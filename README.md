@@ -5,9 +5,6 @@
 ## Ejemplo de uso rapido
 
 ```python
-from centraal_dataframework import task
-from centraal_dataframework import task_dq
-
 """---contenido de function app --- """
 import azure.functions as func 
 from centraal_dataframework import runner
@@ -17,6 +14,8 @@ app.register_functions(runner)
 
 
 """---Contenido de additional_functions.py---"""
+from centraal_dataframework import task
+from centraal_dataframework import task_dq
 @task
 def process_csv():
     info = dl.read_read_csv("contenedor/path/to/csv/file.csv")
