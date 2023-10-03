@@ -12,27 +12,38 @@ from centraal_dataframework import runner
 app = func.FunctionApp() 
 app.register_functions(runner) 
 
-
+```
+```python
 """---Contenido de additional_functions.py---"""
 from centraal_dataframework import task
 from centraal_dataframework import task_dq
-@task
+
+@task(name = etl_origen)
 def process_csv():
     info = dl.read_read_csv("contenedor/path/to/csv/file.csv")
     result = info.pipe(flag = 0).groupby('origen')['conteo'].sum()
     dl.to_csv(result)
 
 
-@task_dq
+@task_dq(name=regla_dq)
 def aplicar_regla():
     validator = context.sources.pandas_default.read_csv(
     "https://raw.githubusercontent.com/great-expectations/gx_tutorials/main/data/yellow_tripdata_sample_2019-01.csv"
 )
     validator.expect_column_values_to_not_be_null("pickup_datetime")
-
-
-
 ```
+
+
+```yml
+#---contenido de config.yaml---
+etl_origen:
+    horas: 8,12,20
+    prioridad: 1
+regla_dq:
+    horas: 8,12,22
+    prioridad: 2
+```
+
 
 ## Arquitectura
 
