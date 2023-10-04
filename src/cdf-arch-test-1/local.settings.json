@@ -1,0 +1,7 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+      "FUNCTIONS_WORKER_RUNTIME": "python",
+      "WEBSITE_RUN_FROM_PACKAGE": "1"
+    }
+  }
