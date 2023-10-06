@@ -2,8 +2,10 @@
 import logging
 import azure.functions as func
 
+from centraal_dataframework.runner import Runner
 
-bp = func.Blueprint()
+runner = Runner()
+framework = func.Blueprint()
 
 
 logger = logging.getLogger(__name__)
@@ -11,8 +13,8 @@ NAME_CONNECTION_STORAGE_ACCOUNT = "MyStorageAccountAppSetting"
 QUEUE_NAME = "tareas"
 
 
-@bp.route(methods=['post'])
-@bp.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)
+@framework.route(methods=['post'])
+@framework.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)
 def run_tasks(req: func.HttpRequest) -> func.HttpResponse:
     """Lee el archivo yml y define que tareas ejecutar.
 
@@ -21,8 +23,8 @@ def run_tasks(req: func.HttpRequest) -> func.HttpResponse:
     Args:
         req: request de la funcion, puede tener un body vacio o tener un parametro
             "task_name", para ejecutar una función.
-    """
 
+    """
     logger.info('ejecutando la funcion run_tasks')
     logger.info('leyendo el archivo .yaml de configuración')
     # TODO: leer el archivo (quizas usar pydantic?)
@@ -44,11 +46,15 @@ def run_tasks(req: func.HttpRequest) -> func.HttpResponse:
         # de acuerdo al retorno del archivo yml, solo se encolan
         pass
 
-    return func.HttpResponse("tareas ejecutadas", status_code=200)
+    return func.HttpResponse("tareas programadas", status_code=200)
 
 
-@bp.queue_trigger(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)  # Queue trigger
+@framework.queue_trigger(
+    arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT
+)  # Queue trigger
 def execute_tasks_queue(msg: func.QueueMessage) -> None:
-    """Ejcuta tareas de acuerdo al queue."""
+    """Ejecuta tareas de acuerdo al queue."""
     task_name = msg.get_body().decode('utf-8')
     logger.info('Python queue trigger function processed a queue item: %s', task_name)
+    func_to_execute = runner.get_task(task_name)
+    func_to_execute()

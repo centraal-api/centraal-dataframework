@@ -5,16 +5,7 @@
 ## Ejemplo de uso rapido
 
 ```python
-"""---contenido de function app --- """
-import azure.functions as func 
-from centraal_dataframework import runner
-
-app = func.FunctionApp() 
-app.register_functions(runner) 
-
-```
-```python
-"""---Contenido de additional_functions.py---"""
+"""---Contenido de other/module/logica.py---"""
 from centraal_dataframework import task
 from centraal_dataframework import task_dq
 
@@ -33,7 +24,6 @@ def aplicar_regla():
     validator.expect_column_values_to_not_be_null("pickup_datetime")
 ```
 
-
 ```yml
 #---contenido de config.yaml---
 etl_origen:
@@ -43,6 +33,23 @@ regla_dq:
     horas: 8,12,22
     prioridad: 2
 ```
+
+```python
+"""---contenido de function app --- """
+import azure.functions as func 
+# se deben importar los modulos custom
+from centraal_dataframework import runner
+from other.module import logica
+# si tiene otro modulo tambien importarlo
+# form otro.modulo import logica
+# ...
+# y luego traer el runner:
+
+app = func.FunctionApp() 
+app.register_functions(runner) 
+
+```
+
 
 
 ## Arquitectura
