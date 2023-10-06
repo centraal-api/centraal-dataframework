@@ -4,8 +4,9 @@ from centraal_dataframework.tasks import task
 
 
 @task
-def greetins():
+def greetins(datalake):
     """Saluda."""
+    print(datalake.__version__)
     print("hello there, iam a task")
 
 

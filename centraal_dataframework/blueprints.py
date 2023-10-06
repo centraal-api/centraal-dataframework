@@ -1,9 +1,13 @@
 """Modulo de blueprints."""
+import os
+
 import logging
 import azure.functions as func
+from azure_datalake_utils import Datalake
 
 from centraal_dataframework.runner import Runner
 
+datalake = Datalake.from_account_key(os.environ.get("datalake_name"), os.environ.get("datalake_key"))
 runner = Runner()
 framework = func.Blueprint()
 
