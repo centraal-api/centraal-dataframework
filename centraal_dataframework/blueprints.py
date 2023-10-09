@@ -1,21 +1,16 @@
 """Modulo de blueprints."""
-import os
-
 import logging
-import azure.functions as func
-from azure_datalake_utils import Datalake
 
+import azure.functions as func
 from centraal_dataframework.runner import Runner
 from centraal_dataframework.excepciones import ErrorEnTarea
-
-datalake = Datalake.from_account_key(os.environ.get("datalake"), os.environ.get("datalake_key"))
-runner = Runner()
-framework = func.Blueprint()
 
 
 logger = logging.getLogger(__name__)
 NAME_CONNECTION_STORAGE_ACCOUNT = "MyStorageAccountAppSetting"
 QUEUE_NAME = "tareas"
+runner = Runner()
+framework = func.Blueprint()
 
 
 @framework.route(methods=['post'])
@@ -23,11 +18,12 @@ QUEUE_NAME = "tareas"
 def queue_rask(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
     """Lee el archivo yml y define que tareas ejecutar.
 
-    Tambien puede usar para programar una función en especifico.
+    Tambien puede usar para programar una lista de funciones.
 
     Args:
         req: request de la funcion, puede tener un body vacio o tener un parametro
-            "task_name", para ejecutar una función.
+            "task_name", para ejecutar una lista de funciones en especifico.
+        msg: mensaje que representa
 
     """
     logger.info('ejecutando la funcion run_tasks')
@@ -35,7 +31,7 @@ def queue_rask(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
     # TODO: leer el archivo (quizas usar pydantic?)
     try:
         req_body = req.get_json()
-        task_name = req_body.get('task_name', None)
+        task_names = req_body.get('task_name', [])
 
     except ValueError:
         return func.HttpResponse(
@@ -43,11 +39,12 @@ def queue_rask(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
             status_code=400,
         )
 
-    if task_name is not None:
+    if task_names is not None:
         # se ejecuta tarea con el nombre especifico sin importar el archivo de configuracion
-        msg.set(task_name)
+        msg.set(task_names)
     else:
-        # de acuerdo al retorno del archivo yml, solo se encolan
+        # de acuerdo al retorno del archivo yml, solo se encolan el listado
+
         pass
 
     return func.HttpResponse("tareas programadas", status_code=200)
