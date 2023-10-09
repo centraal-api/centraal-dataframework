@@ -48,6 +48,7 @@ jupyter = {version = ">=1.0", optional = true}
 azure-functions  = ">1.0,<2.0"
 azure-datalake-utils = ">=0.5.7,<1.0"
 great-expectations = ">=0.17,<1.0"
+python-dotenv = ">=1.0.0,<2.0"
 
 [tool.poetry.extras]
 test = [
@@ -62,7 +63,7 @@ test = [
     "Jinja2"
     ]
 
-dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version", "jupyter"]
+dev = ["tox", "pre-commit", "virtualenv", "pip", "twine", "toml", "bump2version", "jupyter", "python-dotenv"]
 
 doc = [
     "mkdocs",
