@@ -12,3 +12,29 @@ class ErrorEnTarea(Exception):
         """Incializa con el nombre de la tarea."""
         self.message = f"Se encontro un error en {task_name}."
         super().__init__(self.message)
+
+
+class TareaDuplicada(Exception):
+    """Excepción para levantar cuando la tarea ya existe.
+
+    Attributes:
+        nombre de la tarea duplicada.
+    """
+
+    def __init__(self, task_name: str):
+        """Incializa con el nombre de la tarea."""
+        self.message = f" la funcion {task_name} ya existe!."
+        super().__init__(self.message)
+
+
+class TareaNoDefinida(Exception):
+    """Excepción para levantar cuando la tarea no esta definida.
+
+    Attributes:
+        nombre de tarea no definida
+    """
+
+    def __init__(self, task_name: str):
+        """Incializa con el nombre de la tarea."""
+        self.message = f" la funcion {task_name} NO existe!."
+        super().__init__(self.message)

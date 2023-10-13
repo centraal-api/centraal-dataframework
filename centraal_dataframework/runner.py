@@ -1,5 +1,6 @@
 """Modulo de runner con las clases basicas para el framework."""
 from typing import Callable
+from centraal_dataframework.excepciones import TareaDuplicada
 
 
 class Runner:
@@ -9,9 +10,12 @@ class Runner:
         """Constructor."""
         self.tasks = {}
 
-    def add_task(self, func, name):
+    def add_task(self, func, task_name):
         """Adiciona tareas."""
-        self.tasks[name] = func
+        if task_name not in self.tasks:
+            self.tasks[task_name] = func
+        else:
+            raise TareaDuplicada(task_name)
 
     def get_task(self, task_name: str) -> Callable:
         """Ejecuta tareas."""

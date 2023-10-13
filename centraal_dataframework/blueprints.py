@@ -4,6 +4,7 @@ import logging
 import azure.functions as func
 from centraal_dataframework.runner import Runner
 from centraal_dataframework.excepciones import ErrorEnTarea
+from centraal_dataframework.excepciones import TareaNoDefinida
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ framework = func.Blueprint()
 
 @framework.route(methods=['post'])
 @framework.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)
-def queue_rask(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
+def queue_task(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
     """Lee el archivo yml y define que tareas ejecutar.
 
     Tambien puede usar para programar una lista de funciones.
@@ -58,8 +59,12 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
     task_name = msg.get_body().decode('utf-8')
     logger.info('execute_tasks_queue va ejecutar la tarea: %s', task_name)
     func_to_execute = runner.get_task(task_name)
+
+    if func_to_execute is None:
+        raise TareaNoDefinida(task_name)
     try:
         func_to_execute()
     except Exception as error_tarea:
         logger.error("se presento error en %s", task_name, exc_info=True)
+        # TODO: enviar correo
         raise ErrorEnTarea(task_name) from error_tarea
