@@ -1,11 +1,14 @@
 """Modulo con las tareas."""
+import re
 import logging
 import functools
 from typing import Callable, List
 from dataclasses import dataclass
+
 import pandas as pd
 from great_expectations.data_context import EphemeralDataContext
 from great_expectations.core.expectation_configuration import ExpectationConfiguration
+
 from centraal_dataframework.blueprints import runner
 from centraal_dataframework.resources import datalake
 from centraal_dataframework.resources import context
@@ -34,11 +37,37 @@ class GreatExpectationsToolKit:
         self.suite = expectation_suite
         self.check_point = check_point
 
+    def _get_url(self, resource_id, public: bool = False) -> str:
+        """Obtiene url de reporte."""
+        docs_site_urls_list = self.context.get_docs_sites_urls(resource_identifier=resource_id)
+        url = docs_site_urls_list[0]["site_url"]
+        if public:
+            # TODO: el valor de z13.web es un prefijo.¿se deja hardcoded o se necesita personalizacion?
+            url = url.replace("blob", "z13.web").replace("$web/", "")
+        else:
+            pattern = r"https://[\w.]+/([\w$]+/[\w/]+/[\d]+T[\d.]+Z)/([\w-]+)-([\w-]+)\.html"
+            match = re.search(pattern, url)
+            if match:
+                container_path = match.group(1) + "/" + match.group(2)
+            else:
+                raise ValueError("No match found in the URL.")
+            url = f"Se genera un archivo privado: {container_path}. Visitar portal azure para acceder resultados."
+        return url
+
+    def run_expectation_file_on_df(
+        self, df: pd.DataFrame, name_of_df: str, expectations_suite_name: str, public: bool = False
+    ) -> str:
+        """Ejecuta una expectativa existente."""
+        data_asset = self.datasource.add_dataframe_asset(name=f"{self.datasource.name}_{name_of_df}")
+        result = self.context.run_checkpoint(
+            checkpoint_name=self.check_point.name,
+            batch_request=data_asset.build_batch_request(dataframe=df),
+            expectation_suite_name=expectations_suite_name,
+        )
+        return self._get_url(list(result.run_results.keys())[0], public)
+
     def run_expectations_on_df(
-        self,
-        df: pd.DataFrame,
-        name_of_df: str,
-        expectations: List[ExpectationConfiguration],
+        self, df: pd.DataFrame, name_of_df: str, expectations: List[ExpectationConfiguration], public: bool = False
     ) -> str:
         """Ejecuta una lista de expectativas sobre un dataframe y devuelve la URL publica."""
         # adicionar las execptativas
@@ -54,11 +83,7 @@ class GreatExpectationsToolKit:
             expectation_suite_name=self.suite.name,
         )
 
-        docs_site_urls_list = self.context.get_docs_sites_urls(resource_identifier=list(result.run_results.keys())[0])
-        # z13.web No estoy seguro si el prefijo se puede configurar
-        url = docs_site_urls_list[0]["site_url"].replace("blob", "z13.web").replace("$web/", "")
-
-        return url
+        return self._get_url(list(result.run_results.keys())[0], public)
 
 
 def task(func: Callable):

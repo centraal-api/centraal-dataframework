@@ -29,7 +29,7 @@ def queue_task(req: func.HttpRequest, msg: func.Out[str]) -> func.HttpResponse:
     """
     logger.info('ejecutando la funcion run_tasks')
     logger.info('leyendo el archivo .yaml de configuración')
-    # TODO: leer el archivo (quizas usar pydantic?)
+
     try:
         req_body = req.get_json()
         task_names = req_body.get('task_name', [])
