@@ -1,0 +1,5 @@
+- ean_suit:
+    current_ean: 3000
+  scrapping_suit:
+    marca_column_number_max: 11
+    marca_column_number_min: 9
