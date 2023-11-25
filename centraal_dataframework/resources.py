@@ -23,7 +23,7 @@ configuration = {
             "store_backend": {
                 "class_name": "TupleAzureBlobStoreBackend",
                 # noqa: W605
-                "container": "\$web",  # pylint: disable=anomalous-backslash-in-string
+                "container": CONTAINER,  # pylint: disable=anomalous-backslash-in-string
                 "connection_string": "${AZURE_STORAGE_CONNECTION_STRING}",
             },
             "site_index_builder": {"class_name": "DefaultSiteIndexBuilder"},
