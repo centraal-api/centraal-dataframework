@@ -45,12 +45,7 @@ class GreatExpectationsToolKit:
             # TODO: el valor de z13.web es un prefijo.¿se deja hardcoded o se necesita personalizacion?
             url = url.replace("blob", "z13.web").replace("$web/", "")
         else:
-            pattern = r"https://[\w.]+/([\w$]+/[\w/]+/[\d]+T[\d.]+Z)/([\w-]+)-([\w-]+)\.html"
-            match = re.search(pattern, url)
-            if match:
-                container_path = match.group(1) + "/" + match.group(2)
-            else:
-                raise ValueError("No match found in the URL.")
+            _, container_path = url.split(".net")
             url = f"Se genera un archivo privado: {container_path}. Visitar portal azure para acceder resultados."
         return url
 
