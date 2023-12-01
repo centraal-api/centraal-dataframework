@@ -59,7 +59,7 @@ class GreatExpectationsToolKit:
             batch_request=data_asset.build_batch_request(dataframe=df),
             expectation_suite_name=expectations_suite_name,
         )
-        return self._get_url(list(result.run_results.keys())[0], public)
+        return result, self._get_url(list(result.run_results.keys())[0], public)
 
     def run_expectations_on_df(
         self, df: pd.DataFrame, name_of_df: str, expectations: List[ExpectationConfiguration], public: bool = False
@@ -77,8 +77,12 @@ class GreatExpectationsToolKit:
             batch_request=data_asset.build_batch_request(dataframe=df),
             expectation_suite_name=self.suite.name,
         )
-
-        return self._get_url(list(result.run_results.keys())[0], public)
+        exp_status = dict(
+            status = result.success,
+            url    = self._get_url(list(result.run_results.keys())[0], public)
+        )
+        #return result.success, self._get_url(list(result.run_results.keys())[0], public)
+        return exp_status
 
 
 def task(func: Callable):
