@@ -1,9 +1,0 @@
-logic_app_notificacion: https://logic.app # dejarlo en blanco si no se quiere usar la notificacion.
-email_notificar: correo@centraal.studio # si no existe logic app esta configuración no se aplica
-tareas:
-    # deben tener el nombre de la función definida.
-    hello_datalake:
-        horas: 8,12,20
-        email_notify: equipo@centraal.soluciones
-    hello_expectations:
-        horas: 8,12,22
