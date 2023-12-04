@@ -5,6 +5,9 @@ import azure.functions as func
 from centraal_dataframework.runner import Runner
 from centraal_dataframework.excepciones import ErrorEnTarea
 from centraal_dataframework.excepciones import TareaNoDefinida
+from centraal_dataframework.excepciones import ErrorTareaCalidadDatos
+from centraal_dataframework.email_sender import send_email_dq
+from centraal_dataframework.email_sender import send_email_error
 
 
 logger = logging.getLogger(__name__)
@@ -59,12 +62,17 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
     task_name = msg.get_body().decode('utf-8')
     logger.info('execute_tasks_queue va ejecutar la tarea: %s', task_name)
     func_to_execute = runner.get_task(task_name)
+    emails = [""]
 
     if func_to_execute is None:
         raise TareaNoDefinida(task_name)
     try:
         func_to_execute()
+    except ErrorTareaCalidadDatos as error:
+        logger.info("se presento un error, se envia correo")
+        send_email_dq(runner.logic_app_url, emails, error)
+
     except Exception as error_tarea:
         logger.error("se presento error en %s", task_name, exc_info=True)
-        # TODO: enviar correo
+        send_email_error(runner.logic_app_url, emails, error_tarea, func_to_execute)
         raise ErrorEnTarea(task_name) from error_tarea

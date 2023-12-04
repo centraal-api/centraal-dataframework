@@ -1,4 +1,5 @@
 """Modulo de excepciones."""
+from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 
 
 class ErrorEnTarea(Exception):
@@ -37,4 +38,19 @@ class TareaNoDefinida(Exception):
     def __init__(self, task_name: str):
         """Incializa con el nombre de la tarea."""
         self.message = f" la funcion {task_name} NO existe!."
+        super().__init__(self.message)
+
+
+class ErrorTareaCalidadDatos(Exception):
+    """Excepción para levantar se presenta un error de calidad de datos.
+
+    Attributes:
+        suite que fallo.
+    """
+
+    def __init__(self, check_point_result: CheckpointResult):
+        """Incializa con el nombre de la tarea."""
+        suites = ",".join(check_point_result.list_expectation_suite_names())
+        self.message = f"¡Las expectativas {suites} Fallaron!."
+        self.check_point_result = check_point_result
         super().__init__(self.message)

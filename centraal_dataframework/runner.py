@@ -1,5 +1,7 @@
 """Modulo de runner con las clases basicas para el framework."""
-from typing import Callable
+import os
+from typing import Callable, List
+
 from centraal_dataframework.excepciones import TareaDuplicada
 
 
@@ -9,6 +11,8 @@ class Runner:
     def __init__(self) -> None:
         """Constructor."""
         self.tasks = {}
+        self.logic_app_url = os.environ.get("logic_app_url", "")
+        self._load_conf()
 
     def add_task(self, func, task_name):
         """Adiciona tareas."""
@@ -21,3 +25,9 @@ class Runner:
         """Ejecuta tareas."""
         task_fun = self.tasks.get(task_name)
         return task_fun
+
+    def _load_conf(task_name: str) -> List[str]:
+        return []
+
+    def get_emails(task_name: str) -> List[str]:
+        return []
