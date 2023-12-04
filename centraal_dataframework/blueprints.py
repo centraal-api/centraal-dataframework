@@ -29,7 +29,7 @@ def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[str]) -> f
             para ejecutar una lista de funciones en especifico.
         msg: mensaje que representa la cola en donde adicionar.
     """
-    utc_timestamp = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc).isoformat()
+    utc_timestamp = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
     if mytimer.past_due:
         logging.warning('La función se ejecuto a fuetra de tiempo')

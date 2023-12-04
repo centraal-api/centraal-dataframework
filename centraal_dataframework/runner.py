@@ -1,6 +1,7 @@
 """Modulo de runner con las clases basicas para el framework."""
 import os
 import logging
+import datetime
 from typing import Callable, List
 
 import yaml
@@ -9,7 +10,7 @@ from centraal_dataframework.excepciones import TareaDuplicada
 
 
 logger = logging.getLogger(__name__)
-OVEWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)
+OVERWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)
 TAREA_DEBE_ESTAR_CONF = os.environ.get("TAREA_DEBE_CONFIGURACION", True)
 
 
@@ -35,12 +36,12 @@ class Runner:
         else:
             check_tarea_en_conf = True
 
-        if OVEWRITE_TAREA and check_tarea_en_conf:
+        if OVERWRITE_TAREA and check_tarea_en_conf:
             logging.warning(
                 "Tarea %s sobrescrita. Si quiere cambiar este comportamiento"
                 "use la variable de ambiente `SOBREESCRIBIR_TAREA` (valor actual = %s)",
                 task_name,
-                OVEWRITE_TAREA,
+                OVERWRITE_TAREA,
             )
             self.tasks[task_name] = func
 
@@ -62,13 +63,16 @@ class Runner:
         task_fun = self.tasks.get(task_name)
         return task_fun
 
-    def es_programable(self, task_name_conf: dict, fecha) -> bool:
+    def es_programable(self, task_name_conf: dict, fecha_ejecucion: datetime = None) -> bool:
         """verificar que la tarea puede ser programada."""
+        if fecha_ejecucion is None:
+            fecha_ejecucion = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+
         return True
 
-    def get_tareas_programables(self, fecha) -> List[str]:
+    def get_tareas_programables(self, fecha_ejecucion: datetime = None) -> List[str]:
         """Obtiene las tareas que pueden se programadas"""
-        return [task for task, task_conf in self.conf["tareas"] if self.es_programable(task_conf, fecha)]
+        return [task for task, task_conf in self.conf["tareas"] if self.es_programable(task_conf, fecha_ejecucion)]
 
     def _load_conf(self) -> dict:
         archivo = os.environ.get("YAML_CONFIGURACION", "centraal_dataframework.yaml")
