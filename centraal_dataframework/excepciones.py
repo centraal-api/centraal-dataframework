@@ -48,9 +48,10 @@ class ErrorTareaCalidadDatos(Exception):
         suite que fallo.
     """
 
-    def __init__(self, check_point_result: CheckpointResult):
+    def __init__(self, check_point_result: CheckpointResult, url_docs: str):
         """Incializa con el nombre de la tarea."""
         suites = ",".join(check_point_result.list_expectation_suite_names())
         self.message = f"¡Las expectativas {suites} Fallaron!."
         self.check_point_result = check_point_result
+        self.url_docs = url_docs
         super().__init__(self.message)

@@ -126,5 +126,5 @@ class Runner:
 
         except Exception as error_tarea:
             logger.error("se presento error en %s", task_name, exc_info=True)
-            send_email_error(self.logic_app_url, emails, error_tarea, func_to_execute)
+            send_email_error(self.logic_app_url, emails, error_tarea, task_name)
             raise ErrorEnTarea(task_name) from error_tarea

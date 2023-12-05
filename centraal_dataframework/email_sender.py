@@ -40,5 +40,6 @@ def _send(url_logic_app: str, emails: List[str], subject: str, body: str):
         logging.warning("No existen emails configurados.")
     else:
         logging.warning("enviando notificacion a %s", emails)
-        payload = {'emails': ",".join(emails), 'subject': subject, 'body_msj': body}
-        post_req(url=url_logic_app, json=payload, timeout=3 * 60)
+        payload = {'emails': ", ".join(emails), 'subject': subject, 'body_msj': body}
+        headers = {'Content-type': 'application/json'}
+        post_req(url=url_logic_app, json=payload, timeout=3 * 60, headers=headers)
