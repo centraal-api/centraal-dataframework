@@ -12,6 +12,7 @@ from centraal_dataframework.excepciones import TareaDuplicada
 logger = logging.getLogger(__name__)
 OVERWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)
 TAREA_DEBE_ESTAR_CONF = os.environ.get("TAREA_DEBE_CONFIGURACION", True)
+UTC_OFFSET = datetime.timedelta(hours=os.environ.get("UTC_OFFSET", -5))
 
 
 class Runner:
@@ -68,7 +69,22 @@ class Runner:
         if fecha_ejecucion is None:
             fecha_ejecucion = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
-        return True
+        dias = str(task_name_conf["dias"])
+        horas = str(task_name_conf["horas"])
+
+        if dias == "*" and horas == "*":
+            return True
+
+        fecha_en_hora_local = fecha_ejecucion + UTC_OFFSET
+        dias = dias.split(",")
+        horas = horas.split(",")
+        hora_ejecucion = fecha_en_hora_local.time.hour
+        dia_ejecucion = fecha_en_hora_local.date.weekday
+
+        if hora_ejecucion in horas and dia_ejecucion in dias:
+            return True
+
+        return False
 
     def get_tareas_programables(self, fecha_ejecucion: datetime = None) -> List[str]:
         """Obtiene las tareas que pueden se programadas"""

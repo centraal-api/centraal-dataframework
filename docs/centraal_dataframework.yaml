@@ -8,13 +8,13 @@ tareas:
         dias: '*'
         horas: 8,12,20
     scrapping_validate_prerequisites:
-        dias:  1
+        dias:  0
         horas: 8,12,20
     scrapping_validate_column_contents:
         dias:  '*'
         horas: '*'
     scrapping_validate_prices:
-        dias:  1
+        dias:  0,1,2
         horas: 8,12,20
     marcaspropias_validate_column_contents:
         dias:  '*'
