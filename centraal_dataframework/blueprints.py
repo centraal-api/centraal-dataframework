@@ -5,11 +5,6 @@ import datetime
 
 import azure.functions as func
 from centraal_dataframework.runner import Runner
-from centraal_dataframework.excepciones import ErrorEnTarea
-from centraal_dataframework.excepciones import TareaNoDefinida
-from centraal_dataframework.excepciones import ErrorTareaCalidadDatos
-from centraal_dataframework.email_sender import send_email_dq
-from centraal_dataframework.email_sender import send_email_error
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +16,7 @@ framework = func.Blueprint()
 
 @framework.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False)
 @framework.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)
-def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[str]) -> func.HttpResponse:
+def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[str]):
     """Verifica que tareas se deben programar.
 
     Args:
@@ -76,18 +71,4 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
     """Ejecuta tareas de acuerdo al queue."""
     task_name = msg.get_body().decode('utf-8')
     logger.info('execute_tasks_queue va ejecutar la tarea: %s', task_name)
-    func_to_execute = runner.get_task(task_name)
-    emails = runner.get_emails(task_name)
-
-    if func_to_execute is None:
-        raise TareaNoDefinida(task_name)
-    try:
-        func_to_execute()
-    except ErrorTareaCalidadDatos as error:
-        logger.info("se presento un error, se envia correo")
-        send_email_dq(runner.logic_app_url, emails, error)
-
-    except Exception as error_tarea:
-        logger.error("se presento error en %s", task_name, exc_info=True)
-        send_email_error(runner.logic_app_url, emails, error_tarea, func_to_execute)
-        raise ErrorEnTarea(task_name) from error_tarea
+    runner.run_task(task_name)
