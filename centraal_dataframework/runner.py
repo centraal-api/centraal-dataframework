@@ -101,9 +101,13 @@ class Runner:
     def _load_conf(self) -> dict:
         archivo = os.environ.get("YAML_CONFIGURACION", "centraal_dataframework.yaml")
         logger.info("cargando configuracion desde %s", archivo)
-        with open(archivo, 'r', encoding="utf-8") as file:
-            data = yaml.safe_load(file)
-            self.conf = data
+        try:
+            with open(archivo, 'r', encoding="utf-8") as file:
+                data = yaml.safe_load(file)
+                self.conf = data
+        except FileNotFoundError as error_file:
+            logger.warning("se carga archivo dummy %s", error_file, exc_info=True)
+            self.conf = {"recodar_crear_archivo": "YAML_CONFIGURACION"}
 
     def get_emails(self, task_name: str = None) -> List[str]:
         """Obtener los emails."""

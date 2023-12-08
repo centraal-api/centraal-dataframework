@@ -2,6 +2,7 @@ url_logicapp_email: https://prod-33.eastus.logic.azure.com:443/workflows/9d9a5d0
 emails_notificar: 
     - german@centraal.studio
     - wilber@centraal.studio
+    - dmartine@crystal.com.co
 tareas:
     # deben tener el nombre de la función definida.
     get_scrapping_file:
