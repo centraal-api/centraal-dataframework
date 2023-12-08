@@ -98,17 +98,6 @@ class Runner:
                 tareas.append(task)
         return tareas
 
-    def _load_conf(self) -> dict:
-        archivo = os.environ.get("YAML_CONFIGURACION", "centraal_dataframework.yaml")
-        logger.info("cargando configuracion desde %s", archivo)
-        try:
-            with open(archivo, 'r', encoding="utf-8") as file:
-                data = yaml.safe_load(file)
-                self.conf = data
-        except FileNotFoundError as error_file:
-            logger.warning("se carga archivo dummy %s", error_file, exc_info=True)
-            self.conf = {"recodar_crear_archivo": "YAML_CONFIGURACION"}
-
     def get_emails(self, task_name: str = None) -> List[str]:
         """Obtener los emails."""
         if task_name is not None:
@@ -132,3 +121,14 @@ class Runner:
             logger.error("se presento error en %s", task_name, exc_info=True)
             send_email_error(self.logic_app_url, emails, error_tarea, task_name)
             raise ErrorEnTarea(task_name) from error_tarea
+
+    def _load_conf(self) -> dict:
+        archivo = os.environ.get("YAML_CONFIGURACION", "centraal_dataframework.yaml")
+        logger.info("cargando configuracion desde %s", archivo)
+        try:
+            with open(archivo, 'r', encoding="utf-8") as file:
+                data = yaml.safe_load(file)
+                self.conf = data
+        except FileNotFoundError as error_file:
+            logger.warning("se carga archivo dummy %s", error_file, exc_info=True)
+            self.conf = {"tareas": {}, "emails_notificar": [], "url_logicapp_email": "url"}
