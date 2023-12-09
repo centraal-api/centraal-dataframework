@@ -1,11 +1,11 @@
 """Modulo de blueprints."""
-import os
-import logging
 import datetime
+import logging
+import os
 
 import azure.functions as func
-from centraal_dataframework.runner import Runner
 
+from centraal_dataframework.runner import Runner
 
 logger = logging.getLogger(__name__)
 NAME_CONNECTION_STORAGE_ACCOUNT = "MyStorageAccountAppSetting"
@@ -20,8 +20,7 @@ def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[str]):
     """Verifica que tareas se deben programar.
 
     Args:
-        req: request de la funcion, debe tener el parametro llamado "task_name",
-            para ejecutar una lista de funciones en especifico.
+        mytimer: objeto TimerRequest requerido por la función.
         msg: mensaje que representa la cola en donde adicionar.
     """
     utc_timestamp = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)

@@ -4,7 +4,7 @@ from centraal_dataframework.resources import DUMMY_STRING
 
 
 def test_parse_connection_string():
-    """test para parse connection."""
+    """Test para parse connection."""
     key_values = parse_connection_string(DUMMY_STRING)
     assert key_values["AccountName"] == "na"
     assert key_values["AccountKey"] == "key!=k"

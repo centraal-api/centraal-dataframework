@@ -1,19 +1,14 @@
 """Modulo de runner con las clases basicas para el framework."""
-import os
-import logging
 import datetime
+import logging
+import os
 from typing import Callable, List
 
 import yaml
 
-from centraal_dataframework.excepciones import TareaDuplicada
-from centraal_dataframework.excepciones import ErrorEnTarea
-from centraal_dataframework.excepciones import TareaNoDefinida
-from centraal_dataframework.excepciones import ErrorTareaCalidadDatos
-from centraal_dataframework.email_sender import send_email_dq
-from centraal_dataframework.email_sender import send_email_error
+from centraal_dataframework.email_sender import send_email_dq, send_email_error
+from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaDuplicada, TareaNoDefinida
 from centraal_dataframework.resources import DUMMY_STRING
-
 
 logger = logging.getLogger(__name__)
 OVERWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)

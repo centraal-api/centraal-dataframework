@@ -1,19 +1,17 @@
 """Modulo con recursos compartidos."""
 # pylint: disable=line-too-long
-import os
 import logging
-from typing import List, Tuple
+import os
 from dataclasses import dataclass
+from typing import List, Tuple
 
 import pandas as pd
-
-from great_expectations.data_context import EphemeralDataContext
-from great_expectations.core.expectation_configuration import ExpectationConfiguration
-from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from azure_datalake_utils import Datalake
+from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
+from great_expectations.core.expectation_configuration import ExpectationConfiguration
+from great_expectations.data_context import EphemeralDataContext
 
 from centraal_dataframework.utils import parse_connection_string
-
 
 CONTAINER = os.environ.get("CONTENEDOR_VALIDACIONES", "calidad-datos")
 DUMMY_STRING = "DefaultEndpointsProtocol=https;AccountName=na;AccountKey=key!=k;EndpointSuffix=core.windows.net"

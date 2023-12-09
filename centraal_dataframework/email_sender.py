@@ -1,6 +1,6 @@
 """Funciones para enviar correos."""
-import traceback
 import logging
+import traceback
 from typing import List
 
 from requests import post as post_req

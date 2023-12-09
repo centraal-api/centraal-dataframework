@@ -1,14 +1,10 @@
 """Modulo con las tareas."""
-import logging
 import functools
+import logging
 from typing import Callable
 
-
 from centraal_dataframework.blueprints import runner
-from centraal_dataframework.resources import get_datalake
-from centraal_dataframework.resources import get_context
-from centraal_dataframework.resources import GreatExpectationsToolKit
-
+from centraal_dataframework.resources import GreatExpectationsToolKit, get_context, get_datalake
 
 STR_FMT = 'TAREA: %(name)s--%(asctime)s-%(levelname)s-%(message)s'
 
