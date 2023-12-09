@@ -1,6 +1,7 @@
 """Modulo con recursos compartidos."""
 # pylint: disable=line-too-long
 import os
+import logging
 from typing import List, Tuple
 from dataclasses import dataclass
 
@@ -11,10 +12,13 @@ from great_expectations.core.expectation_configuration import ExpectationConfigu
 from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
 from azure_datalake_utils import Datalake
 
+from centraal_dataframework.utils import parse_connection_string
+
 
 CONTAINER = os.environ.get("CONTENEDOR_VALIDACIONES", "calidad-datos")
+DUMMY_STRING = "DefaultEndpointsProtocol=https;AccountName=na;AccountKey=key!=k;EndpointSuffix=core.windows.net"
 
-configuration = {
+CONFIGURATION = {
     "anonymous_usage_statistics": {
         "data_context_id": "d3f5ffb9-7c5b-4600-8d40-be39dacb29fd",
         "explicit_url": False,
@@ -69,9 +73,18 @@ configuration = {
 }
 
 
-datalake = Datalake.from_account_key(os.environ.get("datalake"), os.environ.get("datalake_key"))
+def get_datalake() -> Datalake:
+    """Obtiene el datalake."""
+    conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", DUMMY_STRING)
+    if conn_str == DUMMY_STRING:
+        logging.warning("AZURE_STORAGE_CONNECTION_STRING NO esta configurado.")
+    datalake_conf = parse_connection_string(conn_str)
+    return Datalake.from_account_key(datalake_conf["AccountName"], datalake_conf["AccountKey"])
 
-context = EphemeralDataContext(project_config=configuration)
+
+def get_context() -> EphemeralDataContext:
+    """Context."""
+    return EphemeralDataContext(project_config=CONFIGURATION)
 
 
 @dataclass

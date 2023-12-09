@@ -5,8 +5,8 @@ from typing import Callable
 
 
 from centraal_dataframework.blueprints import runner
-from centraal_dataframework.resources import datalake
-from centraal_dataframework.resources import context
+from centraal_dataframework.resources import get_datalake
+from centraal_dataframework.resources import get_context
 from centraal_dataframework.resources import GreatExpectationsToolKit
 
 
@@ -23,7 +23,7 @@ def task(func: Callable):
         fmt_log = logging.Formatter(STR_FMT)
         c_handler.setFormatter(fmt_log)
         logger.addHandler(c_handler)
-        return func(datalake, logger, *args, **kwargs)
+        return func(get_datalake(), logger, *args, **kwargs)
 
     runner.add_task(wrapper, func.__name__)
 
@@ -41,9 +41,9 @@ def task_dq(func: Callable):
         c_handler.setFormatter(fmt_log)
         logger.addHandler(c_handler)
 
-        gx_toolkit = GreatExpectationsToolKit(context, func.__name__)
+        gx_toolkit = GreatExpectationsToolKit(get_context(), func.__name__)
 
-        return func(datalake, gx_toolkit, logger, *args, **kwargs)
+        return func(get_datalake(), gx_toolkit, logger, *args, **kwargs)
 
     runner.add_task(wrapper, func.__name__)
 
