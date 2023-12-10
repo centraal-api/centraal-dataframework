@@ -5,7 +5,7 @@
 
 ## Comienza a usar el framework
 
-Puedes usar tambien a modo de referencia el [notebook](docs/usage_example.ipynb) o seguir los siguientes pasos:
+Usa como referencia el [notebook](docs/usage_example.ipynb). Algunos pasos basicos:
 
 1. Instala la libreria:
 
@@ -13,49 +13,38 @@ Puedes usar tambien a modo de referencia el [notebook](docs/usage_example.ipynb)
 
 2. Asegurar la creación de las siguientes variables de ambiente. En el ambiente desarollo local, es recomendado usar un archivo `.env` y la libreria [python-dotenv](https://pypi.org/project/python-dotenv/). Ya con la function app desplegada estas variables deben estar configuradas en los [Application settings](https://learn.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal).
 
-    - datalake: nombre de la cuenta de almacenamiento o datalake.
-    - datalake_key: key de acceso a la cuenta de almacenamiento o datalake configurado en la anterior variable
+    - AZURE_STORAGE_CONNECTION_STRING: string de conexión al datalake
+    - CONTENEDOR_VALIDACIONES: donde se contienen las validaciones que van ser realizadas por great expectations.
 
-3. Crea tus tareas, usando el decorador necesario, cada decorador ofrece objetos que puedes usar para concentrarte en la logica necesaria.
-
-```python
-"""---Contenido de other/module/logica_pandas.py---"""
-from centraal_dataframework import task
-
-@task
-def hello_datalake(datalake, logger):
-    """Saluda desde el datalake."""
-    source = datalake.read_csv("test/test_framework.csv", sep="|")
-    transformed = source.sample(10)
-    logger.info(transformed.head(1))
-    logger.info("hello there, iam a task")
+3. Crea tus tareas, usando el decorador necesario, `task_dq` o `task`. Usar como referencia el [notebook en la documentación](docs/usage_example.ipynb)
 ```
-
-```python
-"""---Contenido de other/module/logica_calidad.py---"""
-from centraal_dataframework import task_dq
-
-@task_dq
-def hello_expectations():
-    validator = context.sources.pandas_default.read_csv(
-    "https://raw.githubusercontent.com/great-expectations/gx_tutorials/main/data/yellow_tripdata_sample_2019-01.csv"
-)
-    validator.expect_column_values_to_not_be_null("pickup_datetime")
-```
-4. Crear el archivo de configuración `yml`
+4. Cree el archivo de configuración `yaml`, por defecto este archivo se buscara en el directorio de trabajo bajo el nombre `centraal_dataframework.yaml`
 
 ```yml
 #---contenido de config.yaml---
-logic_app_notificacion: https://logic.app # dejarlo en blanco si no se quiere usar la notificacion
-email_notificar: correo@centraal.studio # si no existe logic app esta configuración no se aplica
+url_logicapp_email: https://prod-33.eastus.logic.azure.com:443/workflows/xxxxx
+emails_notificar: 
+    - nombre.appelido@centraal.studio
+    - nombre.appelido@correo.com
+    ...
 tareas:
-# deben tener el nombre de la función definida.
-    hello_datalake:
+    # deben tener el nombre de la función definida.
+    nombre_funcion:
+        dias: '*'
         horas: 8,12,20
-        email_notify: equipo@centraal.soluciones
-    hello_expectations:
-        horas: 8,12,22
+    segundo_nombre_funcion:
+        dias:  0
+        horas: 8,12,20
 ```
+> Nota: tener en cuenta que '*' puede ser usada en dias y horas, para indicar que la tarea debe ser ejecutada cada hora/dia.  Algunos ejemplos para entender como trabaja:
+
+- `dias: '*'` y `horas: '*'` - > ejecutar todos los dias, cada hora.
+- `dias: '*'` y `horas: '12'` - >  ejecutar todos los dias **solo** a las 12.
+- `dias: '*'` y `horas: 1,8,12,15` - > ejecutar todos los dias **solo** a las 1, 8 a las 12 y a las 15:00 (3 pm).
+- `dias 0,3,6` y `horas: '*'` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6) cada hora.
+- `dias: 1,4` y `horas: 20` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6)  a las 20:00.
+
+
 5. Crear la function app, adiciona el framework y tareas:
 
 ```python
@@ -71,10 +60,9 @@ from other.module.logica_calidad import *
 app = func.FunctionApp()
 #Adicionar el framework
 app.register_functions(framework) 
-
 ```
 
-6. Desplega la azure function.
+6. Desplega la azure function. -> proximamente documentación y herramientas para facilitar este proceso.
 
 ## Arquitectura
 

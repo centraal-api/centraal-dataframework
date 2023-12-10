@@ -72,19 +72,25 @@ class Runner:
         if fecha_ejecucion is None:
             fecha_ejecucion = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
-        dias = str(task_name_conf["dias"])
-        horas = str(task_name_conf["horas"])
+        allowed_days = str(task_name_conf["dias"])
+        allowed_hours = str(task_name_conf["horas"])
 
-        if dias == "*" and horas == "*":
+        if allowed_days == "*" and allowed_hours == "*":
             return True
 
-        fecha_en_hora_local = fecha_ejecucion + UTC_OFFSET
-        dias = dias.split(",")
-        horas = horas.split(",")
-        hora_ejecucion = fecha_en_hora_local.time().hour
-        dia_ejecucion = fecha_en_hora_local.date().weekday
+        fecha_en_hora_local: datetime = fecha_ejecucion + UTC_OFFSET
+        allowed_days = allowed_days.split(",")
+        allowed_hours = allowed_hours.split(",")
+        hora_ejecucion = str(fecha_en_hora_local.time().hour)
+        dia_ejecucion = str(fecha_en_hora_local.date().weekday())
 
-        if hora_ejecucion in horas and dia_ejecucion in dias:
+        if hora_ejecucion in allowed_hours and dia_ejecucion in allowed_days:
+            return True
+
+        if allowed_days == ["*"] and hora_ejecucion in allowed_hours:
+            return True
+
+        if allowed_hours == ["*"] and dia_ejecucion in allowed_days:
             return True
 
         return False
