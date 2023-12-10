@@ -8,6 +8,6 @@ Modulos exportados por este paquete.
 
 __author__ = """centraal.studio"""
 __email__ = 'equipo@centraal.studio'
-__version__ = '0.1'
+__version__ = '0.1.0'
 
 from centraal_dataframework.tasks import task
