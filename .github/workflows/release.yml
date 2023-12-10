@@ -22,6 +22,7 @@ jobs:
     strategy:
       matrix:
         python-versions: [3.8,3.9]
+    environment: release
     permissions:
       id-token: write
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -75,6 +76,4 @@ jobs:
       - name: publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1.5
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
           skip_existing: true
