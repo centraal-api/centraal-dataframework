@@ -127,7 +127,6 @@ GitHub Actions will then deploy to PyPI if tests pass.
 In the first versions the dependencies are not stable, for 2 reasons:
 
 - the versions suggested in the initial template were not fully compatible with the objectives of the library.
-- Some dependencies related to document creation and especially `adlfs` library and `fsspec` are not fully understood very well.
 
 For the above reasons, in some cases, the release workflow could not work, and to avoid creating patch versions the maintainer may need to "recycle" a tag, please follow this gist:
 
