@@ -75,6 +75,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1.5
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip_existing: true
