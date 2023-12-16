@@ -14,11 +14,26 @@ def send_email_dq(url_logic_app: str, emails: List[str], excepcion: ErrorTareaCa
     result = excepcion.check_point_result
     subject = f'¡ALERTA! {excepcion.message}'
     suites = result.list_expectation_suite_names()
+    validation_results = result.list_validation_results(group_by=None)
+    validation_results = str(validation_results)
+    error_msj = []
+    for res in validation_results:
+        error_msj.append(
+            ",".join(
+                [
+                    item.exception_info["exception_message"]
+                    for item in res.results
+                    if res.exception_info["exception_message"] is not None
+                ]
+            )
+        )
+
+    error_msj = "<br>".join(error_msj)
 
     body = (
         f"Las expectativas {','.join(suites)} **Fallaron**.<br>*"
         f"Detalle del resultado:<br>asset de datos: {','.join(result.list_data_asset_names())}<br>"
-        f"resultados: {','.join(result.list_validation_results())}<br>"
+        f"resultados: {error_msj}<br>"
         f"Para mayor detalles revisar la ruta: {result.validation_result_url}<br>"
         f"*Detalles tecnicos*:<br>{detalles_tecnicos}"
     )
