@@ -15,7 +15,6 @@ def send_email_dq(url_logic_app: str, emails: List[str], excepcion: ErrorTareaCa
     subject = f'¡ALERTA! {excepcion.message}'
     suites = result.list_expectation_suite_names()
     validation_results = result.list_validation_results(group_by=None)
-    validation_results = str(validation_results)
     error_msj = []
     for res in validation_results:
         error_msj.append(
