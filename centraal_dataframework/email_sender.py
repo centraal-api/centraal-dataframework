@@ -20,9 +20,9 @@ def send_email_dq(url_logic_app: str, emails: List[str], excepcion: ErrorTareaCa
         error_msj.append(
             ",".join(
                 [
-                    item.exception_info["exception_message"]
+                    item["exception_info"]["exception_message"]
                     for item in res.results
-                    if res.exception_info["exception_message"] is not None
+                    if item["exception_info"]["exception_message"] is not None
                 ]
             )
         )
@@ -33,7 +33,7 @@ def send_email_dq(url_logic_app: str, emails: List[str], excepcion: ErrorTareaCa
         f"Las expectativas {','.join(suites)} **Fallaron**.<br>*"
         f"Detalle del resultado:<br>asset de datos: {','.join(result.list_data_asset_names())}<br>"
         f"resultados: {error_msj}<br>"
-        f"Para mayor detalles revisar la ruta: {result.validation_result_url}<br>"
+        f"Para mayor detalles revisar la ruta: {excepcion.url_docs}<br>"
         f"*Detalles tecnicos*:<br>{detalles_tecnicos}"
     )
 
