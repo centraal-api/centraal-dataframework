@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "centraal_dataframework"
-version = "0.1.1"
+version = "0.1.2"
 homepage = "https://github.com/centraal-api/centraal-dataframework"
 description = "Utilidades para interactuar con Azure Datalake."
 authors = ["centraal.studio <equipo@centraal.studio>"]
