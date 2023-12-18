@@ -2,6 +2,7 @@
 import datetime
 import logging
 import os
+from typing import List
 
 import azure.functions as func
 
@@ -16,7 +17,7 @@ framework = func.Blueprint()
 
 @framework.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False)
 @framework.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=NAME_CONNECTION_STORAGE_ACCOUNT)
-def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[str]):
+def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[List[str]]):
     """Verifica que tareas se deben programar.
 
     Args:
