@@ -39,13 +39,13 @@ jobs:
           tox
 
       - name: Build wheels and source tarball
-        run: |      - name: publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          skip-existing: true
-
+        run: |
           poetry version $(poetry version --short)-dev.$GITHUB_RUN_NUMBER
           poetry version --short
           poetry build
 
+      - name: publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
