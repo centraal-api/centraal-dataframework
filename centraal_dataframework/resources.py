@@ -105,7 +105,15 @@ class GreatExpectationsToolKit:
         self.suite = expectation_suite
         self.check_point = check_point
 
-    def _get_url(self, resource_id, public: bool = False) -> str:
+    def _get_sas_user_or_default(self, duration: int = None, unit: str = None, ip: str = None) -> Tuple[int, str, str]:
+        duration = int(os.environ.get("SAS_VALOR_EXPIRACION", 7)) if duration is None else duration
+        unit = os.environ.get("SAS_UNIDAD_EXPIRACION", 'day') if unit is None else unit
+        ip = os.environ.get("SAS_IP") if ip is None else ip
+        return duration, unit, ip
+
+    def _get_url(
+        self, resource_id, public: bool = False, duration: int = None, unit: str = None, ip: str = None
+    ) -> str:
         """Obtiene url de reporte."""
         docs_site_urls_list = self.context.get_docs_sites_urls(resource_identifier=resource_id)
         url = docs_site_urls_list[0]["site_url"]
@@ -113,8 +121,10 @@ class GreatExpectationsToolKit:
             # TODO: el valor de z13.web es un prefijo.¿se deja hardcoded o se necesita personalizacion?
             url = url.replace("blob", "z13.web").replace("$web/", "")
         else:
-            _, container_path = url.split(".net")
-            url = f"Se genera un archivo privado: {container_path}. Visitar portal azure para acceder resultados."
+            _, container_path = url.split(".net/")
+            duration, unit, ip = self._get_sas_user_or_default(duration, unit, ip)
+            dl = get_datalake()
+            url = dl.generar_url_con_sas_token(container_path, duration, unit, ip)
         return url
 
     def run_expectation_file_on_df(

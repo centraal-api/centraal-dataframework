@@ -17,24 +17,19 @@ def send_email_dq(url_logic_app: str, emails: List[str], excepcion: ErrorTareaCa
     validation_results = result.list_validation_results(group_by=None)
     error_msj = []
     for res in validation_results:
-        error_msj.append(
-            ",".join(
-                [
-                    item["exception_info"]["exception_message"]
-                    for item in res.results
-                    if item["exception_info"]["exception_message"] is not None
-                ]
-            )
-        )
+        error_msj.append(",".join([f'{item["result"]}' for item in res.results if item["exception_info"] is not None]))
 
     error_msj = "<br>".join(error_msj)
 
     body = (
-        f"Las expectativas {','.join(suites)} **Fallaron**.<br>*"
-        f"Detalle del resultado:<br>asset de datos: {','.join(result.list_data_asset_names())}<br>"
-        f"resultados: {error_msj}<br>"
-        f"Para mayor detalles revisar la ruta: {excepcion.url_docs}<br>"
-        f"*Detalles tecnicos*:<br>{detalles_tecnicos}"
+        f"Las expectativas {','.join(suites)} <strong>Fallaron</strong>.<br><br>"
+        "<b>Detalle del resultado</b>"
+        "<ul>"
+        f"<li><i>Asset de datos,</i>: {','.join(result.list_data_asset_names())}</li>"
+        f"""<li><a href="{excepcion.url_docs}" target="_blank">Detalles de la expectativa</a></li>"""
+        f"<li><i>Resultados de Great Expectations</i>: {error_msj}</li>"
+        f"<li><i>Detalles tecnicos:</i>{detalles_tecnicos}</li>"
+        "</ul>"
     )
 
     _send(url_logic_app, emails, subject, body)
@@ -45,7 +40,7 @@ def send_email_error(url_logic_app: str, emails: List[str], exception: Exception
     detalles_tecnicos = ''.join(traceback.TracebackException.from_exception(exception).format())
     subject = f'¡ALERTA! Proceso de datos llamado: {tarea} FALLO'
     # <br> es salto de linea
-    body = f"La tarea {tarea} **FALLO**.<br>**Detalles tecnicos**:<br>{detalles_tecnicos}"
+    body = f"La tarea {tarea} <strong>FALLO</strong>.<br><i>Detalles tecnicos</i>:<br>{detalles_tecnicos}"
     _send(url_logic_app, emails, subject, body)
 
 
