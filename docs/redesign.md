@@ -11,7 +11,7 @@ General principles that will follow this new design of the framework:
     6. We want users can debug easly and use the [azure monitor in house tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-monitoring), but this need to be very transparent for the user and not required bery heavy setup
 3. We want to avoid configuration files and keep an approach that the user only needs to "code" to configure all the aspects of the flow.
 4. We recnognize that sometimes, the user needs to present the steps to a broader audience, we want to provide mechanisms that help to that communication (i.e simple diagrams to describe the flow of taks, etc.)
-5. We want the framework communicates with [Azure datalake](https://www.google.com/search?q=data+lake+azure&rlz=1C1ONGR_esCO1002CO1002&oq=datalake&gs_lcrp=EgZjaHJvbWUqDggBEAAYChhDGIAEGIoFMgkIABBFGDkYgAQyDggBEAAYChhDGIAEGIoFMgwIAhAAGEMYgAQYigUyCQgDEAAYChiABDIGCAQQRRg8MgYIBRBFGDwyBggGEEUYQTIGCAcQRRg80gEIMjg0N2owajeoAgCwAgA&sourceid=chrome&ie=UTF-8) and be able to reuse datasets among the tasks.
+5. We want the framework communicates with [Azure datalake](https://learn.microsoft.com/en-us/azure/storage/blobs/data-lake-storage-introduction) and be able to reuse datasets among the tasks.
 6. We want to take advantage of [blueprints](https://github.com/Azure/azure-functions-durable-python/blob/dev/samples-v2/blueprint/durable_blueprints.py).
 7. First versions of this design will rely heaviyly on azure products, if these kay ideas are proven valuable in future other cloud providers could be included.
 
