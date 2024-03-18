@@ -1,4 +1,5 @@
 """Modulo de blueprints."""
+
 import datetime
 import logging
 import os
@@ -24,10 +25,10 @@ def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[List[str]]
         mytimer: objeto TimerRequest requerido por la función.
         msg: mensaje que representa la cola en donde adicionar.
     """
-    utc_timestamp = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+    utc_timestamp = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=datetime.timezone.utc)
 
     if mytimer.past_due:
-        logging.warning('La función se ejecuto a fuetra de tiempo')
+        logging.warning('La función se ejecuto a fuera de tiempo')
 
     tareas = runner.get_tareas_programables(utc_timestamp)
     if tareas is None:
