@@ -1,0 +1,15 @@
+url_logicapp_email: https://prod-33.eastus.logic.azure.com:443/workflows/9d9a5d0f81354eae92f9b677e4ae5cb3/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DdpZ6Rp4qtCHlqnVIk8XzJ7Ba1g7Q6hfoc5-p2iaSD8
+emails: 
+    - german@centraal.studio
+    - wilber@centraal.studio
+    - dmartine@crystal.com.co
+pipelines:
+    # deben tener el nombre de la función pipeline.
+    test_pipeline:
+        dias: '*'
+        horas: '*'
+    test_pipeline_2:
+        dias:  0
+        horas: 8,12,20
+        emails:
+            - german@centraal.studio

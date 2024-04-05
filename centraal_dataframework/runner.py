@@ -1,14 +1,17 @@
 """Modulo de runner con las clases basicas para el framework."""
+
+import os
 import datetime
 import logging
-import os
-from typing import Callable, List
+from typing import List
 
-import yaml
+import requests
+from azure.functions import FunctionApp, TimerRequest, HttpRequest, HttpResponse
+from azure.durable_functions import Blueprint
 
-from centraal_dataframework.email_sender import send_email_dq, send_email_error
-from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaDuplicada, TareaNoDefinida
 from centraal_dataframework.resources import DUMMY_STRING
+from centraal_dataframework.configuration import FrameworkConfiguration
+from centraal_dataframework.pipeline import Pipeline
 
 logger = logging.getLogger(__name__)
 OVERWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)
@@ -19,121 +22,126 @@ UTC_OFFSET = datetime.timedelta(hours=os.environ.get("UTC_OFFSET", -5))
 class Runner:
     """Clase que representa el runner."""
 
-    def __init__(self) -> None:
+    def __init__(self, pipelines: List[Pipeline], conf: FrameworkConfiguration = None, bp: Blueprint = None) -> None:
         """Constructor."""
-        self.tasks = {}
-        self._load_conf()
+
         if "AZURE_STORAGE_CONNECTION_STRING" not in os.environ:
             logger.warning("AZURE_STORAGE_CONNECTION_STRING No configurado!")
             os.environ["AZURE_STORAGE_CONNECTION_STRING"] = DUMMY_STRING
-        self._logic_app_url = self.conf["url_logicapp_email"]
 
-    @property
-    def logic_app_url(self) -> str:
-        """Obtiene Url logic app."""
-        return self._logic_app_url
+        self.pipelines = {p.name: p for p in pipelines}
+        self.conf = conf
+        self._check_configuration()
+        self._build(bp)
 
-    def add_task(self, func, task_name):
-        """Adiciona tareas."""
-        if TAREA_DEBE_ESTAR_CONF:
-            check_tarea_en_conf = task_name in self.conf["tareas"]
-        else:
-            check_tarea_en_conf = True
+        function_name = os.environ.get("host")
+        self.url = f"https://{function_name}.azurewebsites.net/api"
+        self.url_status = f"https://{function_name}.azurewebsites.net/runtime/webhooks/durabletask/instances"
 
-        if OVERWRITE_TAREA and check_tarea_en_conf:
-            logging.warning(
-                "Tarea %s sobrescrita. Si quiere cambiar este comportamiento\n"
-                "use la variable de ambiente `SOBREESCRIBIR_TAREA` (valor actual = %s)",
-                task_name,
-                OVERWRITE_TAREA,
-            )
-            self.tasks[task_name] = func
+    def _check_configuration(self):
+        try:
+            for name, pipe in self.pipelines.items():
+                pipe_config = self.conf.get_pipe_config(name)
+                pipe.set_config(pipe_config)
+        except KeyError as e:
+            raise ValueError(f"{name} no esta definido en el archivo de configuracion") from e
 
-        elif not check_tarea_en_conf:
-            logger.error(
-                "La tarea %s debe estar definda en la configuracion. Tareas definidas: %s",
-                task_name,
-                self.conf["tareas"],
-            )
-            raise ValueError(f"{task_name} Debe estar definda en la configuración.")
+    def _build(self, bp: Blueprint):
+        for name, pipe in self.pipelines.items():
+            pipe_config = self.conf.get_pipe_config(name)
+            pipe.set_config(pipe_config)
+            pipe.build(bp)
 
-        elif task_name not in self.tasks:
-            self.tasks[task_name] = func
-        else:
-            raise TareaDuplicada(task_name)
-
-    def get_task(self, task_name: str) -> Callable:
+    def get_pipeline(self, pipe_name: str) -> Pipeline:
         """Obtiene la tarea."""
-        task_fun = self.tasks.get(task_name)
-        return task_fun
+        return self.pipelines.get(pipe_name)
 
-    def es_programable(self, task_name_conf: dict, fecha_ejecucion: datetime = None) -> bool:
-        """Verificar que la tarea puede ser programada."""
-        if fecha_ejecucion is None:
-            fecha_ejecucion = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
-
-        allowed_days = str(task_name_conf["dias"])
-        allowed_hours = str(task_name_conf["horas"])
-
-        if allowed_days == "*" and allowed_hours == "*":
-            return True
-
-        fecha_en_hora_local: datetime = fecha_ejecucion + UTC_OFFSET
-        allowed_days = allowed_days.split(",")
-        allowed_hours = allowed_hours.split(",")
-        hora_ejecucion = str(fecha_en_hora_local.time().hour)
-        dia_ejecucion = str(fecha_en_hora_local.date().weekday())
-
-        if hora_ejecucion in allowed_hours and dia_ejecucion in allowed_days:
-            return True
-
-        if allowed_days == ["*"] and hora_ejecucion in allowed_hours:
-            return True
-
-        if allowed_hours == ["*"] and dia_ejecucion in allowed_days:
-            return True
-
-        return False
-
-    def get_tareas_programables(self, fecha_ejecucion: datetime = None) -> List[str]:
+    def get_pipelines_programables(self, fecha_ejecucion: datetime = None) -> List[str]:
         """Obtiene las tareas que pueden se programadas."""
-        tareas = []
-        for task, task_conf in self.conf["tareas"].items():
-            if self.es_programable(task_conf, fecha_ejecucion):
-                tareas.append(task)
-        return tareas
+        pipelines_to_run = []
+        for name, pipe in self.pipelines.items():
+            if pipe.es_programable(fecha_ejecucion):
+                pipelines_to_run.append(name)
+        return pipelines_to_run
 
-    def get_emails(self, task_name: str = None) -> List[str]:
-        """Obtener los emails."""
-        if task_name is not None:
-            logger.warning("Solo se sporta email generales, %s parametro ignorado.", task_name)
-        return self.conf["emails_notificar"]
+    def run_pipeline(self, pipeline_name: str):
+        """Ejecuta el pipeline."""
+        pipeline_to_execute = self.get_pipeline(pipeline_name)
 
-    def run_task(self, task_name):
-        """Ejecuta la tarea."""
-        func_to_execute = self.get_task(task_name)
-        emails = self.get_emails(task_name)
+        if pipeline_to_execute is None:
+            raise ValueError("Pipeline no definido.")
 
-        if func_to_execute is None:
-            raise TareaNoDefinida(task_name)
-        try:
-            func_to_execute()
-        except ErrorTareaCalidadDatos as error:
-            logger.info("se presento un error, se envia correo")
-            send_email_dq(self.logic_app_url, emails, error)
+        response = requests.post(f"{self.url}/{pipeline_to_execute.route}")
+        if response.status_code == 202:
+            instance_id = response.json()["id"]
+            return instance_id
 
-        except Exception as error_tarea:
-            logger.error("se presento error en %s", task_name, exc_info=True)
-            send_email_error(self.logic_app_url, emails, error_tarea, task_name)
-            raise ErrorEnTarea(task_name) from error_tarea
+        raise ValueError("Error en inicio de pipeline")
 
-    def _load_conf(self) -> dict:
-        archivo = os.environ.get("YAML_CONFIGURACION", "centraal_dataframework.yaml")
-        logger.info("cargando configuracion desde %s", archivo)
-        try:
-            with open(archivo, 'r', encoding="utf-8") as file:
-                data = yaml.safe_load(file)
-                self.conf = data
-        except FileNotFoundError as error_file:
-            logger.warning("se carga archivo dummy %s", error_file, exc_info=True)
-            self.conf = {"tareas": {}, "emails_notificar": [], "url_logicapp_email": "url"}
+    def get_status(self, pipeline_name: str):
+        response = requests.get(self.url_status)
+        if response.status_code == 200:
+            status = response.json()["runtimeStatus"]
+            return status
+        else:
+            print("Error checking status")
+            return None
+
+    def register_timer_triger_func(self, app: FunctionApp):
+        runner = self
+
+        def check_and_schedule_pipelines(mytimer: TimerRequest):
+            """Verifica que tareas se deben programar.
+
+            Args:
+                mytimer: objeto TimerRequest requerido por la función.
+            """
+            utc_timestamp = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=datetime.timezone.utc)
+
+            if mytimer.past_due:
+                logging.warning('La función se ejecuto a fuera de tiempo')
+
+            tareas = runner.get_pipelines_programables(utc_timestamp)
+            if tareas is None or not tareas:
+                logger.warning("No se programaron tareas")
+                return "Ningun Pipeline programado"
+
+            for tarea in tareas:
+                self.run_pipeline(tarea)
+
+            return "Pipeline programados"
+
+        app.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False)(check_and_schedule_pipelines)
+
+    def register_get_status(self, app: FunctionApp):
+        runner = self
+
+        def get_status(req: HttpRequest) -> HttpResponse:
+            """Adiciona una tarea.
+
+            Args:
+                req: request de la funcion, debe tener el parametro llamado "task_name",
+                para ejecutar una lista de funciones en especifico.
+            """
+            try:
+                req_body = req.get_json()
+                task_names = req_body.get('pipeline', [])
+
+            except ValueError:
+                return HttpResponse(
+                    "La funcion tuvo un error",
+                    status_code=400,
+                )
+
+            if task_names is None:
+                return HttpResponse("No se enviaron tareas", status_code=400)
+                # se ejecuta tarea con el nombre especifico sin importar el archivo de configuracion
+            runner.get_status(task_names)
+            return HttpResponse(f"status de tareas: {task_names}", status_code=200)
+
+        app.route(methods=['post'])(get_status)
+
+    def register_framework_functions(self, app: FunctionApp):
+        """Registra funciones en el framework."""
+        self.register_timer_triger_func(app)
+        self.register_get_status(app)

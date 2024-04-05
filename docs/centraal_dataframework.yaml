@@ -7,7 +7,7 @@ pipelines:
     # deben tener el nombre de la función pipeline.
     test_pipeline:
         dias: '*'
-        horas: 8,12,20
+        horas: '*'
     test_pipeline_2:
         dias:  0
         horas: 8,12,20

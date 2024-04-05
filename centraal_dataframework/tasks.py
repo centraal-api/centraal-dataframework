@@ -1,46 +1,64 @@
 """Modulo con las tareas."""
-import functools
-import logging
+
+import os
+import json
+import inspect
+from dataclasses import dataclass, field
 from typing import Callable
 
-from centraal_dataframework.blueprints import runner
-from centraal_dataframework.resources import GreatExpectationsToolKit, get_context, get_datalake
-
-STR_FMT = 'TAREA: %(name)s--%(asctime)s-%(levelname)s-%(message)s'
+from centraal_dataframework.constants import TASK_PARAM_NAME
 
 
-def task(func: Callable):
-    """Decorador para adicionar la tarea."""
+@dataclass
+class TaskInfo:
+    """Objeto de informacion de tarea."""
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = logging.getLogger(func.__name__)
-        c_handler = logging.StreamHandler()
-        fmt_log = logging.Formatter(STR_FMT)
-        c_handler.setFormatter(fmt_log)
-        logger.addHandler(c_handler)
-        return func(get_datalake(), logger, *args, **kwargs)
+    succeeded: bool
+    args: dict = field(default_factory=dict)
 
-    runner.add_task(wrapper, func.__name__)
+    def to_json(self):
+        """Metodo para Json."""
+        return json.dumps(self.__dict__)
 
-    return wrapper
+    @staticmethod
+    def from_json(json_str):
+        """Metodo desde json."""
+        data = json.loads(json_str)
+        return TaskInfo(**data)
 
 
-def task_dq(func: Callable):
-    """Decorador para adicionar la tarea great expectations."""
+class Task:
+    """Decorador para definir una tarea."""
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = logging.getLogger(func.__name__)
-        c_handler = logging.StreamHandler()
-        fmt_log = logging.Formatter(STR_FMT)
-        c_handler.setFormatter(fmt_log)
-        logger.addHandler(c_handler)
+    def __init__(self, func: Callable):
+        """Debe pasarse una funcion."""
+        self.func = func
+        self.name = func.__name__
 
-        gx_toolkit = GreatExpectationsToolKit(get_context(), func.__name__)
+    def _check_func(self):
+        signature = inspect.signature(self.func)
+        parameters = signature.parameters
 
-        return func(get_datalake(), gx_toolkit, logger, *args, **kwargs)
+        if TASK_PARAM_NAME not in parameters:
+            raise TypeError(f"El parametro debe ser llamado {TASK_PARAM_NAME}")
 
-    runner.add_task(wrapper, func.__name__)
+        param = parameters[TASK_PARAM_NAME]
+        param_type = param.annotation
 
-    return wrapper
+        if not param_type == TaskInfo:
+            raise ValueError("El parametro debe ser tipo `TaskInfo`")
+
+    def __call__(self):
+        """Metodo para usar la clase como decorador."""
+        self._check_func()
+
+        return self
+
+
+def alert_function(taskinfo: TaskInfo):
+    """Funcion que envia una alerta."""
+    print("alerting!")
+    url_logic_app = os.environ.get("logic_app_url")
+    args_error = TaskInfo.args
+    name_task_failed = args_error["name_task_failed"]
+    print(name_task_failed, "fallo!", url_logic_app, taskinfo)
