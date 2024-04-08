@@ -43,17 +43,24 @@ def other_step_of_pipeline(taskinfo: TaskInfo):
     time.sleep(60)
 
 
+@Task
+def error_step(taskinfo: TaskInfo):
+    print("error step", taskinfo)
+    time.sleep(10)
+    raise ValueError("Error simulado!")
+
+
 bp = df.Blueprint()
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 
-pipeline = Pipeline(name="test_pipeline", tasks=[first_step_of_pipeline, second_step_of_pipeline])
+pipeline = Pipeline(name="pipeline_1", tasks=[first_step_of_pipeline, second_step_of_pipeline])
 
 otherpipeline = Pipeline(
-    name="other_pipeline", tasks=[first_step_of_pipeline, other_step_of_pipeline, second_step_of_pipeline]
+    name="pipeline_2", tasks=[first_step_of_pipeline, other_step_of_pipeline, second_step_of_pipeline]
 )
 
-pipeline_test = Pipeline(name="test_pipeline_2", tasks=[first_step_of_pipeline])
+pipeline_test = Pipeline(name="pipeline_3", tasks=[first_step_of_pipeline, error_step])
 
 
 config = FrameworkConfiguration()

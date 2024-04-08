@@ -3,6 +3,7 @@
 import os
 import json
 import inspect
+import logging
 from dataclasses import dataclass, field
 from typing import Callable
 
@@ -16,9 +17,13 @@ class TaskInfo:
     succeeded: bool
     args: dict = field(default_factory=dict)
 
-    def to_json(self):
+    @staticmethod
+    def to_json(obj):
         """Metodo para Json."""
-        return json.dumps(self.__dict__)
+        if isinstance(obj, TaskInfo):
+            return json.dumps(obj.__dict__)
+
+        raise TypeError("no completo")
 
     @staticmethod
     def from_json(json_str):
@@ -57,8 +62,8 @@ class Task:
 
 def alert_function(taskinfo: TaskInfo):
     """Funcion que envia una alerta."""
-    print("alerting!")
-    url_logic_app = os.environ.get("logic_app_url")
-    args_error = TaskInfo.args
+    logging.warning("alerting!")
+    url_logic_app = os.environ.get("url_logic")
+    args_error = taskinfo.args
     name_task_failed = args_error["name_task_failed"]
     print(name_task_failed, "fallo!", url_logic_app, taskinfo)

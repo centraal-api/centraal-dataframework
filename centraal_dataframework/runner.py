@@ -12,6 +12,7 @@ from azure.durable_functions import Blueprint
 from centraal_dataframework.resources import DUMMY_STRING
 from centraal_dataframework.configuration import FrameworkConfiguration
 from centraal_dataframework.pipeline import Pipeline
+from centraal_dataframework.constants import LOCAL
 
 logger = logging.getLogger(__name__)
 OVERWRITE_TAREA = os.environ.get("SOBREESCRIBIR_TAREA", True)
@@ -35,7 +36,11 @@ class Runner:
         self._build(bp)
 
         function_name = os.environ.get("host")
-        self.url = f"https://{function_name}.azurewebsites.net/api"
+        if function_name == LOCAL:
+            self.url = "http://localhost:7071/api"
+        else:
+            self.url = f"https://{function_name}.azurewebsites.net/api"
+
         self.url_status = f"https://{function_name}.azurewebsites.net/runtime/webhooks/durabletask/instances"
 
     def _check_configuration(self):
@@ -71,23 +76,15 @@ class Runner:
         if pipeline_to_execute is None:
             raise ValueError("Pipeline no definido.")
 
-        response = requests.post(f"{self.url}/{pipeline_to_execute.route}")
+        response = requests.post(f"{self.url}/{pipeline_to_execute.route}", timeout=30)
         if response.status_code == 202:
             instance_id = response.json()["id"]
             return instance_id
 
         raise ValueError("Error en inicio de pipeline")
 
-    def get_status(self, pipeline_name: str):
-        response = requests.get(self.url_status)
-        if response.status_code == 200:
-            status = response.json()["runtimeStatus"]
-            return status
-        else:
-            print("Error checking status")
-            return None
-
     def register_timer_triger_func(self, app: FunctionApp):
+        """Metodo que registra la funcion `register_timer_triger_func`."""
         runner = self
 
         def check_and_schedule_pipelines(mytimer: TimerRequest):
@@ -96,7 +93,7 @@ class Runner:
             Args:
                 mytimer: objeto TimerRequest requerido por la función.
             """
-            utc_timestamp = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=datetime.timezone.utc)
+            utc_timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
 
             if mytimer.past_due:
                 logging.warning('La función se ejecuto a fuera de tiempo')
@@ -114,6 +111,7 @@ class Runner:
         app.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False)(check_and_schedule_pipelines)
 
     def register_get_status(self, app: FunctionApp):
+        """Registra función para obtener status."""
         runner = self
 
         def get_status(req: HttpRequest) -> HttpResponse:
@@ -124,8 +122,8 @@ class Runner:
                 para ejecutar una lista de funciones en especifico.
             """
             try:
-                req_body = req.get_json()
-                task_names = req_body.get('pipeline', [])
+                task_names = req.params.get('pipelines')
+                task_names = task_names.split(",")
 
             except ValueError:
                 return HttpResponse(
@@ -135,7 +133,6 @@ class Runner:
 
             if task_names is None:
                 return HttpResponse("No se enviaron tareas", status_code=400)
-                # se ejecuta tarea con el nombre especifico sin importar el archivo de configuracion
             runner.get_status(task_names)
             return HttpResponse(f"status de tareas: {task_names}", status_code=200)
 

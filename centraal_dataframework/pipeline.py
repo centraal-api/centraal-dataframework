@@ -2,7 +2,7 @@
 
 import logging
 import datetime
-
+from traceback import format_exc
 from typing import List, Callable
 
 from azure.durable_functions import Blueprint, DurableOrchestrationContext
@@ -20,7 +20,6 @@ class Pipeline:
 
     def __init__(self, name: str, tasks: List[Task], framework_conf: FrameworkConfiguration = None) -> None:
         """Constructor."""
-
         self.tasks: List[Task] = tasks
         self.name = name
         self.route = f"start_{self.name}"
@@ -28,6 +27,7 @@ class Pipeline:
             self.config: PipelineConfiguration = framework_conf.get_pipe_config(self.name)
 
     def set_config(self, pipe_config: PipelineConfiguration):
+        """Asigna configuración."""
         if pipe_config is None:
             raise ValueError("pipe_config debe ser `PipelineConfiguration`")
         self.config = pipe_config
@@ -36,7 +36,7 @@ class Pipeline:
 
         for t in self.tasks:
             if t.name == "alert":
-                raise ValueError("La tarea `alert` es una actividad del framework, por favor usar otro nombre.")
+                raise ValueError("`alert` es una actividad del framework, por favor usar otro nombre.")
 
             task_in_bp = check_if_func_name_is_register(bp, t.name)
 
@@ -47,9 +47,11 @@ class Pipeline:
         emails = self.config.emails.copy()
         url_logic_app = self.config.url_logicapp_email
         tasks = self.tasks.copy()
+        pipe_name = self.name
 
         def orchestator(context: DurableOrchestrationContext):
             results = {}
+            logging.info("### Pipeline %s inicio!", pipe_name)
             try:
                 for t in tasks:
                     if not results:
@@ -57,10 +59,11 @@ class Pipeline:
                         results[t.name] = result
 
                     else:
-                        result[t.name] = yield context.call_activity(t.name, result)
+                        results[t.name] = yield context.call_activity(t.name, result)
                     logging.info("Actividad %s termino!", t.name)
 
             except Exception as e:
+                logging.error("### Pipeline %s en error!", pipe_name)
                 yield context.call_activity(
                     "alert",
                     TaskInfo(
@@ -69,32 +72,42 @@ class Pipeline:
                             "name_task_failed": t.name,
                             "task_executed": [n for n in results],
                             "error": str(e),
+                            "traceback": format_exc(),
                             "emails": emails,
                             "url_logic": url_logic_app,
                         },
                     ),
                 )
 
-                raise ValueError("Error en pipeline") from e
+                raise ValueError(f"Error en pipeline {pipe_name}") from e
 
-            return results
+            logging.info("### Pipeline %s termino!", pipe_name)
+
+            return [results]
 
         return orchestator
 
     def __create_start_fun(self, client_name: str) -> Callable:
         if " " in client_name:
             raise ValueError("client_name no puede contener espacios")
-        # TODO: verificar si esto puede serde otra manera
-        # esta parte del codigo esta bastante "fea", sin mebargo en la
-        # unica solucion para poder parametrizar
+        # TODO: esta parte del codigo esta bastante "fea", sin embargo en la
+        # unica solucion para poder parametrizar el nombre de una función
+        # de manera dinamica.
         name_orchestastor = f"start_orchestrator_func_{self.name}"
         func_str = (
-            "from azure.functions import HttpRequest\n"
+            "from azure.functions import HttpRequest, HttpResponse\n"
+            "from azure.durable_functions.models import OrchestrationRuntimeStatus\n"
+            "import json\n"
             "import logging\n\n"
             f"async def {name_orchestastor}(req: HttpRequest, {client_name}):\n"
-            f"""\tinstance_id = await {client_name}.start_new("{self.name}")\n"""
-            """\tlogging.info("Started orchestration with ID = '%s'.", instance_id)\n"""
-            f"""\treturn {client_name}.create_check_status_response(req, instance_id)\n"""
+            f"""\texisting_instance = await {client_name}.get_status("{self.name}")\n"""
+            """\tif existing_instance.runtime_status in [OrchestrationRuntimeStatus.Completed, OrchestrationRuntimeStatus.Failed, OrchestrationRuntimeStatus.Terminated, None]:\n"""
+            f"""\t\tinstance_id = await {client_name}.start_new("{self.name}", instance_id="{self.name}")\n"""
+            """\t\tlogging.info("Started orchestration with ID = '%s'.", instance_id)\n"""
+            f"""\t\treturn {client_name}.create_check_status_response(req, instance_id)\n"""
+            "\telse:\n"
+            f"""\t\tbody= {{"status": 409, "body": "Existe {self.name} ejecutandose." }}\n"""
+            """\t\treturn HttpResponse(json.dumps(body), mimetype="application/json")"""
         )
         namespace = {}
         exec(func_str, namespace)
@@ -112,11 +125,13 @@ class Pipeline:
         bp.route(route=self.route)(bp.durable_client_input(client_name=name)(fun_start))
 
     def register_pipeline(self, bp: Blueprint):
+        """Registra el pipeline."""
         self._register_tasks(bp)
         self._create_register_orchestartor(bp)
         self._create_register_start(bp)
 
     def register_alert_activity(self, bp: Blueprint):
+        """Registra el alerta."""
 
         if check_if_func_name_is_register(bp, "alert"):
             logging.debug("Ya se ha registrado la funcion de alerta")
@@ -152,5 +167,6 @@ class Pipeline:
         return False
 
     def build(self, bp: Blueprint):
+        """Construye el pipeline."""
         self.register_alert_activity(bp)
         self.register_pipeline(bp)

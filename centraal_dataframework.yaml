@@ -5,11 +5,16 @@ emails:
     - dmartine@crystal.com.co
 pipelines:
     # deben tener el nombre de la función pipeline.
-    test_pipeline:
+    pipeline_1:
         dias: '*'
         horas: '*'
-    test_pipeline_2:
+    pipeline_2:
         dias:  0
+        horas: 8,12,20
+        emails:
+            - german@centraal.studio
+    pipeline_3:
+        dias:  '*'
         horas: 8,12,20
         emails:
             - german@centraal.studio
