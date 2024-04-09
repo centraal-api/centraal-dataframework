@@ -15,6 +15,6 @@ pipelines:
             - german@centraal.studio
     pipeline_3:
         dias:  '*'
-        horas: 8,12,20
+        horas: '*'
         emails:
             - german@centraal.studio

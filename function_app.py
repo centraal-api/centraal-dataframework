@@ -21,6 +21,7 @@ UTC_OFFSET = datetime.timedelta(hours=os.environ.get("UTC_OFFSET", -5))
 
 @Task
 def first_step_of_pipeline(taskinfo: TaskInfo):
+    """Step of pipeline."""
     print("first step start", taskinfo)
     time.sleep(10)
     print("first step delay 10 seconds")
@@ -29,6 +30,7 @@ def first_step_of_pipeline(taskinfo: TaskInfo):
 
 @Task
 def second_step_of_pipeline(taskinfo: TaskInfo):
+    """Step of pipeline."""
     print("second step", taskinfo)
     time.sleep(10)
     print("second step delay 30 seconds")
@@ -37,6 +39,7 @@ def second_step_of_pipeline(taskinfo: TaskInfo):
 
 @Task
 def other_step_of_pipeline(taskinfo: TaskInfo):
+    """Step of pipeline."""
     print("other second step", taskinfo)
     time.sleep(10)
     print("second step delay 60 seconds")
@@ -45,6 +48,7 @@ def other_step_of_pipeline(taskinfo: TaskInfo):
 
 @Task
 def error_step(taskinfo: TaskInfo):
+    """Error of pipeline."""
     print("error step", taskinfo)
     time.sleep(10)
     raise ValueError("Error simulado!")
@@ -56,15 +60,13 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
 
 pipeline = Pipeline(name="pipeline_1", tasks=[first_step_of_pipeline, second_step_of_pipeline])
 
-otherpipeline = Pipeline(
-    name="pipeline_2", tasks=[first_step_of_pipeline, other_step_of_pipeline, second_step_of_pipeline]
-)
+tasks = [first_step_of_pipeline, other_step_of_pipeline, second_step_of_pipeline]
+otherpipeline = Pipeline(name="pipeline_2", tasks=tasks)
 
 pipeline_test = Pipeline(name="pipeline_3", tasks=[first_step_of_pipeline, error_step])
 
 
 config = FrameworkConfiguration()
 runner = Runner(pipelines=[pipeline, pipeline_test], conf=config, bp=bp)
-
+runner.register_framework_functions(bp)
 app.register_functions(bp)
-runner.register_framework_functions(app)

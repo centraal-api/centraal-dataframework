@@ -3,11 +3,12 @@
 import os
 import datetime
 import logging
+import json
 from typing import List
 
-import requests
 from azure.functions import FunctionApp, TimerRequest, HttpRequest, HttpResponse
-from azure.durable_functions import Blueprint
+from azure.durable_functions import Blueprint, DurableOrchestrationClient
+from azure.durable_functions.models import OrchestrationRuntimeStatus
 
 from centraal_dataframework.resources import DUMMY_STRING
 from centraal_dataframework.configuration import FrameworkConfiguration
@@ -25,7 +26,6 @@ class Runner:
 
     def __init__(self, pipelines: List[Pipeline], conf: FrameworkConfiguration = None, bp: Blueprint = None) -> None:
         """Constructor."""
-
         if "AZURE_STORAGE_CONNECTION_STRING" not in os.environ:
             logger.warning("AZURE_STORAGE_CONNECTION_STRING No configurado!")
             os.environ["AZURE_STORAGE_CONNECTION_STRING"] = DUMMY_STRING
@@ -40,8 +40,6 @@ class Runner:
             self.url = "http://localhost:7071/api"
         else:
             self.url = f"https://{function_name}.azurewebsites.net/api"
-
-        self.url_status = f"https://{function_name}.azurewebsites.net/runtime/webhooks/durabletask/instances"
 
     def _check_configuration(self):
         try:
@@ -69,30 +67,13 @@ class Runner:
                 pipelines_to_run.append(name)
         return pipelines_to_run
 
-    def run_pipeline(self, pipeline_name: str):
-        """Ejecuta el pipeline."""
-        pipeline_to_execute = self.get_pipeline(pipeline_name)
-
-        if pipeline_to_execute is None:
-            raise ValueError("Pipeline no definido.")
-
-        response = requests.post(f"{self.url}/{pipeline_to_execute.route}", timeout=30)
-        if response.status_code == 202:
-            instance_id = response.json()["id"]
-            return instance_id
-
-        raise ValueError("Error en inicio de pipeline")
-
-    def register_timer_triger_func(self, app: FunctionApp):
+    def register_timer_triger_func(self, app: Blueprint):
         """Metodo que registra la funcion `register_timer_triger_func`."""
         runner = self
 
-        def check_and_schedule_pipelines(mytimer: TimerRequest):
-            """Verifica que tareas se deben programar.
-
-            Args:
-                mytimer: objeto TimerRequest requerido por la función.
-            """
+        @app.durable_client_input(client_name="client")
+        async def check_and_schedule_pipelines(mytimer: TimerRequest, client: DurableOrchestrationClient):
+            """Verifica que tareas se deben programar."""
             utc_timestamp = datetime.datetime.now(tz=datetime.timezone.utc)
 
             if mytimer.past_due:
@@ -101,44 +82,60 @@ class Runner:
             tareas = runner.get_pipelines_programables(utc_timestamp)
             if tareas is None or not tareas:
                 logger.warning("No se programaron tareas")
-                return "Ningun Pipeline programado"
-
-            for tarea in tareas:
-                self.run_pipeline(tarea)
-
-            return "Pipeline programados"
+            else:
+                for tarea in tareas:
+                    instance_id = await client.start_new(tarea, instance_id=tarea)
+                    response = client.create_check_status_response(None, instance_id)
+                    logging.info("response: %s", response)
 
         app.schedule(schedule="0 0 * * * *", arg_name="mytimer", run_on_startup=False)(check_and_schedule_pipelines)
 
     def register_get_status(self, app: FunctionApp):
         """Registra función para obtener status."""
-        runner = self
 
-        def get_status(req: HttpRequest) -> HttpResponse:
-            """Adiciona una tarea.
-
-            Args:
-                req: request de la funcion, debe tener el parametro llamado "task_name",
-                para ejecutar una lista de funciones en especifico.
-            """
+        @app.durable_client_input(client_name="client")
+        async def get_status(req: HttpRequest, client: DurableOrchestrationClient) -> HttpResponse:
+            """Adiciona una tarea."""
             try:
                 task_names = req.params.get('pipelines')
-                task_names = task_names.split(",")
 
             except ValueError:
                 return HttpResponse(
                     "La funcion tuvo un error",
                     status_code=400,
                 )
-
+            responses = []
             if task_names is None:
-                return HttpResponse("No se enviaron tareas", status_code=400)
-            runner.get_status(task_names)
-            return HttpResponse(f"status de tareas: {task_names}", status_code=200)
+                logging.info("consultando todas los estados en running")
+                instances = await client.get_status_by(runtime_status=[OrchestrationRuntimeStatus.Running])
+                responses = [
+                    {
+                        "Pipeline": instance.name,
+                        "CreatedTime": instance.created_time,
+                        "LastUpdatedTime": instance.last_updated_time,
+                        "RuntimeStatus": instance.runtime_status.value,
+                    }
+                    for instance in instances
+                ]
 
-        app.route(methods=['post'])(get_status)
+            else:
+                task_names = task_names.split(",")
+                for t in task_names:
+                    status = await client.get_status(instance_id=t)
+                    responses.append(
+                        {
+                            "Pipeline": status.name,
+                            "CreatedTime": status.created_time,
+                            "LastUpdatedTime": status.last_updated_time,
+                            "RuntimeStatus": status.runtime_status.value,
+                        }
+                    )
 
-    def register_framework_functions(self, app: FunctionApp):
+            return HttpResponse(body=json.dumps(responses, default=str), status_code=200)
+
+        app.route(methods=['get'])(get_status)
+
+    def register_framework_functions(self, app: Blueprint):
         """Registra funciones en el framework."""
         self.register_timer_triger_func(app)
         self.register_get_status(app)

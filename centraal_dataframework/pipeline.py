@@ -101,8 +101,10 @@ class Pipeline:
             "import logging\n\n"
             f"async def {name_orchestastor}(req: HttpRequest, {client_name}):\n"
             f"""\texisting_instance = await {client_name}.get_status("{self.name}")\n"""
-            """\tif existing_instance.runtime_status in [OrchestrationRuntimeStatus.Completed, OrchestrationRuntimeStatus.Failed, OrchestrationRuntimeStatus.Terminated, None]:\n"""
-            f"""\t\tinstance_id = await {client_name}.start_new("{self.name}", instance_id="{self.name}")\n"""
+            """\tif existing_instance.runtime_status in [OrchestrationRuntimeStatus.Completed, """
+            """OrchestrationRuntimeStatus.Failed, OrchestrationRuntimeStatus.Terminated, None]:\n"""
+            f"""\t\tinstance_id = await {client_name}.start_new("{self.name}","""
+            f"""instance_id="{self.name}")\n"""
             """\t\tlogging.info("Started orchestration with ID = '%s'.", instance_id)\n"""
             f"""\t\treturn {client_name}.create_check_status_response(req, instance_id)\n"""
             "\telse:\n"
@@ -110,6 +112,9 @@ class Pipeline:
             """\t\treturn HttpResponse(json.dumps(body), mimetype="application/json")"""
         )
         namespace = {}
+        # TODO: verificar si se reduce el riesgo
+        # usando allowed_locals o allowed_globals
+        # pylint: disable-next=exec-used
         exec(func_str, namespace)
         return namespace[name_orchestastor]
 
@@ -132,7 +137,6 @@ class Pipeline:
 
     def register_alert_activity(self, bp: Blueprint):
         """Registra el alerta."""
-
         if check_if_func_name_is_register(bp, "alert"):
             logging.debug("Ya se ha registrado la funcion de alerta")
         else:

@@ -9,7 +9,7 @@ pipelines:
         dias: '*'
         horas: '*'
     test_pipeline_2:
-        dias:  0
-        horas: 8,12,20
+        dias:  '*'
+        horas: '*'
         emails:
             - german@centraal.studio
