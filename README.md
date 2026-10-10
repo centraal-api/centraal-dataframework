@@ -1,164 +1,188 @@
 # centraal-dataframework
 
-`centraal-dataframework` es una libreria de python que implementa practicas para usar de manera eficiente [azure function](https://azure.microsoft.com/en-us/products/functions#:~:text=Azure%20Functions%20is%20an%20event,highest%20level%20of%20hardware%20abstraction.) para ejecutar procesos de transformación y calidad de datos. Los procesos de transformación se ejecutan usando la libreria [pandas](https://pandas.pydata.org/) y las reglas de calidad con [great expectations](https://github.com/great-expectations/great_expectations).
+Librería Python para ejecutar transformaciones (pandas) y calidad de datos
+([Great Expectations](https://greatexpectations.io/) 1.x) sobre
+[Azure Functions](https://azure.microsoft.com/products/functions), con
+programación por YAML, colas, alertas y CLI local.
 
+> Versión actual: **0.2.0** (API con `TaskContext`). Guía:
+> [Migración 0.1 → 0.2](docs/MIGRATION_0.1_to_0.2.md).
 
-## Comienza a usar el framework
+## Instalación
 
-Usa como referencia el [notebook](docs/usage_example.ipynb). Algunos pasos basicos:
-
-1. Instala la libreria:
-
-    `pip install centraal-dataframework`
-
-2. Asegurar la creación de las siguientes variables de ambiente. En el ambiente desarollo local, es recomendado usar un archivo `.env` y la libreria [python-dotenv](https://pypi.org/project/python-dotenv/). Ya con la function app desplegada estas variables deben estar configuradas en los [Application settings](https://learn.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal).
-
-    - AZURE_STORAGE_CONNECTION_STRING: string de conexión al datalake
-    - CONTENEDOR_VALIDACIONES: donde se contienen las validaciones que van ser realizadas por great expectations.
-
-3. Crea tus tareas, usando el decorador necesario, `task_dq` o `task`. Usar como referencia el [notebook en la documentación](docs/usage_example.ipynb)
+```bash
+pip install centraal-dataframework
 ```
-4. Cree el archivo de configuración `yaml`, por defecto este archivo se buscara en el directorio de trabajo bajo el nombre `centraal_dataframework.yaml`
 
-```yml
-#---contenido de config.yaml---
-url_logicapp_email: https://prod-33.eastus.logic.azure.com:443/workflows/xxxxx
-emails_notificar: 
-    - nombre.appelido@centraal.studio
-    - nombre.appelido@correo.com
-    ...
-tareas:
-    # deben tener el nombre de la función definida.
-    nombre_funcion:
-        dias: '*'
-        horas: 8,12,20
-    segundo_nombre_funcion:
-        dias:  0
-        horas: 8,12,20
-```
-> Nota: tener en cuenta que '*' puede ser usada en dias y horas, para indicar que la tarea debe ser ejecutada cada hora/dia.  Algunos ejemplos para entender como trabaja:
+Requiere **Python 3.10–3.14** y `azure-datalake-utils>=0.6.0`.
 
-- `dias: '*'` y `horas: '*'` - > ejecutar todos los dias, cada hora.
-- `dias: '*'` y `horas: '12'` - >  ejecutar todos los dias **solo** a las 12.
-- `dias: '*'` y `horas: 1,8,12,15` - > ejecutar todos los dias **solo** a las 1, 8 a las 12 y a las 15:00 (3 pm).
-- `dias 0,3,6` y `horas: '*'` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6) cada hora.
-- `dias: 1,4` y `horas: 20` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6)  a las 20:00.
+Ese rango coincide con el runtime 4.x de Azure Functions, donde
+[3.10, 3.11, 3.12, 3.13 y 3.14 están en GA](https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions?pivots=programming-language-python).
 
+En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se agregan ahí. Para esas versiones hay que usar Flex Consumption, Premium o Dedicated.
 
-5. Crear la function app, adiciona el framework y tareas:
+## Variables de entorno
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `AZURE_STORAGE_CONNECTION_STRING` | — | Connection string del storage/datalake |
+| `STORAGE_ACCOUNT_NAME` | — | Alternativa con Managed Identity |
+| `STORAGE_CONNECTION_SETTING` | `AzureWebJobsStorage` | App setting del binding de cola |
+| `QUEUE_NAME` | `tareas` | Nombre de la cola |
+| `YAML_CONFIGURACION` | `centraal_dataframework.yaml` | Ruta al YAML |
+| `LOGICAPP_EMAIL_URL` | — | URL HTTP de Logic App (no va en el YAML) |
+| `TIMEZONE` | `America/Bogota` | Zona horaria de programación |
+| `CONTENEDOR_VALIDACIONES` | `calidad-datos` | Contenedor docs/stores GX |
+| `DOCS_PUBLIC_BASE_URL` | — | Base URL pública de data docs |
+| `SOBREESCRIBIR_TAREA` | `true` | Permite re-registrar tareas |
+| `TAREA_DEBE_CONFIGURACION` | `true` | Exige tarea en YAML al ejecutar |
+| `MAX_RETRIES` | `5` | Alinear con `maxDequeueCount` |
+| `HISTORY_ENABLED` | `false` | Historial en Table Storage |
+| `TEAMS_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` | — | Notificadores extra |
+| `SAS_*` | — | Expiración/IP de SAS para reportes |
+
+## Tareas (API 0.2)
 
 ```python
-"""---contenido de function_app.py --- """
-import azure.functions as func 
-from centraal_dataframework.blueprints import framework
-# se deben importar los modulos custom
-from other.module.logica_pandas import *
-from other.module.logica_calidad import *
-# si tiene otro modulo tambien importarlo
-# form otro.modulo import logica
-# ...
-app = func.FunctionApp()
-#Adicionar el framework
-app.register_functions(framework) 
+from centraal_dataframework import TaskContext, task, task_dq
+import great_expectations as gx
+
+@task
+def transformar(ctx: TaskContext):
+    df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
+    ctx.logger.info("filas=%s params=%s", len(df), ctx.params)
+
+@task_dq
+def validar(ctx: TaskContext):
+    df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
+    result = ctx.gx.validate(
+        df,
+        "ventas",
+        [gx.expectations.ExpectColumnValuesToNotBeNull(column="id")],
+    )
+    return result  # DQResult; si falla, se notifica automáticamente
 ```
 
-6. Desplega la azure function. -> proximamente documentación y herramientas para facilitar este proceso.
+`ctx.datalake` y `ctx.synapse` se crean al primer uso: una tarea que no los usa no necesita
+su configuración.
+
+## Synapse (serverless primero)
+
+La tarea envía SQL a Synapse y recibe resultados pequeños (conteos, metadata). El procesamiento
+pesado ocurre dentro de Synapse; los datos no viajan a la Function.
+
+Instalar con el extra y el driver del sistema *ODBC Driver 18 for SQL Server*:
+
+```bash
+pip install "centraal-dataframework[synapse]"
+```
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `SYNAPSE_WORKSPACE` | — | Workspace; usa `<workspace>-ondemand.sql.azuresynapse.net` (serverless) |
+| `SYNAPSE_SERVER` | — | Servidor explícito (p.ej. pool dedicado); tiene prioridad |
+| `SYNAPSE_DATABASE` | — | Base por defecto |
+| `SYNAPSE_AUTH` | `identity` | `identity` (Managed Identity / `DefaultAzureCredential`) o `sql` |
+| `SYNAPSE_USER` / `SYNAPSE_PASSWORD` | — | Solo con `SYNAPSE_AUTH=sql` (desarrollo local) |
+| `SYNAPSE_QUERY_TIMEOUT` | `1800` | Segundos por consulta (límite de serverless: 30 min) |
+
+```python
+@task
+def contar(ctx: TaskContext):
+    bronze = ctx.synapse_for('bronze')  # otra base, misma conexión/credencial
+    n = bronze.scalar("SELECT COUNT(*) FROM demo.ventas WHERE fecha = ?", ctx.params['lote'])
+    ctx.logger.info("filas=%s", n)
+
+@task
+def crear_vista(ctx: TaskContext):
+    # DDL: sin parámetros ?, se usa {{param}} con lista blanca; lotes separados por GO
+    ctx.synapse_for('silver').execute_file('sql/vista.sql', esquema='demo', lote=ctx.params['lote'])
+```
+
+API de `SynapseClient`: `query` (lista de dicts), `scalar`, `execute` (DDL/CETAS), `read_df`
+(DataFrame pequeño), `execute_file(path, **params)` y `for_database(base)`. Los valores de
+`{{param}}` solo admiten letras, números y `_` separados por un `-`, `:` o `.` (fechas, ids).
+Reintenta errores transitorios de conexión y throttling; no reintenta errores de SQL ni de login.
+
+**Prueba de integración:** copie [docs/synapse.env.example](docs/synapse.env.example) a
+`.env.synapse` en la raíz, complete las variables del ambiente y ejecute el notebook
+[docs/synapse_integracion.ipynb](docs/synapse_integracion.ipynb) o `pytest -m synapse -v`.
+
+## YAML de configuración
+
+```yaml
+emails_notificar:
+  - equipo@example.com
+tareas:
+  transformar:
+    dias: '*'
+    horas: 8,12,20
+  validar:
+    dias: '*'
+    horas: '*'
+    depends_on: [transformar]
+    params:
+      fecha: "2024-01-01"
+    # cron: "0 8 * * 1-5"   # opcional, reemplaza dias/horas
+    # enabled: false
+```
+
+Notas de programación (`dias` = weekday ISO-like: 0=lunes … 6=domingo):
+
+- `dias: '*'` y `horas: '*'` → cada hora, todos los días
+- `dias: '*'` y `horas: '12'` → todos los días a las 12
+- `dias: 0,3,6` y `horas: '*'` → lunes, jueves y domingo cada hora
+
+## Function App
+
+```python
+import azure.functions as func
+from centraal_dataframework.blueprints import framework
+from mi_paquete import tareas  # noqa: F401
+
+app = func.FunctionApp()
+app.register_functions(framework)
+```
+
+Scaffold:
+
+```bash
+python -m centraal_dataframework init ./mi-proyecto
+```
+
+## CLI local
+
+```bash
+python -m centraal_dataframework validate-config -c centraal_dataframework.yaml
+python -m centraal_dataframework list -m mi_paquete.tareas
+python -m centraal_dataframework run transformar -m mi_paquete.tareas --params '{"fecha":"2024-01-01"}'
+python -m centraal_dataframework next-runs transformar -n 5
+```
 
 ## Arquitectura
 
-La arquitectura general de la libreria esta basada en los siguientes servicios:
-
-![Arquitectura](docs/arq.jpg)
-
-
-El diseño inical del API de la libreria se comopone de los siguientes objetos:
-
-1. config.yml
-2. runner
-3. task
-    1. log
-    2. alerta
-4. dq-task: es un tipo de `task` especifica para reportar tareas de calidad de datos (`dq`).
-
 ```mermaid
----
-title: Diseño inicial del API de la libreria
----
-  graph TD;
-      config[config.yml]:::cdf--usa-->runner:::cdf;
-      m[Llamado manual]:::manual-->httptf[Http Trigger function]:::az;
-      httptf --> runner;
-      runner --encola tarea --> qtf(Queue Trigger Function):::az ;
-      qtf --> task:::cdf
-      task --usa--> log:::cdf --usa-->alerta:::cdf
-      task --> dqt[dq-task]:::cdf
-      dqt --> log
-      classDef manual stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
-      classDef az stroke:#2D9BF0,stroke-width:2px
-      classDef cdf stroke:#FAC710
-      
+graph TD
+    settingsMod[Settings] --> runnerMod[Runner]
+    configYaml[YAML pydantic] --> runnerMod
+    timerFn[TimerTrigger] --> runnerMod
+    httpFn[HttpTrigger] --> queueMsg[Cola JSON]
+    runnerMod --> queueMsg
+    queueMsg --> queueFn[QueueTrigger]
+    queueFn --> runnerMod
+    runnerMod --> taskCtx[TaskContext]
+    taskCtx --> userTask[Tarea]
+    runnerMod --> notifier[Notifier]
 ```
 
-# PyPI Release Checklist
+## Seguridad
 
-> NOTA: basado en [check list del template original](https://waynerv.github.io/cookiecutter-pypackage/pypi_release_checklist/).
+No versionar `centraal_dataframework.yaml` real ni `local.settings.json`.
+Ver [docs/SECURITY_ROTATION.md](docs/SECURITY_ROTATION.md).
 
-## Before Your First Release
+## Desarrollo
 
-You better visit PyPI to make sure your package name is unused.
-
-## For Every Release
-
-0.  Make some pull requests, merge all changes from feature branch to master/main.
-
-1.  Update CHANGELOG.md manually. Make sure it follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standard.
-    Be noticed that GitHub workflow will read changelog and extract release notes automatically.
-
-2.  Commit the changelog changes:
-
-    > ``` bash
-    > git add CHANGELOG.md
-    > git commit -m "Changelog for upcoming release 0.1.1."
-    > ```
-
-3.  Update version number and automatically create a commit, tag(can also be patch or major).
-
-    > ``` bash
-    > poetry run bump2version minor
-    > ```
-
-4.  Run the tests locally for insurance:
-
-    > ``` bash
-    > poetry run tox
-    > ```
-
-5.  Push these commits to master/main:
-
-    > ``` bash
-    > git push
-    > ```
-
-    Before proceeding to the next step, please check workflows triggered by this push have passed.
-
-6.  Push the tags(created by bump2version) to master/main, creating the new release on both GitHub and PyPI:
-
-    > ``` bash
-    > git push --tags
-    > ```
-
-    Only tag name started with 'v'(lower case) will leverage GitHub release workflow.
-
-7.  Check the PyPI listing page to make sure that the README, release
-    notes, and roadmap display properly. If tox test passed, this should be ok, since
-    we have already run twine check during tox test.
-
-## About This Checklist
-
-This checklist is adapted from <https://cookiecutter-pypackage.readthedocs.io/en/latest/pypi_release_checklist.html>.
-
-It assumes that you are using all features of Cookiecutter PyPackage.
-
-
-
-
+```bash
+poetry install --with test,dev
+poetry run pytest --cov=centraal_dataframework --cov-branch tests
+```

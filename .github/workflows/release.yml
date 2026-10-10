@@ -1,42 +1,31 @@
-# Publish package on main branch if it's tagged with 'v*'
-
 name: release & publish workflow
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push events but only for the master branch
   push:
     tags:
       - 'v*'
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "release"
   release:
     name: Create Release
-    runs-on: ubuntu-20.04
-
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-versions: [3.8,3.9]
+        python-versions: ['3.11']
     environment: release
     permissions:
       id-token: write
       contents: write
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Get version from tag
         id: tag_name
         run: |
-          echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+          echo "current_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
         shell: bash
 
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-versions }}
 
@@ -47,7 +36,7 @@ jobs:
 
       - name: build documentation
         run: |
-          poetry install -E doc
+          poetry install --with doc
           poetry run mkdocs build
 
       - name: publish documentation
@@ -57,18 +46,15 @@ jobs:
           publish_dir: ./site
 
       - name: Build wheels and source tarball
-        run: >-
-          poetry build
+        run: poetry build
 
       - name: show temporary files
-        run: >-
-          ls -l
+        run: ls -l
 
       - name: create github release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          body: ${{ steps.changelog_reader.outputs.changes }}
           files: dist/*.whl
           draft: false
           prerelease: false

@@ -1,158 +1,265 @@
-"""Modulo con recursos compartidos."""
-# pylint: disable=line-too-long
+"""Recursos compartidos: Datalake y Great Expectations 1.x."""
+
+from __future__ import annotations
+
 import logging
 import os
-from dataclasses import dataclass
-from typing import List, Tuple
+import tempfile
+import uuid
+from dataclasses import dataclass, field
+from typing import Any, List, Optional, Sequence
 
-import pandas as pd
-from azure_datalake_utils import Datalake
-from great_expectations.checkpoint.types.checkpoint_result import CheckpointResult
-from great_expectations.core.expectation_configuration import ExpectationConfiguration
-from great_expectations.data_context import EphemeralDataContext
-
+from centraal_dataframework.excepciones import StorageNoConfigurado
+from centraal_dataframework.settings import Settings, get_settings
 from centraal_dataframework.utils import parse_connection_string
 
-CONTAINER = os.environ.get("CONTENEDOR_VALIDACIONES", "calidad-datos")
-DUMMY_STRING = "DefaultEndpointsProtocol=https;AccountName=na;AccountKey=key!=k;EndpointSuffix=core.windows.net"
+logger = logging.getLogger(__name__)
 
-CONFIGURATION = {
-    "anonymous_usage_statistics": {
-        "data_context_id": "d3f5ffb9-7c5b-4600-8d40-be39dacb29fd",
-        "explicit_url": False,
-        "explicit_id": True,
-        "enabled": True,
-        "usage_statistics_url": "https://stats.greatexpectations.io/great_expectations/v1/usage_statistics",
-    },
-    "checkpoint_store_name": "checkpoint_store",
-    "config_version": 3,
-    "data_docs_sites": {
-        "datalake_site": {
-            "class_name": "SiteBuilder",
-            "store_backend": {
-                "class_name": "TupleAzureBlobStoreBackend",
-                # noqa: W605
-                "container": CONTAINER,  # pylint: disable=anomalous-backslash-in-string
-                "connection_string": "${AZURE_STORAGE_CONNECTION_STRING}",
+
+@dataclass
+class DQResult:
+    """Resultado de una validación de calidad de datos."""
+
+    success: bool
+    url: str = ''
+    failed: List[str] = field(default_factory=list)
+    raw: Any = None
+
+
+def _import_datalake():
+    """Import diferido de Datalake para no fallar al importar el paquete."""
+    from azure_datalake_utils import Datalake
+
+    return Datalake
+
+
+def get_datalake(settings: Optional[Settings] = None) -> Any:
+    """Obtiene cliente Datalake (account key o Managed Identity)."""
+    Datalake = _import_datalake()
+    settings = settings or get_settings()
+    conn_str = settings.resolve_storage_connection_string()
+
+    if conn_str:
+        parsed = parse_connection_string(conn_str)
+        account_name = parsed.get('AccountName')
+        account_key = parsed.get('AccountKey')
+        if account_name and account_key:
+            return Datalake.from_account_key(account_name, account_key)
+
+    account_name = settings.storage_account_name
+    if not account_name and conn_str:
+        account_name = parse_connection_string(conn_str).get('AccountName')
+
+    if account_name:
+        return _datalake_from_credential(account_name)
+
+    raise StorageNoConfigurado(
+        "Configure AZURE_STORAGE_CONNECTION_STRING (con AccountKey) "
+        "o STORAGE_ACCOUNT_NAME + Managed Identity / DefaultAzureCredential."
+    )
+
+
+def _datalake_from_credential(account_name: str) -> Any:
+    """Crea Datalake con DefaultAzureCredential si la librería lo soporta."""
+    from azure.identity import DefaultAzureCredential
+
+    Datalake = _import_datalake()
+    credential = DefaultAzureCredential()
+    if hasattr(Datalake, 'from_credential'):
+        return Datalake.from_credential(account_name, credential)
+    if hasattr(Datalake, 'from_token_credential'):
+        return Datalake.from_token_credential(account_name, credential)
+    try:
+        return Datalake(account_name, credential)  # type: ignore[call-arg]
+    except TypeError as exc:
+        raise StorageNoConfigurado(
+            "azure-datalake-utils no expone constructor con Managed Identity. "
+            "Use AZURE_STORAGE_CONNECTION_STRING con AccountKey, "
+            "o actualice azure-datalake-utils con from_credential()."
+        ) from exc
+
+
+def get_context(settings: Optional[Settings] = None):
+    """Crea un DataContext efímero de Great Expectations 1.x."""
+    import great_expectations as gx
+
+    settings = settings or get_settings()
+    # Preferir contexto efímero en tmp; stores Azure se configuran si hay connection string.
+    root = tempfile.mkdtemp(prefix='cdf_gx_')
+    context = gx.get_context(mode='ephemeral', project_root_dir=root)
+    # Desactivar analytics si es posible
+    try:
+        context.set_analytics_enabled(False)
+    except Exception:  # noqa: BLE001
+        try:
+            os.environ['GX_ANALYTICS_ENABLED'] = 'false'
+        except Exception:  # noqa: BLE001
+            pass
+
+    conn_str = settings.resolve_storage_connection_string()
+    if conn_str:
+        try:
+            _configure_azure_stores(context, settings, conn_str)
+        except Exception:  # noqa: BLE001
+            logger.warning("No se pudieron configurar stores Azure de GX; se usan stores locales.", exc_info=True)
+    return context
+
+
+def _configure_azure_stores(context, settings: Settings, conn_str: str) -> None:
+    """Intenta configurar data docs / stores en Azure Blob (best-effort GX 1.x)."""
+    # GX 1.x API varía; si falla, el toolkit sigue con docs locales.
+    container = settings.validations_container
+    try:
+        context.add_data_docs_site(
+            site_name='datalake_site',
+            site_config={
+                'class_name': 'SiteBuilder',
+                'store_backend': {
+                    'class_name': 'TupleAzureBlobStoreBackend',
+                    'container': container,
+                    'connection_string': conn_str,
+                },
+                'site_index_builder': {'class_name': 'DefaultSiteIndexBuilder'},
             },
-            "site_index_builder": {"class_name": "DefaultSiteIndexBuilder"},
-        },
-    },
-    "datasources": {},
-    "evaluation_parameter_store_name": "evaluation_parameter_store",
-    "expectations_store_name": "expectations_AZ_store",
-    "fluent_datasources": {},
-    "include_rendered_content": {"globally": False, "expectation_validation_result": False, "expectation_suite": False},
-    "profiler_store_name": "profiler_store",
-    "stores": {
-        "expectations_AZ_store": {
-            "class_name": "ExpectationsStore",
-            "store_backend": {
-                "class_name": "TupleAzureBlobStoreBackend",
-                "container": CONTAINER,
-                "prefix": "expectations",
-                "connection_string": "${AZURE_STORAGE_CONNECTION_STRING}",
-            },
-        },
-        "validations_AZ_store": {
-            "class_name": "ValidationsStore",
-            "store_backend": {
-                "class_name": "TupleAzureBlobStoreBackend",
-                "container": CONTAINER,
-                "prefix": "validations",
-                "connection_string": "${AZURE_STORAGE_CONNECTION_STRING}",
-            },
-        },
-        "evaluation_parameter_store": {"class_name": "EvaluationParameterStore"},
-        "checkpoint_store": {"class_name": "CheckpointStore", "store_backend": {"class_name": "InMemoryStoreBackend"}},
-        "profiler_store": {"class_name": "ProfilerStore", "store_backend": {"class_name": "InMemoryStoreBackend"}},
-    },
-    "validations_store_name": "validations_AZ_store",
-}
-
-
-def get_datalake() -> Datalake:
-    """Obtiene el datalake."""
-    conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING", DUMMY_STRING)
-    if conn_str == DUMMY_STRING:
-        logging.warning("AZURE_STORAGE_CONNECTION_STRING NO esta configurado.")
-    datalake_conf = parse_connection_string(conn_str)
-    return Datalake.from_account_key(datalake_conf["AccountName"], datalake_conf["AccountKey"])
-
-
-def get_context() -> EphemeralDataContext:
-    """Context."""
-    return EphemeralDataContext(project_config=CONFIGURATION)
+        )
+    except Exception:  # noqa: BLE001
+        logger.debug("add_data_docs_site no disponible o falló", exc_info=True)
 
 
 @dataclass
 class GreatExpectationsToolKit:
-    """Clase para representar toolkit de great expectations."""
+    """Toolkit de Great Expectations 1.x por tarea."""
 
-    context: EphemeralDataContext
+    context: Any
     name_task: str
+    settings: Optional[Settings] = None
 
     def __post_init__(self):
-        """Crea el resto de elementos del toolkit."""
-        name_task = self.name_task
-        self.datasource = self.context.sources.add_or_update_pandas(name_or_datasource=f"{name_task}_source")
-        expectation_name = f"{name_task}_expectation_suite"
-        expectation_suite = self.context.add_or_update_expectation_suite(expectation_suite_name=expectation_name)
-        check_point = self.context.add_or_update_checkpoint(
-            name=f"{name_task}_checkpoint", expectation_suite_name=expectation_suite.name
-        )
+        """Inicializa datasource pandas."""
+        self.settings = self.settings or get_settings()
+        sources = self.context.data_sources
+        self.datasource = sources.add_or_update_pandas(name=f"{self.name_task}_source")
 
-        self.suite = expectation_suite
-        self.check_point = check_point
+    def validate(
+        self,
+        df: Any,
+        name: str,
+        expectations: Sequence[Any],
+        public: bool = False,
+    ) -> DQResult:
+        """Valida un DataFrame contra una lista de Expectation GX 1.x."""
+        import great_expectations as gx
 
-    def _get_sas_user_or_default(self, duration: int = None, unit: str = None, ip: str = None) -> Tuple[int, str, str]:
-        duration = int(os.environ.get("SAS_VALOR_EXPIRACION", 7)) if duration is None else duration
-        unit = os.environ.get("SAS_UNIDAD_EXPIRACION", 'day') if unit is None else unit
-        ip = os.environ.get("SAS_IP") if ip is None else ip
-        return duration, unit, ip
+        suite_name = f"{self.name_task}_{name}_suite"
+        suite = gx.ExpectationSuite(name=suite_name, expectations=list(expectations))
+        suite = self.context.suites.add_or_update(suite)
+        return self._run_suite_on_df(df, name, suite, public=public)
 
-    def _get_url(
-        self, resource_id, public: bool = False, duration: int = None, unit: str = None, ip: str = None
-    ) -> str:
-        """Obtiene url de reporte."""
-        docs_site_urls_list = self.context.get_docs_sites_urls(resource_identifier=resource_id)
-        url = docs_site_urls_list[0]["site_url"]
-        if public:
-            # TODO: el valor de z13.web es un prefijo.¿se deja hardcoded o se necesita personalizacion?
-            url = url.replace("blob", "z13.web").replace("$web/", "")
-        else:
-            _, container_path = url.split(".net/")
-            duration, unit, ip = self._get_sas_user_or_default(duration, unit, ip)
-            dl = get_datalake()
-            url = dl.generar_url_con_sas_token(container_path, duration, unit, ip)
-        return url
+    def validate_suite(self, df: Any, name: str, suite_name: str, public: bool = False) -> DQResult:
+        """Valida un DataFrame contra una suite existente."""
+        suite = self.context.suites.get(suite_name)
+        return self._run_suite_on_df(df, name, suite, public=public)
+
+    # Compat nombres anteriores
+    def run_expectations_on_df(
+        self, df: Any, name_of_df: str, expectations: List[Any], public: bool = False
+    ) -> DQResult:
+        """Alias de validate."""
+        return self.validate(df, name_of_df, expectations, public=public)
 
     def run_expectation_file_on_df(
-        self, df: pd.DataFrame, name_of_df: str, expectations_suite_name: str, public: bool = False
-    ) -> Tuple[str, CheckpointResult]:
-        """Ejecuta una expectativa existente."""
-        data_asset = self.datasource.add_dataframe_asset(name=f"{self.datasource.name}_{name_of_df}")
-        result = self.context.run_checkpoint(
-            checkpoint_name=self.check_point.name,
-            batch_request=data_asset.build_batch_request(dataframe=df),
-            expectation_suite_name=expectations_suite_name,
+        self, df: Any, name_of_df: str, expectations_suite_name: str, public: bool = False
+    ) -> DQResult:
+        """Alias de validate_suite."""
+        return self.validate_suite(df, name_of_df, expectations_suite_name, public=public)
+
+    def _run_suite_on_df(self, df: Any, name: str, suite: Any, public: bool = False) -> DQResult:
+        """Ejecuta checkpoint GX 1.x sobre un dataframe."""
+        import great_expectations as gx
+        from great_expectations.checkpoint import UpdateDataDocsAction
+
+        uid = uuid.uuid4().hex[:8]
+        asset_name = f"{self.name_task}_{name}_{uid}"
+        batch_def_name = f"{asset_name}_batch"
+        asset = self.datasource.add_dataframe_asset(name=asset_name)
+        batch_def = asset.add_batch_definition_whole_dataframe(batch_def_name)
+
+        validation_def = gx.ValidationDefinition(
+            name=f"{asset_name}_validation",
+            data=batch_def,
+            suite=suite,
         )
-        return self._get_url(list(result.run_results.keys())[0], public), result
+        validation_def = self.context.validation_definitions.add_or_update(validation_def)
 
-    def run_expectations_on_df(
-        self, df: pd.DataFrame, name_of_df: str, expectations: List[ExpectationConfiguration], public: bool = False
-    ) -> Tuple[str, CheckpointResult]:
-        """Ejecuta una lista de expectativas sobre un dataframe y devuelve la URL publica."""
-        # adicionar las execptativas
-        for exp in expectations:
-            self.suite.add_expectation(exp)
+        actions = []
+        try:
+            actions.append(UpdateDataDocsAction(name='update_data_docs'))
+        except Exception:  # noqa: BLE001
+            pass
 
-        data_asset = self.datasource.add_dataframe_asset(name=f"{self.datasource.name}_{name_of_df}")
-        self.context.save_expectation_suite(self.suite)
-
-        result = self.context.run_checkpoint(
-            checkpoint_name=self.check_point.name,
-            batch_request=data_asset.build_batch_request(dataframe=df),
-            expectation_suite_name=self.suite.name,
+        checkpoint = gx.Checkpoint(
+            name=f"{asset_name}_checkpoint",
+            validation_definitions=[validation_def],
+            actions=actions,
         )
-        return self._get_url(list(result.run_results.keys())[0], public), result
+        checkpoint = self.context.checkpoints.add_or_update(checkpoint)
+        result = checkpoint.run(batch_parameters={'dataframe': df})
+
+        success = bool(getattr(result, 'success', False))
+        failed = _failed_expectations(result)
+        url = self._get_url(result, public=public)
+        return DQResult(success=success, url=url, failed=failed, raw=result)
+
+    def _get_url(self, result: Any, public: bool = False) -> str:
+        """Obtiene URL de data docs (pública o con SAS)."""
+        resource_id = None
+        try:
+            run_results = getattr(result, 'run_results', {}) or {}
+            if run_results:
+                resource_id = list(run_results.keys())[0]
+        except Exception:  # noqa: BLE001
+            resource_id = None
+
+        try:
+            docs = self.context.get_docs_sites_urls(resource_identifier=resource_id)
+            if not docs:
+                return ''
+            url = docs[0]['site_url']
+        except Exception:  # noqa: BLE001
+            return ''
+
+        if public and self.settings and self.settings.docs_public_base_url:
+            # Reemplazar host blob por base pública configurada
+            try:
+                _, path = url.split('.net/', 1)
+                base = self.settings.docs_public_base_url.rstrip('/')
+                return f"{base}/{path.replace('$web/', '')}"
+            except ValueError:
+                return url
+
+        if not public and self.settings:
+            try:
+                _, container_path = url.split('.net/', 1)
+                dl = get_datalake(self.settings)
+                return dl.generar_url_con_sas_token(
+                    container_path,
+                    self.settings.sas_duration,
+                    self.settings.sas_unit,
+                    self.settings.sas_ip,
+                )
+            except Exception:  # noqa: BLE001
+                logger.debug("No se pudo generar SAS para docs", exc_info=True)
+        return url
+
+
+def _failed_expectations(result: Any) -> List[str]:
+    """Lista nombres/tipos de expectativas fallidas."""
+    failed: List[str] = []
+    run_results = getattr(result, 'run_results', None) or {}
+    for value in run_results.values():
+        vr = getattr(value, 'validation_result', value)
+        for item in getattr(vr, 'results', []) or []:
+            if getattr(item, 'success', True) is False:
+                cfg = getattr(item, 'expectation_config', None)
+                failed.append(str(getattr(cfg, 'type', None) or getattr(cfg, 'expectation_type', 'expectation')))
+    return failed

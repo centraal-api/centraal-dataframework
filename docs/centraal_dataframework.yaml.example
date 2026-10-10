@@ -1,0 +1,16 @@
+# Copiar a centraal_dataframework.yaml en el directorio de trabajo.
+# No versionar el archivo real con secretos o datos de cliente.
+emails_notificar:
+  - equipo@example.com
+tareas:
+  nombre_funcion:
+    dias: '*'
+    horas: 8,12,20
+  segunda_funcion:
+    dias: '0,2,4'
+    horas: '8,12,20'
+    emails:
+      - otra@example.com
+    enabled: true
+    params: {}
+    depends_on: []

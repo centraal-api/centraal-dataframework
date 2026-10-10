@@ -1,10 +1,10 @@
-"""Prueba."""
-from centraal_dataframework.tasks import task
+"""Ejemplo de tarea de transformación (API 0.2)."""
+from centraal_dataframework import TaskContext, task
 
 
 @task
-def hello_datalake(datalake, logger):
+def hello_datalake(ctx: TaskContext):
     """Saluda al datalake."""
-    source = datalake.read_csv("test/test_framework.csv", sep="|")
-    logger.info(source.head(1))
-    logger.info("hello there, iam a task")
+    source = ctx.datalake.read_csv("test/test_framework.csv", sep="|")
+    ctx.logger.info(source.head(1))
+    ctx.logger.info("hello there, i am a task. params=%s", ctx.params)
