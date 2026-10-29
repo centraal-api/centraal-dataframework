@@ -67,17 +67,17 @@ tareas:
 '''
 
 TASKS_MOD = '''"""Ejemplo de tareas."""
-from centraal_dataframework import TaskContext, task, task_dq
+from centraal_dataframework import TaskContext, task
 
 
-@task
+@task(uses=['datalake'])
 def hello_datalake(ctx: TaskContext):
     """Ejemplo de tarea de transformación."""
     ctx.logger.info("params=%s", ctx.params)
     ctx.logger.info("hello from hello_datalake")
 
 
-@task_dq
+@task(uses=['gx'])
 def hello_gx(ctx: TaskContext):
     """Ejemplo de tarea DQ — completar con expectativas GX 1.x."""
     ctx.logger.info("hello from hello_gx")

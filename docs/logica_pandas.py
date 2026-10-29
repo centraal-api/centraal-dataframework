@@ -2,7 +2,7 @@
 from centraal_dataframework import TaskContext, task
 
 
-@task
+@task(uses=['datalake'])
 def hello_datalake(ctx: TaskContext):
     """Saluda al datalake."""
     source = ctx.datalake.read_csv("test/test_framework.csv", sep="|")

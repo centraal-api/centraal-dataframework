@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import sys
-from datetime import timezone
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from typing import Optional
 
-from centraal_dataframework.config import load_framework_config
+from centraal_dataframework.config import load_framework_config, silence_warnings
 from centraal_dataframework.runner import Runner, reset_runner, set_runner
 from centraal_dataframework.settings import clear_settings_cache, get_settings
 
@@ -24,24 +26,32 @@ def _build_runner(yaml_path: Optional[str] = None) -> Runner:
     return runner
 
 
+def _load_runner(args: argparse.Namespace) -> Runner:
+    """Construye el runner e importa los módulos de tareas indicados con --module."""
+    runner = _build_runner(args.config)
+    for mod in args.module or []:
+        importlib.import_module(mod)
+    return runner
+
+
 def cmd_validate_config(args: argparse.Namespace) -> int:
     """Valida el YAML."""
-    path = args.config or get_settings().yaml_path
+    settings = get_settings()
+    path = args.config or settings.yaml_path
     conf = load_framework_config(path, allow_missing=False)
     print(f"OK: {path} — {len(conf.tareas)} tareas, {len(conf.emails_notificar)} emails.")
     for name, task in conf.tareas.items():
         deps = f" depends_on={task.depends_on}" if task.depends_on else ""
         cron = f" cron={task.cron}" if task.cron else f" dias={task.dias} horas={task.horas}"
         print(f"  - {name}: enabled={task.enabled}{cron}{deps}")
+    for warning in silence_warnings(conf, datetime.now(ZoneInfo(settings.timezone)).date()):
+        print(f"AVISO: {warning}")
     return 0
 
 
 def cmd_list(args: argparse.Namespace) -> int:
     """Lista tareas registradas (requiere importar módulos de usuario)."""
-    runner = _build_runner(args.config)
-    if args.module:
-        for mod in args.module:
-            __import__(mod)
+    runner = _load_runner(args)
     tasks = runner.list_tasks()
     conf_tasks = sorted(runner.conf.tareas.keys())
     print("Registradas:", tasks or "(ninguna — importe módulos con --module)")
@@ -51,14 +61,24 @@ def cmd_list(args: argparse.Namespace) -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     """Ejecuta una tarea localmente."""
-    runner = _build_runner(args.config)
-    if args.module:
-        for mod in args.module:
-            __import__(mod)
+    runner = _load_runner(args)
     params = json.loads(args.params) if args.params else {}
     runner.run_task(args.task, params=params, notify=not args.no_notify)
     print(f"OK: {args.task}")
     return 0
+
+
+def cmd_check_resources(args: argparse.Namespace) -> int:
+    """Verifica la configuración de los recursos que declaran las tareas, sin ejecutarlas."""
+    runner = _load_runner(args)
+    problems = runner.check_resources()
+    for name in runner.list_tasks():
+        uses = ', '.join(getattr(runner.get_task(name), 'uses', ())) or '-'
+        status = 'FALTA CONFIGURACIÓN' if name in problems else 'OK'
+        print(f"  - {name} [{uses}]: {status}")
+        for problem in problems.get(name, []):
+            print(f"      {problem}")
+    return 1 if problems else 0
 
 
 def cmd_next_runs(args: argparse.Namespace) -> int:
@@ -107,6 +127,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument('--params', help='JSON de parámetros')
     p_run.add_argument('--no-notify', action='store_true', help='No enviar notificaciones')
     p_run.set_defaults(func=cmd_run)
+
+    p_check = sub.add_parser('check-resources', help='Verifica la configuración de los recursos de las tareas')
+    p_check.add_argument('-c', '--config', help='Ruta al YAML')
+    p_check.add_argument('-m', '--module', action='append', help='Módulo a importar (puede repetirse)')
+    p_check.set_defaults(func=cmd_check_resources)
 
     p_next = sub.add_parser('next-runs', help='Próximas ejecuciones de una tarea')
     p_next.add_argument('task', help='Nombre de la tarea')

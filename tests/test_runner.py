@@ -72,12 +72,8 @@ def test_add_task_duplicate_raises(settings, sample_conf):
         r.add_task(lambda **k: None, 'alpha')
 
 
-def test_run_task_success(runner, monkeypatch):
+def test_run_task_success(runner):
     """Ejecuta tarea registrada."""
-    monkeypatch.setattr(
-        'centraal_dataframework.tasks.get_datalake',
-        lambda: object(),
-    )
     calls = []
 
     def fake(**kwargs):

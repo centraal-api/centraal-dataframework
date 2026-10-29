@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
+import pytest
+
 from centraal_dataframework.config import TaskConfig
 from centraal_dataframework.runner import Runner, get_runner, reset_runner
 
@@ -40,15 +42,18 @@ def test_get_runner_lazy(monkeypatch, tmp_path):
     reset_runner()
 
 
-def test_dq_warn_only(runner, monkeypatch):
-    """dq_warn_only no relanza."""
+def test_silenced_dq_error_raised_by_task(runner, monkeypatch):
+    """Una tarea que lanza ErrorTareaCalidadDatos ella misma también respeta el silencio."""
+    from datetime import date
+
+    from centraal_dataframework.config import DQSilence
     from centraal_dataframework.excepciones import ErrorTareaCalidadDatos
 
-    runner.conf.tareas['alpha'].dq_warn_only = True
+    runner.conf.tareas['alpha'].silenciar_dq = DQSilence(hasta=date(2999, 1, 1), motivo='m')
 
     def boom(**kwargs):
         raise ErrorTareaCalidadDatos('fail', failed=['x'])
 
     runner.add_task(boom, 'alpha')
-    monkeypatch.setattr(runner.notifier, 'notify_dq', lambda *a, **k: None)
+    monkeypatch.setattr(runner.notifier, 'notify_dq', lambda *a, **k: pytest.fail('no debe notificar'))
     assert runner.run_task('alpha', notify=True) is None

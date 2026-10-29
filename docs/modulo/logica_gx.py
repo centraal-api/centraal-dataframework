@@ -1,10 +1,10 @@
 """Ejemplo de tarea DQ con Great Expectations 1.x."""
 import great_expectations as gx
 
-from centraal_dataframework import TaskContext, task_dq
+from centraal_dataframework import TaskContext, task
 
 
-@task_dq
+@task(uses=['datalake', 'gx'])
 def hello_gx(ctx: TaskContext):
     """Valida un CSV con expectativas GX 1.x."""
     source = ctx.datalake.read_csv("test/test_framework.csv", sep="|")

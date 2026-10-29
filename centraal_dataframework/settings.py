@@ -1,10 +1,11 @@
 """Configuración centralizada desde variables de entorno."""
 
+import os
 from functools import lru_cache
-from typing import Literal, Optional
+from typing import Any, Dict, Literal, Optional
 from zoneinfo import ZoneInfo
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, PrivateAttr, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +17,7 @@ class Settings(BaseSettings):
         env_file_encoding='utf-8',
         extra='ignore',
         case_sensitive=False,
+        populate_by_name=True,
     )
 
     storage_connection_setting: str = Field(
@@ -52,6 +54,17 @@ class Settings(BaseSettings):
     synapse_password: Optional[SecretStr] = Field(default=None, validation_alias='SYNAPSE_PASSWORD')
     synapse_query_timeout: int = Field(default=1800, validation_alias='SYNAPSE_QUERY_TIMEOUT')
 
+    _instance: Optional[str] = PrivateAttr(default=None)
+
+    @property
+    def instance(self) -> Optional[str]:
+        """Nombre de la conexión (None = conexión por defecto)."""
+        return self._instance
+
+    def env_name(self, variable: str) -> str:
+        """Nombre de la variable de entorno para esta conexión (con sufijo si tiene nombre)."""
+        return f"{variable}__{self._instance.upper()}" if self._instance else variable
+
     @field_validator('timezone')
     @classmethod
     def _validate_timezone(cls, value: str) -> str:
@@ -63,11 +76,17 @@ class Settings(BaseSettings):
         return ZoneInfo(self.timezone)
 
     def resolve_storage_connection_string(self) -> Optional[str]:
-        """Resuelve connection string desde AZURE_STORAGE_CONNECTION_STRING o el app setting nombrado."""
+        """Resuelve connection string desde AZURE_STORAGE_CONNECTION_STRING o el app setting nombrado.
+
+        Una conexión con nombre solo usa sus propias variables (incluido STORAGE_CONNECTION_SETTING__<NOMBRE>):
+        nunca cae en AzureWebJobsStorage.
+        """
         if self.azure_storage_connection_string:
             return self.azure_storage_connection_string
-        import os
-
+        if self._instance:
+            if 'storage_connection_setting' in self.model_fields_set:
+                return os.environ.get(self.storage_connection_setting)
+            return None
         return os.environ.get(self.storage_connection_setting) or os.environ.get('AzureWebJobsStorage')
 
 
@@ -77,6 +96,82 @@ def get_settings() -> Settings:
     return Settings()
 
 
+# Campos que identifican una conexión. Una conexión con nombre no los hereda de la global (para no
+# apuntar en silencio a otro lago o workspace); el resto (timeouts, contenedores, SAS, ...) sí.
+CONNECTION_FIELDS = frozenset(
+    {
+        'azure_storage_connection_string',
+        'storage_account_name',
+        'storage_connection_setting',
+        'synapse_workspace',
+        'synapse_server',
+        'synapse_database',
+        'synapse_user',
+        'synapse_password',
+    }
+)
+
+
+class _InstanceSettings(Settings):
+    """Settings que solo se construyen con los valores explícitos (sin leer el entorno)."""
+
+    @classmethod
+    def settings_customise_sources(cls, settings_cls, init_settings, *args, **kwargs):
+        """Solo valores pasados al constructor."""
+        return (init_settings,)
+
+
+def _env_with_dotenv() -> Dict[str, str]:
+    """Variables del env_file de Settings y del entorno (el entorno tiene prioridad), con claves en mayúscula."""
+    values: Dict[str, Any] = {}
+    env_file = Settings.model_config.get('env_file')
+    if env_file:
+        from dotenv import dotenv_values
+
+        encoding = Settings.model_config.get('env_file_encoding')
+        files = env_file if isinstance(env_file, (list, tuple)) else [env_file]
+        for path in files:
+            values.update({k.upper(): v for k, v in dotenv_values(path, encoding=encoding).items() if v is not None})
+    values.update({k.upper(): v for k, v in os.environ.items()})
+    return values
+
+
+def _build_instance_settings(instance: str, base: Settings) -> Settings:
+    """Construye las Settings de una conexión con nombre a partir de base y las variables con sufijo."""
+    suffix = f"__{instance.upper()}"
+    env = _env_with_dotenv()
+    values: Dict[str, Any] = {}
+    for name, field in Settings.model_fields.items():
+        alias = field.validation_alias
+        if not isinstance(alias, str):
+            continue
+        if alias.upper() + suffix in env:
+            values[alias] = env[alias.upper() + suffix]
+        elif name not in CONNECTION_FIELDS and name in base.model_fields_set:
+            values[alias] = getattr(base, name)
+    settings = _InstanceSettings(**values)
+    settings._instance = instance
+    return settings
+
+
+@lru_cache(maxsize=None)
+def _cached_instance_settings(instance: str) -> Settings:
+    return _build_instance_settings(instance, get_settings())
+
+
+def settings_for_instance(instance: str, base: Optional[Settings] = None) -> Settings:
+    """Settings de una conexión con nombre.
+
+    Los campos de conexión (CONNECTION_FIELDS) salen solo de variables ``<VARIABLE>__<NOMBRE>``; el resto
+    se hereda de base (por defecto, las Settings globales) y también se puede sobrescribir con sufijo.
+    """
+    instance = instance.lower()
+    if base is None:
+        return _cached_instance_settings(instance)
+    return _build_instance_settings(instance, base)
+
+
 def clear_settings_cache() -> None:
     """Limpia cache de Settings (útil en tests)."""
     get_settings.cache_clear()
+    _cached_instance_settings.cache_clear()

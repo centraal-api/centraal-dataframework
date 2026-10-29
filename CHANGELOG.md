@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Python 3.10–3.14, con `azure-datalake-utils>=0.6.0`, `pandas>=2.2` y `azure-functions` 1.x (<3.13) / 2.x (>=3.13).
 - `email_sender` renombrado a `notifiers` (`LogicAppNotifier`).
 - `TaskContext` ya no recibe `datalake` en el constructor: `ctx.datalake` se crea al primer uso.
+- Las tareas declaran sus recursos: `@task(uses=['datalake', 'synapse', 'gx'])`. Usar un recurso no declarado lanza `RecursoNoDeclarado`.
+- `@task_dq` se elimina: use `@task(uses=['gx'])`. Si una tarea devuelve un `DQResult` fallido, el runner lanza `ErrorTareaCalidadDatos`; la llamada directa devuelve el `DQResult`. `fail_on_error=False` no tiene equivalente permanente: use `silenciar_dq` (`hasta` + `motivo`) en el YAML.
 
 ### Added
 
@@ -27,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cron por tarea, `depends_on`, historial en Table Storage, CLI y plantilla de proyecto (Fase B).
 - Guía de migración 0.1 → 0.2.
 - Soporte de Synapse SQL, serverless primero: `SynapseClient` (`ctx.synapse`, `ctx.synapse_for(base)`) con Managed Identity, `query`/`scalar`/`execute`/`read_df`/`execute_file`, plantillas `{{param}}` con lista blanca, lotes `GO` y reintentos solo ante errores transitorios. Extra opcional `[synapse]` (`pyodbc`). Variables `SYNAPSE_*`.
+- Registro de plataformas (`register_resource`): `datalake`, `synapse` y `gx` se registran con la misma API pública que un proyecto cliente usa para agregar las suyas. Conexiones con nombre (`'synapse:gold'`, `ctx.resource('synapse', 'gold')`) configuradas con variables con sufijo `__<NOMBRE>`: los datos de conexión (cuenta, workspace, base, credenciales) no se heredan de la conexión por defecto; el resto (timeouts, contenedores, SAS) sí.
+- Silencio temporal de alarmas de calidad (`silenciar_dq` con `hasta` y `motivo` en el YAML): no lanza ni notifica, deja log y deja correr las dependientes; vence solo y `validate-config` avisa los vencidos o por vencer.
+- Verificación de configuración sin conectarse: el runner no ejecuta una tarea con recursos sin configurar (`RecursoNoConfigurado`) y el comando `check-resources` revisa todas las tareas.
 - Prueba de integración con Synapse: notebook `docs/synapse_integracion.ipynb`, `pytest -m synapse` y `docs/synapse.env.example`.
 
 ### Fixed

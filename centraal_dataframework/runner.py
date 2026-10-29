@@ -9,9 +9,17 @@ from zoneinfo import ZoneInfo
 
 from croniter import croniter
 
-from centraal_dataframework.config import FrameworkConfig, TaskConfig, load_framework_config
-from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaDuplicada, TareaNoDefinida
+from centraal_dataframework.config import DQSilence, FrameworkConfig, TaskConfig, load_framework_config
+from centraal_dataframework.excepciones import (
+    ErrorEnTarea,
+    ErrorTareaCalidadDatos,
+    RecursoNoConfigurado,
+    TareaDuplicada,
+    TareaNoDefinida,
+)
 from centraal_dataframework.notifiers import Notifier, build_default_notifier
+from centraal_dataframework.registry import check_uses
+from centraal_dataframework.resources import DQResult
 from centraal_dataframework.settings import Settings, get_settings
 from centraal_dataframework.utils import new_run_id
 
@@ -71,6 +79,16 @@ class Runner:
     def get_task(self, task_name: str) -> Optional[Callable]:
         """Obtiene la tarea."""
         return self.tasks.get(task_name)
+
+    def check_task_resources(self, task_name: str) -> List[str]:
+        """Problemas de configuración de los recursos que declara la tarea (sin conectarse)."""
+        func = self.get_task(task_name)
+        return check_uses(getattr(func, 'uses', ()), self.settings)
+
+    def check_resources(self) -> Dict[str, List[str]]:
+        """Problemas de configuración por tarea registrada; solo incluye tareas con problemas."""
+        result = {name: self.check_task_resources(name) for name in self.list_tasks()}
+        return {name: problems for name, problems in result.items() if problems}
 
     def list_tasks(self) -> List[str]:
         """Lista nombres de tareas registradas."""
@@ -178,6 +196,33 @@ class Runner:
         """Tareas que dependen de task_name."""
         return list(self._dependents.get(task_name, []))
 
+    def dq_silence(self, task_name: str, now: Optional[datetime] = None) -> Optional[DQSilence]:
+        """Silencio de DQ vigente de la tarea (hasta incluido, en su zona horaria) o None."""
+        task_conf = self.conf.tareas.get(task_name)
+        if task_conf is None or task_conf.silenciar_dq is None:
+            return None
+        now = now or datetime.now(timezone.utc)
+        today = now.astimezone(ZoneInfo(task_conf.timezone or self.settings.timezone)).date()
+        return task_conf.silenciar_dq if today <= task_conf.silenciar_dq.hasta else None
+
+    def _handle_silenced_dq(
+        self, task_name: str, run_id: str, started: datetime, error: ErrorTareaCalidadDatos
+    ) -> bool:
+        """Si hay silencio de DQ vigente, deja el fallo solo en el log (tarea exitosa) y devuelve True."""
+        silence = self.dq_silence(task_name)
+        if silence is None:
+            return False
+        logger.warning(
+            "DQ silenciada hasta %s (%s): %s expectativas fallaron en %s",
+            silence.hasta,
+            silence.motivo,
+            len(error.failed),
+            task_name,
+        )
+        if self.history:
+            self.history.record_success(task_name, run_id, started, error.result)
+        return True
+
     def run_task(
         self,
         task_name: str,
@@ -187,7 +232,11 @@ class Runner:
         notify: bool = True,
         raise_on_error: bool = True,
     ) -> Any:
-        """Ejecuta la tarea."""
+        """Ejecuta la tarea.
+
+        Un DQResult fallido termina en ErrorTareaCalidadDatos, salvo que la tarea tenga un silencio de DQ
+        vigente (``silenciar_dq`` en el YAML): entonces solo se registra en el log y se devuelve el resultado.
+        """
         func_to_execute = self.get_task(task_name)
         emails = self.get_emails(task_name)
         run_id = run_id or new_run_id()
@@ -204,7 +253,11 @@ class Runner:
             self.history.record_start(task_name, run_id, merged)
 
         try:
-            result = func_to_execute(run_id=run_id, params=merged)
+            problems = self.check_task_resources(task_name)
+            if problems:
+                raise RecursoNoConfigurado(task_name, problems)
+            result = func_to_execute(run_id=run_id, params=merged, settings=self.settings)
+            _raise_if_dq_failed(task_name, result)
             if self.history:
                 self.history.record_success(task_name, run_id, started, result)
             task_conf = self.conf.tareas.get(task_name)
@@ -215,14 +268,13 @@ class Runner:
                 self.notifier.notify_success(emails, task_name, run_id)
             return result
         except ErrorTareaCalidadDatos as error:
+            if self._handle_silenced_dq(task_name, run_id, started, error):
+                return error.result
             logger.info("Error de calidad de datos en %s", task_name)
-            task_conf = self.conf.tareas.get(task_name)
             if self.history:
                 self.history.record_failure(task_name, run_id, started, error, url=error.url_docs)
-            if notify and not (task_conf and task_conf.dq_warn_only):
+            if notify:
                 self.notifier.notify_dq(emails, error)
-            if task_conf and task_conf.dq_warn_only:
-                return None
             if raise_on_error:
                 raise
             return None
@@ -235,6 +287,18 @@ class Runner:
             if raise_on_error:
                 raise ErrorEnTarea(task_name) from error_tarea
             return None
+
+
+def _raise_if_dq_failed(task_name: str, result: Any) -> None:
+    """Convierte un DQResult fallido en ErrorTareaCalidadDatos."""
+    if isinstance(result, DQResult) and not result.success:
+        raise ErrorTareaCalidadDatos(
+            message=f"¡Las expectativas fallaron en {task_name}!.",
+            url_docs=result.url,
+            check_point_result=result.raw,
+            failed=result.failed,
+            result=result,
+        )
 
 
 def get_runner() -> Runner:

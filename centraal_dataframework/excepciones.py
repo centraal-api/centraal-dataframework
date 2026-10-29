@@ -36,9 +36,17 @@ class TareaNoDefinida(Exception):
 class ErrorTareaCalidadDatos(Exception):
     """Excepción para levantar cuando falla una validación de calidad de datos."""
 
-    def __init__(self, message: str, url_docs: str = '', check_point_result: Any = None, failed: Optional[list] = None):
-        """Inicializa con el detalle de DQ."""
+    def __init__(
+        self,
+        message: str,
+        url_docs: str = '',
+        check_point_result: Any = None,
+        failed: Optional[list] = None,
+        result: Any = None,
+    ):
+        """Inicializa con el detalle de DQ; result es el DQResult de la tarea."""
         self.message = message
+        self.result = result
         self.url_docs = url_docs
         self.check_point_result = check_point_result
         self.failed = failed or []
@@ -55,3 +63,38 @@ class StorageNoConfigurado(Exception):
 
 class SynapseNoConfigurado(Exception):
     """Excepción cuando falta configuración o dependencias de Synapse."""
+
+
+class RecursoDesconocido(Exception):
+    """Excepción cuando una tarea declara una plataforma que no está registrada."""
+
+    def __init__(self, name: str, available: Optional[list] = None):
+        """Inicializa con la plataforma pedida y las registradas."""
+        self.name = name
+        self.message = f"La plataforma {name!r} no está registrada. Registradas: {available or []}."
+        super().__init__(self.message)
+
+
+class RecursoNoDeclarado(Exception):
+    """Excepción cuando una tarea usa un recurso que no declaró en ``uses``."""
+
+    def __init__(self, task_name: str, use: str, declared: tuple = ()):
+        """Inicializa con la tarea, el recurso usado y los declarados."""
+        self.task_name = task_name
+        self.use = use
+        self.message = (
+            f"La tarea {task_name!r} usa {use!r} sin declararlo. "
+            f"Agréguelo a @task(uses=[...]); declarados: {list(declared)}."
+        )
+        super().__init__(self.message)
+
+
+class RecursoNoConfigurado(Exception):
+    """Excepción cuando un recurso declarado no tiene su configuración completa."""
+
+    def __init__(self, task_name: str, problems: list):
+        """Inicializa con la tarea y los problemas encontrados."""
+        self.task_name = task_name
+        self.problems = problems
+        self.message = f"La tarea {task_name!r} tiene recursos sin configurar: " + '; '.join(problems)
+        super().__init__(self.message)

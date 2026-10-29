@@ -18,18 +18,35 @@ def validar(datalake, gx_toolkit, logger):
 Ahora:
 
 ```python
-from centraal_dataframework import TaskContext, task, task_dq
+from centraal_dataframework import TaskContext, task
 
-@task
+@task(uses=['datalake'])
 def mi_tarea(ctx: TaskContext):
     df = ctx.datalake.read_csv(...)
     ctx.logger.info("ok params=%s", ctx.params)
 
-@task_dq
+@task(uses=['datalake', 'gx'])
 def validar(ctx: TaskContext):
     result = ctx.gx.validate(df, "x", expectations)  # DQResult
-    return result  # si success=False y fail_on_error=True, se alerta solo
+    return result  # si success=False, la tarea falla como error de calidad y se notifica
 ```
+
+Cada tarea declara en `uses` las plataformas que carga en su contexto (`datalake`, `synapse`, `gx` o
+una conexión con nombre como `synapse:gold`). Usar una no declarada lanza `RecursoNoDeclarado`.
+
+`@task_dq` ya no existe: use `@task(uses=['gx', ...])`. El antiguo `fail_on_error=False` no tiene
+equivalente permanente: para apagar una alarma conocida use un silencio con vencimiento en el YAML.
+
+```yaml
+tareas:
+  validar:
+    silenciar_dq:
+      hasta: 2026-11-15
+      motivo: "Proveedor X envía fechas nulas, ticket #123"
+```
+
+Llamar la tarea directamente (`validar()`) devuelve el `DQResult` sin lanzar: el error de calidad lo
+lanza el runner.
 
 ## 2. Great Expectations 1.x
 

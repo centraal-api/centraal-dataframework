@@ -44,15 +44,15 @@ En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se
 ## Tareas (API 0.2)
 
 ```python
-from centraal_dataframework import TaskContext, task, task_dq
+from centraal_dataframework import TaskContext, task
 import great_expectations as gx
 
-@task
+@task(uses=['datalake'])
 def transformar(ctx: TaskContext):
     df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
     ctx.logger.info("filas=%s params=%s", len(df), ctx.params)
 
-@task_dq
+@task(uses=['datalake', 'gx'])
 def validar(ctx: TaskContext):
     df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
     result = ctx.gx.validate(
@@ -60,11 +60,47 @@ def validar(ctx: TaskContext):
         "ventas",
         [gx.expectations.ExpectColumnValuesToNotBeNull(column="id")],
     )
-    return result  # DQResult; si falla, se notifica automáticamente
+    return result  # DQResult; si falla, el runner lo trata como error de calidad y notifica
 ```
 
-`ctx.datalake` y `ctx.synapse` se crean al primer uso: una tarea que no los usa no necesita
-su configuración.
+### Recursos del contexto
+
+Cada plataforma es un recurso distinto del contexto y cada tarea **declara** cuáles usa con `uses`:
+
+| Declaración | Acceso |
+|---|---|
+| `'datalake'` | `ctx.datalake` |
+| `'synapse'` | `ctx.synapse`, `ctx.synapse_for('silver')` |
+| `'gx'` | `ctx.gx` |
+| `'synapse:gold'` | `ctx.resource('synapse', 'gold')`: conexión con nombre |
+
+- Usar un recurso no declarado lanza `RecursoNoDeclarado`.
+- Declarar una plataforma no registrada falla al importar las tareas (`RecursoDesconocido`).
+- Si un recurso declarado no tiene configuración, la tarea no se ejecuta (`RecursoNoConfigurado`).
+  `python -m centraal_dataframework check-resources -m mi_paquete.tareas` revisa todas las tareas sin
+  ejecutarlas y termina con código 1 si falta algo.
+- Declarar no conecta: el cliente se crea al primer uso.
+- Si la tarea devuelve un `DQResult` fallido, el runner lo convierte en `ErrorTareaCalidadDatos` y
+  notifica. Llamada directa (`validar()` en un notebook), la tarea devuelve el `DQResult` sin lanzar.
+
+**Conexiones con nombre.** `'datalake:curado'` usa solo las variables con sufijo `__CURADO`
+(`AZURE_STORAGE_CONNECTION_STRING__CURADO`, `STORAGE_ACCOUNT_NAME__CURADO`). `'synapse:gold'` usa
+`SYNAPSE_WORKSPACE__GOLD`, `SYNAPSE_DATABASE__GOLD`, etc. Los datos de conexión (cuenta, connection string,
+workspace, servidor, base, usuario y clave) **no** se heredan de la conexión por defecto, para no apuntar
+en silencio a otro lago o workspace. El resto (`SYNAPSE_QUERY_TIMEOUT`, `CONTENEDOR_VALIDACIONES`, `SAS_*`, …)
+se hereda y se puede sobrescribir con el mismo sufijo.
+
+**Plataformas propias.** `datalake`, `synapse` y `gx` se registran con la misma API pública:
+
+```python
+from centraal_dataframework import register_resource
+
+register_resource('mi_api', lambda settings, ctx: MiApi(...), check=lambda settings: [])
+```
+
+`factory(settings, ctx)` recibe las Settings de la conexión (por defecto o con nombre);
+`check(settings)` devuelve los problemas de configuración sin conectarse. Registre la plataforma antes
+de importar las tareas que la declaran.
 
 ## Synapse (serverless primero)
 
@@ -87,13 +123,13 @@ pip install "centraal-dataframework[synapse]"
 | `SYNAPSE_QUERY_TIMEOUT` | `1800` | Segundos por consulta (límite de serverless: 30 min) |
 
 ```python
-@task
+@task(uses=['synapse'])
 def contar(ctx: TaskContext):
     bronze = ctx.synapse_for('bronze')  # otra base, misma conexión/credencial
     n = bronze.scalar("SELECT COUNT(*) FROM demo.ventas WHERE fecha = ?", ctx.params['lote'])
     ctx.logger.info("filas=%s", n)
 
-@task
+@task(uses=['synapse'])
 def crear_vista(ctx: TaskContext):
     # DDL: sin parámetros ?, se usa {{param}} con lista blanca; lotes separados por GO
     ctx.synapse_for('silver').execute_file('sql/vista.sql', esquema='demo', lote=ctx.params['lote'])
@@ -125,6 +161,9 @@ tareas:
       fecha: "2024-01-01"
     # cron: "0 8 * * 1-5"   # opcional, reemplaza dias/horas
     # enabled: false
+    # silenciar_dq:          # opcional, ver "Silenciar una alarma de calidad"
+    #   hasta: 2026-11-15
+    #   motivo: "Proveedor X envía fechas nulas, ticket #123"
 ```
 
 Notas de programación (`dias` = weekday ISO-like: 0=lunes … 6=domingo):
@@ -132,6 +171,22 @@ Notas de programación (`dias` = weekday ISO-like: 0=lunes … 6=domingo):
 - `dias: '*'` y `horas: '*'` → cada hora, todos los días
 - `dias: '*'` y `horas: '12'` → todos los días a las 12
 - `dias: 0,3,6` y `horas: '*'` → lunes, jueves y domingo cada hora
+
+### Silenciar una alarma de calidad
+
+Cuando un fallo de calidad ya es conocido (p.ej. un proveedor envía datos malos mientras se corrige),
+`silenciar_dq` lo apaga **por un tiempo**. `hasta` (fecha, incluida, en la zona horaria de la tarea) y
+`motivo` son obligatorios.
+
+Mientras está vigente, si la validación falla:
+
+- no se lanza error, no se notifica y no se reintenta: la tarea termina como exitosa;
+- las tareas que dependen de ella (`depends_on`) se ejecutan;
+- solo queda en el log: `DQ silenciada hasta 2026-11-15 (motivo): N expectativas fallaron en validar`.
+
+Al vencer, la alarma vuelve sola. `validate-config` avisa los silencios vencidos y los que vencen en los
+próximos 7 días. No hay forma de silenciar una validación de manera permanente: si no debe detener nada,
+no debería ser una validación de calidad.
 
 ## Function App
 

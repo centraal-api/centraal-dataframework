@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Union
 
 import yaml
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 def _parse_csv_int_or_star(value: Union[str, int, List[Any]]) -> Union[str, List[int]]:
@@ -28,6 +29,26 @@ def _parse_csv_int_or_star(value: Union[str, int, List[Any]]) -> Union[str, List
     return [int(part.strip()) for part in text.split(',') if part.strip()]
 
 
+class DQSilence(BaseModel):
+    """Silencio temporal de la alarma de calidad de datos de una tarea.
+
+    Mientras está vigente (hasta incluido, en la zona horaria de la tarea), un fallo de calidad no lanza
+    error ni notifica: solo queda en el log. Al vencer, la alarma vuelve sola.
+    """
+
+    model_config = ConfigDict(extra='forbid')
+
+    hasta: date
+    motivo: str
+
+    @field_validator('motivo')
+    @classmethod
+    def _motivo_required(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError('motivo no puede estar vacío')
+        return value.strip()
+
+
 class TaskConfig(BaseModel):
     """Configuración de una tarea en el YAML."""
 
@@ -40,7 +61,14 @@ class TaskConfig(BaseModel):
     params: Dict[str, Any] = Field(default_factory=dict)
     timezone: Optional[str] = None
     notify_on_success: Optional[bool] = None
-    dq_warn_only: bool = False
+    silenciar_dq: Optional[DQSilence] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def _reject_dq_warn_only(cls, data: Any) -> Any:
+        if isinstance(data, dict) and 'dq_warn_only' in data:
+            raise ValueError("dq_warn_only ya no existe: use silenciar_dq con 'hasta' (fecha) y 'motivo'.")
+        return data
 
     @field_validator('dias', 'horas', mode='before')
     @classmethod
@@ -94,6 +122,21 @@ def _assert_no_cycles(tareas: Dict[str, TaskConfig]) -> None:
 
     for name in tareas:
         dfs(name)
+
+
+def silence_warnings(conf: FrameworkConfig, today: date, days: int = 7) -> List[str]:
+    """Avisos de silencios de DQ vencidos o que vencen en los próximos ``days`` días."""
+    warnings: List[str] = []
+    for name, task in conf.tareas.items():
+        silence = task.silenciar_dq
+        if silence is None:
+            continue
+        remaining = (silence.hasta - today).days
+        if remaining < 0:
+            warnings.append(f"{name}: el silencio de DQ venció el {silence.hasta}; puede quitarse del YAML.")
+        elif remaining <= days:
+            warnings.append(f"{name}: el silencio de DQ vence el {silence.hasta} ({silence.motivo}).")
+    return warnings
 
 
 def load_framework_config(path: Union[str, Path], *, allow_missing: bool = False) -> FrameworkConfig:
