@@ -89,4 +89,5 @@ Requiere Python 3.10–3.14 y `azure-datalake-utils>=0.6`.
 ## 6. host.json
 
 Configure `extensions.queues.maxDequeueCount` alineado con `MAX_RETRIES` (default 5).
-Las notificaciones de error se envían solo en el último intento.
+Las notificaciones de error se envían solo en el último intento. Un fallo de calidad de datos no se
+reintenta: se notifica en el primer intento y el mensaje se consume.

@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `Settings` (pydantic-settings) y validación de YAML con pydantic.
 - Mensajes de cola JSON (`task`, `params`, `run_id`).
-- Control de reintentos con `dequeue_count` y notificación solo en el último intento.
+- Control de reintentos con `dequeue_count` y notificación solo en el último intento. Un fallo de calidad de datos no se reintenta: se notifica en el primer intento y no ejecuta dependientes.
 - Soporte Managed Identity / `DefaultAzureCredential` para el datalake.
 - Cron por tarea, `depends_on`, historial en Table Storage, CLI y plantilla de proyecto (Fase B).
 - Guía de migración 0.1 → 0.2.

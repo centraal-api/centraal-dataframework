@@ -87,7 +87,7 @@ def test_execute_notifies_only_last_attempt(runner, monkeypatch):
 
     runner.add_task(boom, 'alpha')
 
-    def capture_run(task_name, params=None, run_id=None, notify=True, raise_on_error=True):
+    def capture_run(task_name, params=None, run_id=None, notify=True, raise_on_error=True, **kwargs):
         calls.append(notify)
         if raise_on_error:
             raise ErrorEnTarea(task_name)
@@ -108,3 +108,42 @@ def test_execute_notifies_only_last_attempt(runner, monkeypatch):
     except ErrorEnTarea:
         pass
     assert calls == [True]
+
+
+def _failed_dq_task(runner, name):
+    from centraal_dataframework.resources import DQResult
+    from centraal_dataframework.tasks import task
+
+    @task(name=name)
+    def _t(ctx):
+        return DQResult(success=False, failed=['e1'])
+
+
+def test_dq_failure_notifies_first_attempt_and_is_not_retried(runner, monkeypatch):
+    """Un fallo de calidad se notifica en el primer intento y no se reintenta (los datos no cambian)."""
+    _failed_dq_task(runner, 'alpha')
+    notified = []
+    monkeypatch.setattr(runner.notifier, 'notify_dq', lambda *a, **k: notified.append(True))
+    dependents = []
+    monkeypatch.setattr(runner, 'dependents_of', lambda name: dependents.append(name) or [])
+
+    msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
+    execute_tasks_inqueue(msg)  # type: ignore[arg-type]  # no lanza: el mensaje se consume
+
+    assert notified == [True]
+    assert dependents == []  # las dependientes no corren tras un fallo de calidad
+
+
+def test_dependent_dq_failure_does_not_retry_parent(runner, monkeypatch):
+    """Si falla la calidad de una dependiente, el mensaje del padre no se reintenta."""
+    from centraal_dataframework.tasks import task
+
+    @task(name='alpha')
+    def alpha(ctx):
+        return 'ok'
+
+    _failed_dq_task(runner, 'gamma')
+    monkeypatch.setattr(runner.notifier, 'notify_dq', lambda *a, **k: None)
+
+    msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
+    execute_tasks_inqueue(msg)  # type: ignore[arg-type]

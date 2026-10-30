@@ -10,7 +10,7 @@ from typing import List, Union
 
 import azure.functions as func
 
-from centraal_dataframework.excepciones import ErrorEnTarea, TareaNoDefinida
+from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaNoDefinida
 from centraal_dataframework.runner import get_runner
 from centraal_dataframework.settings import get_settings
 from centraal_dataframework.utils import build_queue_message, parse_queue_message
@@ -164,9 +164,15 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
     is_last_attempt = dequeue_count >= max_retries
 
     try:
-        runner.run_task(task_name, params=params, run_id=run_id, notify=is_last_attempt, raise_on_error=True)
+        # Un fallo de calidad se notifica en el primer intento y no se reintenta: los datos no cambian.
+        runner.run_task(
+            task_name, params=params, run_id=run_id, notify=is_last_attempt, raise_on_error=True, notify_dq=True
+        )
     except TareaNoDefinida:
         logger.error("Tarea no definida en ejecución: %s", task_name)
+        return
+    except ErrorTareaCalidadDatos:
+        logger.error("Tarea %s falló por calidad de datos; no se reintenta ni se ejecutan dependientes", task_name)
         return
     except ErrorEnTarea:
         if is_last_attempt:
@@ -184,5 +190,5 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
             logger.info("Ejecutando dependiente %s de %s", dep, task_name)
             try:
                 runner.run_task(dep, params=params, notify=True, raise_on_error=True)
-            except ErrorEnTarea:
+            except (ErrorEnTarea, ErrorTareaCalidadDatos):
                 logger.exception("Falló dependiente %s", dep)

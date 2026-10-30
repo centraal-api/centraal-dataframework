@@ -82,6 +82,9 @@ Cada plataforma es un recurso distinto del contexto y cada tarea **declara** cu�
 - Declarar no conecta: el cliente se crea al primer uso.
 - Si la tarea devuelve un `DQResult` fallido, el runner lo convierte en `ErrorTareaCalidadDatos` y
   notifica. Llamada directa (`validar()` en un notebook), la tarea devuelve el `DQResult` sin lanzar.
+- En la Function, un fallo de calidad se notifica en el primer intento y **no se reintenta** (los datos
+  no cambian entre intentos), y sus dependientes no se ejecutan. Los demás errores se reintentan hasta
+  `MAX_RETRIES` y notifican solo en el último intento.
 
 **Conexiones con nombre.** `'datalake:curado'` usa solo las variables con sufijo `__CURADO`
 (`AZURE_STORAGE_CONNECTION_STRING__CURADO`, `STORAGE_ACCOUNT_NAME__CURADO`). `'synapse:gold'` usa

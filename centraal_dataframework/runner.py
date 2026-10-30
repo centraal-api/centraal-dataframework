@@ -231,11 +231,13 @@ class Runner:
         *,
         notify: bool = True,
         raise_on_error: bool = True,
+        notify_dq: Optional[bool] = None,
     ) -> Any:
         """Ejecuta la tarea.
 
         Un DQResult fallido termina en ErrorTareaCalidadDatos, salvo que la tarea tenga un silencio de DQ
         vigente (``silenciar_dq`` en el YAML): entonces solo se registra en el log y se devuelve el resultado.
+        ``notify_dq`` controla la notificación de calidad aparte de ``notify`` (por defecto, igual a ``notify``).
         """
         func_to_execute = self.get_task(task_name)
         emails = self.get_emails(task_name)
@@ -273,7 +275,8 @@ class Runner:
             logger.info("Error de calidad de datos en %s", task_name)
             if self.history:
                 self.history.record_failure(task_name, run_id, started, error, url=error.url_docs)
-            if notify:
+            should_notify_dq = notify if notify_dq is None else notify_dq
+            if should_notify_dq:
                 self.notifier.notify_dq(emails, error)
             if raise_on_error:
                 raise
