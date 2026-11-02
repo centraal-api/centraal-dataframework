@@ -400,3 +400,48 @@ def test_data_processed_mb_without_row_is_zero(fake_odbc, client):
     """Sin consumo en el día el contador no tiene fila: 0."""
     fake_odbc.outcomes.append({'cols': ['data_processed_mb'], 'rows': []})
     assert client.data_processed_mb() == 0.0
+
+
+def test_separar_tabla_dos_partes():
+    """esquema.tabla se separa tal cual."""
+    assert syn.separar_tabla('bronze_x.vista', 'bronze') == ('bronze_x', 'vista')
+
+
+def test_separar_tabla_tres_partes_misma_base():
+    """base.esquema.tabla se acepta si la base es la del cliente (sin distinguir mayúsculas)."""
+    assert syn.separar_tabla('Bronze.s.v', 'bronze') == ('s', 'v')
+
+
+def test_separar_tabla_base_distinta():
+    """Otra base no se acepta: el datasource está atado a la base del cliente."""
+    with pytest.raises(ValueError, match='no coincide'):
+        syn.separar_tabla('silver.s.v', 'bronze')
+
+
+def test_separar_tabla_una_parte():
+    """Hace falta el esquema."""
+    with pytest.raises(ValueError, match='esquema.tabla'):
+        syn.separar_tabla('v', 'bronze')
+
+
+def test_separar_tabla_caracteres():
+    """Nombres solo con letras, números y guion bajo."""
+    with pytest.raises(ValueError):
+        syn.separar_tabla('s.v; DROP', 'bronze')
+
+
+def test_tipo_y_definicion_objeto(fake_odbc, client):
+    """tipo_objeto consulta sys.objects y definicion_objeto OBJECT_DEFINITION, con el nombre como parámetro."""
+    fake_odbc.outcomes.append({'cols': ['type'], 'rows': [('V ',)]})
+    fake_odbc.outcomes.append({'cols': ['d'], 'rows': [('CREATE VIEW s.v AS SELECT 1 FROM OPENROWSET(...)',)]})
+    assert client.tipo_objeto('s.v') == 'V'
+    assert 'OPENROWSET' in client.definicion_objeto('s.v')
+    sqls = [(sql, params) for sql, params in fake_odbc.executed if isinstance(sql, str)]
+    assert 'sys.objects' in sqls[0][0] and sqls[0][1] == ('s.v',)
+    assert 'OBJECT_DEFINITION' in sqls[1][0] and sqls[1][1] == ('s.v',)
+
+
+def test_tipo_objeto_inexistente(fake_odbc, client):
+    """Sin fila, tipo_objeto devuelve None."""
+    fake_odbc.outcomes.append({'cols': ['type'], 'rows': []})
+    assert client.tipo_objeto('s.no') is None

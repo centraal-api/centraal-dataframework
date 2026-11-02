@@ -9,7 +9,7 @@ import struct
 import time
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote_plus
 
 from centraal_dataframework.excepciones import SynapseNoConfigurado
@@ -97,6 +97,30 @@ def render(sql: str, **params: Any) -> str:
         return value
 
     return _PARAM_RE.sub(_sub, sql)
+
+
+_IDENT_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def separar_tabla(tabla: str, database: Optional[str]) -> Tuple[str, str]:
+    """Separa ``esquema.tabla`` (o ``base.esquema.tabla``) en ``(esquema, tabla)``.
+
+    Con tres partes, la base debe ser la del cliente: el datasource de GX está atado a una base.
+    Los nombres solo admiten letras, números y ``_`` (sin corchetes).
+    """
+    partes = tabla.split('.')
+    if len(partes) == 3:
+        base, esquema, nombre = partes
+        if (database or '').lower() != base.lower():
+            raise ValueError(f"la base {base!r} no coincide con la del cliente {database!r}; use synapse_for({base!r})")
+    elif len(partes) == 2:
+        esquema, nombre = partes
+    else:
+        raise ValueError(f"indique esquema.tabla (o base.esquema.tabla), no {tabla!r}")
+    for parte in (esquema, nombre):
+        if not _IDENT_RE.match(parte):
+            raise ValueError(f"nombre no permitido en {tabla!r}: {parte!r}")
+    return esquema, nombre
 
 
 @dataclass
@@ -228,6 +252,16 @@ class SynapseClient:
         """MB procesados hoy por el pool serverless (contador de todo el workspace, aproximado)."""
         value = self.scalar("SELECT data_processed_mb FROM sys.dm_external_data_processed WHERE type = 'daily'")
         return float(value or 0)
+
+    def tipo_objeto(self, tabla: str) -> Optional[str]:
+        """Tipo del objeto en ``sys.objects`` (``'V'`` vista, ``'U'`` tabla), o None si no existe o no se ve."""
+        value = self.scalar('SELECT type FROM sys.objects WHERE object_id = OBJECT_ID(?)', tabla)
+        return str(value).strip() if value is not None else None
+
+    def definicion_objeto(self, tabla: str) -> Optional[str]:
+        """Definición del objeto (``OBJECT_DEFINITION``); None sin permiso ``VIEW DEFINITION`` o si no es vista."""
+        value = self.scalar('SELECT OBJECT_DEFINITION(OBJECT_ID(?))', tabla)
+        return str(value) if value is not None else None
 
     def execute_file(self, path: Union[str, os.PathLike], **params: Any) -> int:
         """Renderiza un .sql y ejecuta cada lote separado por GO."""
