@@ -490,7 +490,7 @@ def test_validate_table_accepts_date_partition_value(toolkit, vista_particionada
 
 
 def test_validate_dataframe_missing_column_is_a_quality_failure(toolkit):
-    """Fuera de Synapse, validate(df) conserva su semántica: una columna ausente es fallo de calidad, no error de motor."""
+    """Fuera de Synapse, una columna ausente en validate(df) sigue siendo fallo de calidad, no error de motor."""
     import great_expectations as gx
     import pandas as pd
 
