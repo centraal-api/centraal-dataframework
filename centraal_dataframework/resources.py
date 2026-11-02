@@ -189,8 +189,11 @@ class GreatExpectationsToolKit:
             expectations: Expectativas GX 1.x; o bien ``suite_name`` de una suite registrada.
             suite_name: Suite existente en el contexto.
             params: Valores de ``{{param}}``; pasan por la lista blanca de ``synapse.render``.
-            modo: ``'sql'`` (plan A): GX traduce cada expectativa a SQL y Synapse devuelve solo agregados.
-                ``'pandas'`` (plan B): trae la consulta a la Function con ``read_df`` y valida ahí.
+            modo: ``'sql'`` (plan A): GX traduce cada expectativa a SQL y Synapse devuelve solo agregados; para una
+                consulta suelta solo admite expectativas de tabla (conteo de filas), porque GX no resuelve las
+                columnas de un ``TextClause`` en SQL Server. Para expectativas de columna use ``validate_table``.
+                ``'pandas'`` (plan B): trae la consulta a la Function con ``read_df`` y valida ahí: las filas
+                viajan a la Function, solo para resultados pequeños. No hay fallback entre modos.
             result_format: ``'BASIC'`` o ``'SUMMARY'``. ``'COMPLETE'`` vuelve a escanear para traer filas.
             medir_costo: Guarda en el resultado el delta de MB procesados del día (aproximado: el contador
                 es de todo el workspace).
@@ -206,6 +209,14 @@ class GreatExpectationsToolKit:
             suite = self._build_suite(name, expectations)
         else:
             raise ValueError("validate_query necesita expectations o suite_name")
+        if modo == 'sql':
+            de_columna = _expectativas_de_columna(suite)
+            if de_columna:
+                raise ValueError(
+                    f"validate_query en modo 'sql' no admite expectativas de columna {de_columna}: "
+                    "use validate_table(..., modo='sql') o modo='pandas' "
+                    "(las filas de la consulta viajan a la Function)"
+                )
         sql = render(query, **(params or {}))
 
         before = synapse.data_processed_mb() if medir_costo else None
@@ -359,6 +370,22 @@ class GreatExpectationsToolKit:
             except Exception:  # noqa: BLE001
                 logger.debug("No se pudo generar SAS para docs", exc_info=True)
         return url
+
+
+_KWARGS_DE_COLUMNA = ('column', 'column_list', 'column_A', 'column_B', 'column_set')
+
+
+def _expectativas_de_columna(suite: Any) -> List[str]:
+    """Tipos de las expectativas de la suite que nombran columnas (no se pueden evaluar en sql sobre una consulta)."""
+    tipos: List[str] = []
+    for exp in getattr(suite, 'expectations', []) or []:
+        cfg = getattr(exp, 'configuration', None)
+        kwargs = getattr(cfg, 'kwargs', None) or getattr(exp, 'kwargs', None) or {}
+        if any(k in kwargs for k in _KWARGS_DE_COLUMNA):
+            tipo = getattr(cfg, 'type', None) or getattr(exp, 'expectation_type', None) or type(exp).__name__
+            if tipo not in tipos:
+                tipos.append(str(tipo))
+    return tipos
 
 
 def _raised_exceptions(result: Any) -> List[str]:

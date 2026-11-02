@@ -167,30 +167,61 @@ def _expectations():
     ]
 
 
+def _expectations_tabla(min_value=1):
+    """Solo expectativas de tabla: las únicas que validate_query admite en modo sql."""
+    import great_expectations as gx
+
+    return [gx.expectations.ExpectTableRowCountToBeBetween(min_value=min_value)]
+
+
+def _exps(modo):
+    """La suite por modo: en sql solo de tabla, en pandas también de columna."""
+    return _expectations_tabla() if modo == 'sql' else _expectations()
+
+
 @pytest.mark.parametrize('modo', ['sql', 'pandas'])
 def test_validate_query_success_in_both_modes(toolkit, sqlite_synapse, modo):
-    """Plan A (SQL en el motor) y plan B (pandas) validan la misma suite con el mismo resultado."""
+    """Plan A (SQL en el motor, expectativas de tabla) y plan B (pandas) validan con éxito."""
     out = toolkit.validate_query(
-        sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-11-01'}, modo=modo
+        sqlite_synapse, 'ventas', QUERY, _exps(modo), params={'fecha': '2026-11-01'}, modo=modo
     )
     assert out.success is True
     assert out.failed == []
     assert out.modo == modo
 
 
-@pytest.mark.parametrize('modo', ['sql', 'pandas'])
-def test_validate_query_reports_failures_in_both_modes(toolkit, sqlite_synapse, modo):
-    """La partición con nulos falla igual en los dos modos."""
-    out = toolkit.validate_query(
-        sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-10-31'}, modo=modo
-    )
+@pytest.mark.parametrize(
+    'modo, exps, fallida',
+    [
+        ('sql', lambda: _expectations_tabla(min_value=2), 'expect_table_row_count_to_be_between'),
+        ('pandas', _expectations, 'expect_column_values_to_not_be_null'),
+    ],
+)
+def test_validate_query_reports_failures_in_both_modes(toolkit, sqlite_synapse, modo, exps, fallida):
+    """La partición de una fila (y con nulos) falla en los dos modos, cada uno con su expectativa."""
+    out = toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, exps(), params={'fecha': '2026-10-31'}, modo=modo)
     assert out.success is False
-    assert out.failed == ['expect_column_values_to_not_be_null']
+    assert out.failed == [fallida]
+
+
+def test_validate_query_sql_rejects_column_expectations(toolkit, sqlite_synapse):
+    """En modo sql una expectativa de columna da error claro antes de conectarse: use validate_table o pandas."""
+    with pytest.raises(ValueError, match='validate_table'):
+        toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-11-01'})
+    assert sqlite_synapse.kwargs_calls == 0
+    assert sqlite_synapse.queries == []
+
+
+def test_validate_query_sql_allows_table_expectations(toolkit, sqlite_synapse):
+    """En modo sql las expectativas de tabla siguen corriendo en el motor."""
+    out = toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'})
+    assert out.success is True
+    assert sqlite_synapse.queries == []
 
 
 def test_validate_query_sql_mode_does_not_pull_rows(toolkit, sqlite_synapse):
     """En modo sql la Function no trae filas: no se llama a read_df y la conexión usa sqlalchemy_kwargs."""
-    toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-11-01'})
+    toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'})
     assert sqlite_synapse.queries == []
     assert sqlite_synapse.kwargs_calls == 1
 
@@ -227,7 +258,7 @@ def test_validate_query_with_existing_suite(toolkit, sqlite_synapse):
     """Acepta una suite ya registrada en el contexto."""
     import great_expectations as gx
 
-    toolkit.context.suites.add(gx.ExpectationSuite(name='mi_suite', expectations=_expectations()))
+    toolkit.context.suites.add(gx.ExpectationSuite(name='mi_suite', expectations=_expectations_tabla()))
     out = toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, suite_name='mi_suite', params={'fecha': '2026-11-01'})
     assert out.success is True
 
@@ -235,21 +266,21 @@ def test_validate_query_with_existing_suite(toolkit, sqlite_synapse):
 def test_validate_query_measures_data_processed(toolkit, sqlite_synapse):
     """medir_costo deja en el resultado el delta de MB procesados."""
     out = toolkit.validate_query(
-        sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-11-01'}, medir_costo=True
+        sqlite_synapse, 'ventas', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'}, medir_costo=True
     )
     assert out.data_processed_mb == pytest.approx(12.5)
 
 
 def test_validate_query_without_cost_measure_has_none(toolkit, sqlite_synapse):
     """Sin medir_costo no consulta el contador."""
-    out = toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations(), params={'fecha': '2026-11-01'})
+    out = toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'})
     assert out.data_processed_mb is None
 
 
 def test_validate_query_twice_reuses_the_sql_datasource(toolkit, sqlite_synapse):
     """Dos validaciones en la misma tarea comparten el datasource SQL de la base."""
-    toolkit.validate_query(sqlite_synapse, 'a', QUERY, _expectations(), params={'fecha': '2026-11-01'})
-    toolkit.validate_query(sqlite_synapse, 'b', QUERY, _expectations(), params={'fecha': '2026-11-01'})
+    toolkit.validate_query(sqlite_synapse, 'a', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'})
+    toolkit.validate_query(sqlite_synapse, 'b', QUERY, _expectations_tabla(), params={'fecha': '2026-11-01'})
     names = [ds.name for ds in toolkit.context.data_sources.all().values()]
     assert names.count('t_synapse_bronze') == 1
 
@@ -261,7 +292,8 @@ def test_run_checkpoint_raises_on_metric_exception(toolkit, sqlite_synapse, modo
 
     from centraal_dataframework import ErrorMotorCalidad
 
-    # TODO Task 7: en modo sql pasar a validate_table cuando validate_query rechace expectativas de columna.
+    if modo == 'sql':
+        pytest.skip('TODO Task 7: en sql se prueba con validate_table (validate_query rechaza columnas)')
     exps = [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')]
     with pytest.raises(ErrorMotorCalidad) as info:
         toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, exps, params={'fecha': '2026-11-01'}, modo=modo)
