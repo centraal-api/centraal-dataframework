@@ -28,7 +28,7 @@ _SAFE_VALUE_RE = re.compile(r'^[A-Za-z0-9_]+(?:[-:.][A-Za-z0-9_]+)*$')
 _GO_RE = re.compile(r'^\s*GO\s*;?\s*$', re.IGNORECASE | re.MULTILINE)
 
 TRANSIENT_SQLSTATES = frozenset({'08S01', '08001', 'HYT00', 'HYT01', '40001'})
-TRANSIENT_CODES = ('40613', '40501', '40197', '10928', '10929', '49918')
+TRANSIENT_CODES = ('40613', '40501', '40197', '10928', '10929', '49918', '42109')
 
 
 def _import_pyodbc():
@@ -75,7 +75,7 @@ def _fetch_table(cursor: Any) -> tuple:
 
 
 def _is_transient(exc: Exception) -> bool:
-    """True para conexión, timeout y throttling; False para SQL y login (18456)."""
+    """True para conexión, timeout, throttling y pool serverless en frío (42109); False para SQL y login (18456)."""
     sqlstate = str(exc.args[0]) if exc.args else ''
     message = ' '.join(str(a) for a in exc.args)
     if '18456' in message:

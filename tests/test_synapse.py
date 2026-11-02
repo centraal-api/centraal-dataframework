@@ -456,8 +456,9 @@ def test_sql_pool_warming_up_is_retried(fake_odbc, client, monkeypatch):
         calls.append(1)
         if len(calls) == 1:
             raise FakeError(
-                'HY000', '[HY000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The SQL pool is warming up. '
-                'Please try again. (42109) (SQLDriverConnect)'
+                'HY000',
+                '[HY000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The SQL pool is warming up. '
+                'Please try again. (42109) (SQLDriverConnect)',
             )
         return real_connect(*a, **k)
 
