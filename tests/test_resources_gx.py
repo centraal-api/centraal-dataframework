@@ -96,13 +96,23 @@ def test_validate_reuses_the_same_expectations_list():
 class _SqliteSynapse:
     """Doble de SynapseClient: misma interfaz que usa validate_query, sobre una base SQLite."""
 
-    def __init__(self, path, processed=(100.0, 112.5)):
-        """Guarda la ruta y la secuencia de lecturas de data_processed_mb."""
+    def __init__(self, path, processed=(100.0, 112.5), definicion=None, tipo='V'):
+        """Guarda la ruta, la secuencia de lecturas de data_processed_mb y la definición/tipo del objeto."""
         self.path = path
         self.database = 'bronze'
         self.queries = []
         self._processed = list(processed)
         self.kwargs_calls = 0
+        self.definicion = definicion
+        self.tipo = tipo
+
+    def tipo_objeto(self, tabla):
+        """Tipo simulado del objeto ('V', 'U' o None)."""
+        return self.tipo
+
+    def definicion_objeto(self, tabla):
+        """Definición simulada de la vista (None = ilegible)."""
+        return self.definicion
 
     def sqlalchemy_url(self):
         """URL de SQLAlchemy."""
@@ -113,7 +123,7 @@ class _SqliteSynapse:
         self.kwargs_calls += 1
         return {}
 
-    def read_df(self, sql):
+    def read_df(self, sql, *params):
         """Plan B: trae el resultado a pandas."""
         import sqlite3
 
@@ -293,8 +303,171 @@ def test_run_checkpoint_raises_on_metric_exception(toolkit, sqlite_synapse, modo
     from centraal_dataframework import ErrorMotorCalidad
 
     if modo == 'sql':
-        pytest.skip('TODO Task 7: en sql se prueba con validate_table (validate_query rechaza columnas)')
+        pytest.skip(
+            'en sql validate_query rechaza columnas; el caso sql está en test_validate_table_sql_raises_on_metric_exception'
+        )
     exps = [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')]
     with pytest.raises(ErrorMotorCalidad) as info:
         toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, exps, params={'fecha': '2026-11-01'}, modo=modo)
     assert info.value.modo == modo and info.value.mensajes
+
+
+# --- validate_table -------------------------------------------------------------------------------------------
+
+from tests.test_particiones import DEF_SIMPLE, DEF_SIN_FILEPATH  # noqa: E402
+
+
+@pytest.fixture
+def vista_particionada(sqlite_synapse):
+    """La tabla ventas de SQLite presentada como vista de bronze particionada por fecha=*."""
+    sqlite_synapse.definicion = DEF_SIMPLE
+    return sqlite_synapse
+
+
+def _exps_id():
+    import great_expectations as gx
+
+    return [
+        gx.expectations.ExpectColumnValuesToNotBeNull(column='monto'),
+        gx.expectations.ExpectTableRowCountToBeBetween(min_value=1),
+    ]
+
+
+@pytest.mark.parametrize('modo', ['sql', 'pandas'])
+def test_validate_table_particion_ok(toolkit, vista_particionada, modo):
+    """La foto sana pasa en los dos modos con expectativas de columna."""
+    out = toolkit.validate_table(
+        vista_particionada, 'ventas', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'}, modo=modo
+    )
+    assert out.success is True and out.failed == [] and out.modo == modo
+
+
+@pytest.mark.parametrize('modo', ['sql', 'pandas'])
+def test_validate_table_particion_reports_failures(toolkit, vista_particionada, modo):
+    """La foto con nulos falla igual en los dos modos."""
+    out = toolkit.validate_table(
+        vista_particionada, 'ventas', 'main.ventas', _exps_id(), particion={'fecha': '2026-10-31'}, modo=modo
+    )
+    assert out.success is False and out.failed == ['expect_column_values_to_not_be_null']
+
+
+def test_validate_table_sql_does_not_pull_rows(toolkit, vista_particionada):
+    """En sql no se llama a read_df y la conexión usa sqlalchemy_kwargs."""
+    toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'})
+    assert vista_particionada.queries == [] and vista_particionada.kwargs_calls == 1
+
+
+def test_validate_table_pandas_reads_filtered_select(toolkit, vista_particionada):
+    """En pandas se trae la tabla filtrada por la partición con el valor validado como literal."""
+    toolkit.validate_table(
+        vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'}, modo='pandas'
+    )
+    assert vista_particionada.queries == ["SELECT * FROM main.ventas WHERE fecha = '2026-11-01'"]
+
+
+def test_validate_table_sin_particion_en_vista_particionada(toolkit, vista_particionada):
+    """Una vista particionada sin particion declarada se rechaza: hay que declararla o pedir 'completa'."""
+    from centraal_dataframework import ParticionInvalida
+
+    with pytest.raises(ParticionInvalida, match='completa'):
+        toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id())
+    assert vista_particionada.kwargs_calls == 0
+
+
+def test_validate_table_completa(toolkit, vista_particionada):
+    """particion='completa' valida toda la vista a propósito (aquí falla por el nulo del total)."""
+    out = toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion='completa')
+    assert out.success is False and out.failed == ['expect_column_values_to_not_be_null']
+
+
+def test_validate_table_columna_no_particion(toolkit, vista_particionada):
+    """Una columna de datos no es partición."""
+    from centraal_dataframework import ParticionInvalida
+
+    with pytest.raises(ParticionInvalida, match='no sale de filepath'):
+        toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'id': 1})
+
+
+def test_validate_table_definicion_ilegible(toolkit, sqlite_synapse):
+    """Vista sin definición legible: falta GRANT VIEW DEFINITION, con o sin particion."""
+    from centraal_dataframework import ParticionInvalida
+
+    sqlite_synapse.definicion = None
+    with pytest.raises(ParticionInvalida, match='VIEW DEFINITION'):
+        toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'})
+    with pytest.raises(ParticionInvalida, match='VIEW DEFINITION'):
+        toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id())
+
+
+def test_validate_table_objeto_inexistente(toolkit, sqlite_synapse):
+    """Objeto que no existe o que la identidad no ve."""
+    from centraal_dataframework import ParticionInvalida
+
+    sqlite_synapse.tipo = None
+    with pytest.raises(ParticionInvalida, match='no existe'):
+        toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id())
+
+
+def test_validate_table_tabla_externa_entera(toolkit, sqlite_synapse):
+    """Una tabla (no vista) se valida entera sin leer definición."""
+    sqlite_synapse.tipo = 'U'
+    out = toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id(), modo='pandas')
+    assert out.success is False and sqlite_synapse.queries == ['SELECT * FROM main.ventas']
+
+
+def test_validate_table_tabla_externa_con_particion(toolkit, sqlite_synapse):
+    """Una tabla (no vista) no tiene particiones de carpeta que aplicar."""
+    from centraal_dataframework import ParticionInvalida
+
+    sqlite_synapse.tipo = 'U'
+    with pytest.raises(ParticionInvalida, match='no es una vista'):
+        toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'})
+
+
+def test_validate_table_vista_sin_filepath_entera(toolkit, sqlite_synapse):
+    """Una vista sin filepath (silver/gold) se valida entera sin declarar particion."""
+    sqlite_synapse.definicion = DEF_SIN_FILEPATH
+    out = toolkit.validate_table(sqlite_synapse, 'v', 'main.ventas', _exps_id(), modo='pandas')
+    assert out.success is False and sqlite_synapse.queries == ['SELECT * FROM main.ventas']
+
+
+def test_validate_table_rejects_unsafe_partition_value(toolkit, vista_particionada):
+    """El valor de la partición pasa por la lista blanca antes de tocar Synapse."""
+    with pytest.raises(ValueError):
+        toolkit.validate_table(
+            vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': "2026-11-01' OR 1=1"}
+        )
+    assert vista_particionada.kwargs_calls == 0
+
+
+@pytest.mark.parametrize('particion', [{'a': 1, 'b': 2}, {}, 'otra', 5, {'no-valido': 1}])
+def test_validate_table_particion_shape(toolkit, vista_particionada, particion):
+    """particion es None, 'completa' o un dict de una sola entrada con nombre de columna válido."""
+    with pytest.raises(ValueError, match='particion'):
+        toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion=particion)
+
+
+def test_validate_table_base_distinta(toolkit, vista_particionada):
+    """base.esquema.tabla con otra base se rechaza antes de conectarse."""
+    with pytest.raises(ValueError, match='no coincide'):
+        toolkit.validate_table(vista_particionada, 'v', 'silver.main.ventas', _exps_id(), particion='completa')
+
+
+def test_validate_table_measures_data_processed(toolkit, vista_particionada):
+    """medir_costo deja el delta de MB procesados."""
+    out = toolkit.validate_table(
+        vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': '2026-11-01'}, medir_costo=True
+    )
+    assert out.data_processed_mb == pytest.approx(12.5)
+
+
+def test_validate_table_sql_raises_on_metric_exception(toolkit, vista_particionada):
+    """Un error técnico de GX en sql (columna inexistente) es ErrorMotorCalidad."""
+    import great_expectations as gx
+
+    from centraal_dataframework import ErrorMotorCalidad
+
+    exps = [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')]
+    with pytest.raises(ErrorMotorCalidad) as info:
+        toolkit.validate_table(vista_particionada, 'v', 'main.ventas', exps, particion={'fecha': '2026-11-01'})
+    assert info.value.modo == 'sql'

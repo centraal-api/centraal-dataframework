@@ -5,10 +5,11 @@ from __future__ import annotations
 import copy
 import logging
 import os
+import re
 import tempfile
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from centraal_dataframework.excepciones import ErrorMotorCalidad, StorageNoConfigurado
 from centraal_dataframework.settings import Settings, get_settings
@@ -233,6 +234,123 @@ class GreatExpectationsToolKit:
         logger.info("GX %s [%s] success=%s data_processed_mb=%s", name, modo, out.success, out.data_processed_mb)
         return out
 
+    def validate_table(
+        self,
+        synapse: Any,
+        name: str,
+        tabla: str,
+        expectations: Optional[Sequence[Any]] = None,
+        *,
+        suite_name: Optional[str] = None,
+        particion: Union[None, str, Dict[str, Any]] = None,
+        modo: str = 'sql',
+        result_format: str = DEFAULT_RESULT_FORMAT,
+        medir_costo: bool = False,
+        public: bool = False,
+    ) -> DQResult:
+        """Valida una tabla o vista con nombre, entera o una partición, con GX sobre Synapse o sobre pandas.
+
+        Es el caso principal de la plataforma. En bronze la vista acumula fotos particionadas por carpeta
+        (``.../fecha=*/``) y la tarea valida la de un día: ``particion={'fecha': '2026-01-31'}``. En silver y gold la
+        tabla candidata ya es un solo lote y se valida sin ``particion``.
+
+        La partición declarada se verifica contra la definición de la vista (``OBJECT_DEFINITION``): la columna
+        debe salir de ``filepath(n)`` y ``n`` ser la carpeta ``<columna>=*``. Si la vista está particionada y no se
+        declara ``particion``, se rechaza para no escanear por descuido; ``particion='completa'`` la valida entera a
+        propósito. Nunca se cambia de motor: si el ``modo`` pedido no puede ejecutarse, se lanza una excepción.
+
+        Args:
+            synapse: ``SynapseClient`` (``ctx.synapse`` o ``ctx.synapse_for(base)``).
+            name: Nombre de la validación (aparece en data docs y alarmas).
+            tabla: ``esquema.tabla`` o ``base.esquema.tabla`` (la base debe ser la del cliente).
+            expectations: Expectativas GX 1.x; o bien ``suite_name`` de una suite registrada.
+            suite_name: Suite existente en el contexto.
+            particion: ``None`` (tabla entera; rechazado si la vista está particionada), ``'completa'`` (toda la
+                vista a propósito) o ``{'columna': valor}`` con una sola columna. El valor pasa por la lista
+                blanca de ``render``.
+            modo: ``'sql'``: GX traduce la suite a SQL y Synapse devuelve solo agregados, leyendo solo la partición.
+                ``'pandas'``: trae ``SELECT *`` de la tabla (filtrado por la partición) con ``read_df`` y valida en
+                la Function: las filas viajan a la Function, solo para tablas pequeñas.
+            result_format: ``'BASIC'`` o ``'SUMMARY'``.
+            medir_costo: Guarda en el resultado el delta de MB procesados del día (aproximado, de todo el workspace).
+            public: URL pública de data docs.
+
+        Raises:
+            ValueError: modo, suite, nombre de tabla o forma de ``particion`` inválidos.
+            ParticionInvalida: el objeto no existe, la definición no se puede leer (falta ``GRANT VIEW
+                DEFINITION``), la columna no es partición, o la vista está particionada y no se declaró.
+            ErrorMotorCalidad: GX no pudo evaluar alguna expectativa (error técnico, no de datos).
+        """
+        from centraal_dataframework.excepciones import ParticionInvalida
+        from centraal_dataframework.particiones import es_particionada, verificar_particion
+        from centraal_dataframework.synapse import separar_tabla
+
+        if modo not in MODOS:
+            raise ValueError(f"modo debe ser uno de {MODOS}, no {modo!r}")
+        if suite_name:
+            suite = self.context.suites.get(suite_name)
+        elif expectations:
+            suite = self._build_suite(name, expectations)
+        else:
+            raise ValueError("validate_table necesita expectations o suite_name")
+        schema, table = separar_tabla(tabla, getattr(synapse, 'database', None))
+        objeto = f'{schema}.{table}'
+        par = _particion_declarada(particion)
+
+        tipo = synapse.tipo_objeto(objeto)
+        if tipo is None:
+            raise ParticionInvalida(objeto, "el objeto no existe o la identidad no puede verlo")
+        if tipo == 'V':
+            definicion = synapse.definicion_objeto(objeto)
+            if definicion is None:
+                raise ParticionInvalida(
+                    objeto,
+                    "no se puede leer la definición de la vista: la identidad necesita GRANT VIEW DEFINITION "
+                    "además de db_datareader",
+                )
+            if par is not None:
+                verificar_particion(definicion, par[0], objeto)
+            elif particion is None and es_particionada(definicion):
+                raise ParticionInvalida(
+                    objeto,
+                    "la vista está particionada por filepath(); declare particion={'columna': valor} "
+                    "o particion='completa' para validarla entera a propósito",
+                )
+        elif par is not None:
+            raise ParticionInvalida(objeto, "no es una vista con filepath(): no tiene particiones que aplicar")
+
+        before = synapse.data_processed_mb() if medir_costo else None
+        if modo == 'pandas':
+            sql = f'SELECT * FROM {objeto}'
+            if par is not None:
+                sql += f" WHERE {par[0]} = '{par[1]}'"
+            out = self._run_suite_on_df(synapse.read_df(sql), name, suite, public=public, result_format=result_format)
+        else:
+            asset_name, batch_def, batch_parameters = self._table_batch_definition(synapse, name, schema, table, par)
+            out = self._run_checkpoint(
+                asset_name,
+                batch_def,
+                suite,
+                batch_parameters,
+                public=public,
+                result_format=result_format,
+                name=name,
+                modo='sql',
+            )
+        out.modo = modo
+        if before is not None:
+            out.data_processed_mb = synapse.data_processed_mb() - before
+        logger.info(
+            "GX %s [%s] tabla=%s particion=%s success=%s data_processed_mb=%s",
+            name,
+            modo,
+            objeto,
+            par[0] if par else (particion or 'ninguna'),
+            out.success,
+            out.data_processed_mb,
+        )
+        return out
+
     def _sql_datasource(self, synapse: Any) -> Any:
         """Datasource SQL de GX para la base del cliente (uno por base y tarea)."""
         database = getattr(synapse, 'database', None) or 'default'
@@ -386,6 +504,26 @@ class GreatExpectationsToolKit:
             except Exception:  # noqa: BLE001
                 logger.debug("No se pudo generar SAS para docs", exc_info=True)
         return url
+
+
+_IDENT_COLUMNA_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _particion_declarada(particion: Union[None, str, Dict[str, Any]]) -> Optional[Tuple[str, str]]:
+    """Normaliza ``particion``: None o 'completa' → None; ``{'col': valor}`` → ``('col', 'valor')`` validados."""
+    from centraal_dataframework.synapse import _SAFE_VALUE_RE
+
+    if particion is None or particion == 'completa':
+        return None
+    if not isinstance(particion, dict) or len(particion) != 1:
+        raise ValueError("particion debe ser None, 'completa' o un dict con una sola columna: {'columna': valor}")
+    ((columna, valor),) = particion.items()
+    if not isinstance(columna, str) or not _IDENT_COLUMNA_RE.match(columna):
+        raise ValueError(f"particion: nombre de columna no permitido: {columna!r}")
+    texto = str(valor)
+    if not _SAFE_VALUE_RE.match(texto):
+        raise ValueError(f"particion: valor no permitido para {columna!r}: {texto!r}")
+    return columna, texto
 
 
 _KWARGS_DE_COLUMNA = ('column', 'column_list', 'column_A', 'column_B', 'column_set')
