@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import datetime
 import logging
 import os
 import re
@@ -222,11 +223,21 @@ class GreatExpectationsToolKit:
 
         before = synapse.data_processed_mb() if medir_costo else None
         if modo == 'pandas':
-            out = self._run_suite_on_df(synapse.read_df(sql), name, suite, public=public, result_format=result_format)
+            out = self._run_suite_on_df(
+                synapse.read_df(sql), name, suite, public=public, result_format=result_format, errores_motor=True
+            )
         else:
             asset_name, batch_def = self._query_batch_definition(synapse, name, sql)
             out = self._run_checkpoint(
-                asset_name, batch_def, suite, {}, public=public, result_format=result_format, name=name, modo='sql'
+                asset_name,
+                batch_def,
+                suite,
+                {},
+                public=public,
+                result_format=result_format,
+                name=name,
+                modo='sql',
+                errores_motor=True,
             )
         out.modo = modo
         if before is not None:
@@ -324,7 +335,9 @@ class GreatExpectationsToolKit:
             sql = f'SELECT * FROM {objeto}'
             if par is not None:
                 sql += f" WHERE {par[0]} = '{par[1]}'"
-            out = self._run_suite_on_df(synapse.read_df(sql), name, suite, public=public, result_format=result_format)
+            out = self._run_suite_on_df(
+                synapse.read_df(sql), name, suite, public=public, result_format=result_format, errores_motor=True
+            )
         else:
             asset_name, batch_def, batch_parameters = self._table_batch_definition(synapse, name, schema, table, par)
             out = self._run_checkpoint(
@@ -336,6 +349,7 @@ class GreatExpectationsToolKit:
                 result_format=result_format,
                 name=name,
                 modo='sql',
+                errores_motor=True,
             )
         out.modo = modo
         if before is not None:
@@ -398,7 +412,13 @@ class GreatExpectationsToolKit:
         return self.validate_suite(df, name_of_df, expectations_suite_name, public=public)
 
     def _run_suite_on_df(
-        self, df: Any, name: str, suite: Any, public: bool = False, result_format: Optional[str] = None
+        self,
+        df: Any,
+        name: str,
+        suite: Any,
+        public: bool = False,
+        result_format: Optional[str] = None,
+        errores_motor: bool = False,
     ) -> DQResult:
         """Ejecuta checkpoint GX 1.x sobre un dataframe."""
         asset_name = f"{self.name_task}_{name}_{uuid.uuid4().hex[:8]}"
@@ -413,6 +433,7 @@ class GreatExpectationsToolKit:
             result_format=result_format,
             name=name,
             modo='pandas',
+            errores_motor=errores_motor,
         )
 
     def _run_checkpoint(
@@ -425,11 +446,14 @@ class GreatExpectationsToolKit:
         result_format: Optional[str] = None,
         name: str = '',
         modo: str = '',
+        errores_motor: bool = False,
     ) -> DQResult:
         """Valida un batch definition con un checkpoint (con data docs) y arma el DQResult.
 
-        Si GX no pudo evaluar alguna expectativa (``exception_info``), lanza ``ErrorMotorCalidad`` en vez de
-        devolver un fallo de calidad: un problema del motor no es un problema de los datos.
+        Con ``errores_motor`` (rutas de Synapse: ``validate_table`` y ``validate_query``), si GX no pudo evaluar
+        alguna expectativa (``exception_info``) lanza ``ErrorMotorCalidad`` en vez de devolver un fallo de
+        calidad: un problema del motor no es un problema de los datos. Las validaciones sobre DataFrame
+        conservan su semántica anterior (la expectativa queda como fallida).
         """
         import great_expectations as gx
         from great_expectations.checkpoint import UpdateDataDocsAction
@@ -456,7 +480,7 @@ class GreatExpectationsToolKit:
         checkpoint = self.context.checkpoints.add_or_update(checkpoint)
         result = checkpoint.run(batch_parameters=batch_parameters)
 
-        mensajes = _raised_exceptions(result)
+        mensajes = _raised_exceptions(result) if errores_motor else []
         if mensajes:
             raise ErrorMotorCalidad(name or asset_name, modo or 'pandas', mensajes)
         success = bool(getattr(result, 'success', False))
@@ -520,7 +544,9 @@ def _particion_declarada(particion: Union[None, str, Dict[str, Any]]) -> Optiona
     ((columna, valor),) = particion.items()
     if not isinstance(columna, str) or not _IDENT_COLUMNA_RE.match(columna):
         raise ValueError(f"particion: nombre de columna no permitido: {columna!r}")
-    texto = str(valor)
+    if valor is None or isinstance(valor, bool):
+        raise ValueError(f"particion: {columna!r} necesita un valor (fecha o id), no {valor!r}")
+    texto = valor.isoformat() if isinstance(valor, (datetime.date, datetime.datetime)) else str(valor)
     if not _SAFE_VALUE_RE.match(texto):
         raise ValueError(f"particion: valor no permitido para {columna!r}: {texto!r}")
     return columna, texto

@@ -469,3 +469,32 @@ def test_validate_table_sql_raises_on_metric_exception(toolkit, vista_particiona
     with pytest.raises(ErrorMotorCalidad) as info:
         toolkit.validate_table(vista_particionada, 'v', 'main.ventas', exps, particion={'fecha': '2026-11-01'})
     assert info.value.modo == 'sql'
+
+
+@pytest.mark.parametrize('valor', [None, True, False])
+def test_validate_table_rejects_none_and_bool_partition_values(toolkit, vista_particionada, valor):
+    """None (parámetro ausente) y bool no son valores de partición: ValueError antes de tocar Synapse."""
+    with pytest.raises(ValueError, match='particion'):
+        toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': valor})
+    assert vista_particionada.kwargs_calls == 0
+
+
+def test_validate_table_accepts_date_partition_value(toolkit, vista_particionada):
+    """Un date se normaliza a ISO y filtra igual que la cadena."""
+    import datetime as dt
+
+    toolkit.validate_table(
+        vista_particionada, 'v', 'main.ventas', _exps_id(), particion={'fecha': dt.date(2026, 11, 1)}, modo='pandas'
+    )
+    assert vista_particionada.queries == ["SELECT * FROM main.ventas WHERE fecha = '2026-11-01'"]
+
+
+def test_validate_dataframe_missing_column_is_a_quality_failure(toolkit):
+    """Fuera de Synapse, validate(df) conserva su semántica: una columna ausente es fallo de calidad, no error de motor."""
+    import great_expectations as gx
+    import pandas as pd
+
+    df = pd.DataFrame({'id': [1, 2]})
+    out = toolkit.validate(df, 'df', [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')])
+    assert out.success is False
+    assert out.failed == ['expect_column_values_to_not_be_null']
