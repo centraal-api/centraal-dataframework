@@ -303,9 +303,7 @@ def test_run_checkpoint_raises_on_metric_exception(toolkit, sqlite_synapse, modo
     from centraal_dataframework import ErrorMotorCalidad
 
     if modo == 'sql':
-        pytest.skip(
-            'en sql validate_query rechaza columnas; el caso sql está en test_validate_table_sql_raises_on_metric_exception'
-        )
+        pytest.skip('en sql validate_query rechaza columnas; ver test_validate_table_sql_raises_on_metric_exception')
     exps = [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')]
     with pytest.raises(ErrorMotorCalidad) as info:
         toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, exps, params={'fecha': '2026-11-01'}, modo=modo)
@@ -442,7 +440,7 @@ def test_validate_table_rejects_unsafe_partition_value(toolkit, vista_particiona
 
 @pytest.mark.parametrize('particion', [{'a': 1, 'b': 2}, {}, 'otra', 5, {'no-valido': 1}])
 def test_validate_table_particion_shape(toolkit, vista_particionada, particion):
-    """particion es None, 'completa' o un dict de una sola entrada con nombre de columna válido."""
+    """La partición es None, 'completa' o un dict de una sola entrada con nombre de columna válido."""
     with pytest.raises(ValueError, match='particion'):
         toolkit.validate_table(vista_particionada, 'v', 'main.ventas', _exps_id(), particion=particion)
 

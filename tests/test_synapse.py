@@ -445,3 +445,23 @@ def test_tipo_objeto_inexistente(fake_odbc, client):
     """Sin fila, tipo_objeto devuelve None."""
     fake_odbc.outcomes.append({'cols': ['type'], 'rows': []})
     assert client.tipo_objeto('s.no') is None
+
+
+def test_sql_pool_warming_up_is_retried(fake_odbc, client, monkeypatch):
+    """42109 (pool serverless en frío) al conectar se reintenta como transitorio."""
+    real_connect = fake_odbc.connect
+    calls = []
+
+    def frio(*a, **k):
+        calls.append(1)
+        if len(calls) == 1:
+            raise FakeError(
+                'HY000', '[HY000] [Microsoft][ODBC Driver 18 for SQL Server][SQL Server]The SQL pool is warming up. '
+                'Please try again. (42109) (SQLDriverConnect)'
+            )
+        return real_connect(*a, **k)
+
+    monkeypatch.setattr(fake_odbc, 'connect', frio)
+    fake_odbc.outcomes.append({'cols': ['x'], 'rows': [(1,)]})
+    assert client.scalar('SELECT 1') == 1
+    assert [e for e in fake_odbc.executed if e[0] == 'sleep'] == [('sleep', 2)]
