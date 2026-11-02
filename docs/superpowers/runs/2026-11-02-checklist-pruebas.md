@@ -132,3 +132,39 @@ Resultado: **la hipótesis se confirma.**
   - Un table asset "whole table" no lleva el filtro de partición (`WHERE fecha = ...`). Para podar carpetas habría que usar un batch definition con partición de GX sobre la columna de fecha, o seguir validando por consulta cuando se necesite el filtro.
 
 Implicación para el brainstorming: agregar a la librería la validación por tabla o vista (caso principal) y decidir cómo tratar los cruces, por ejemplo publicándolos como vista con nombre; y revisar cómo aplicar el filtro de partición en el table asset.
+
+## Corrida 3, con `validate_table` (bloques 1 y 2)
+
+Código: rama `feature/version_020` tras el plan `docs/superpowers/plans/2026-11-02-validate-table-synapse.md`. Entorno: `.venv` con las versiones del `poetry.lock` (great-expectations 1.24.0, SQLAlchemy 2.0.55, pyodbc 5.3.0, driver ODBC 18).
+
+### Bloque 1
+
+- PASA — `make test`: isort y black sin cambios (44 archivos), flake8 limpio, pytest `250 passed, 1 skipped` incluidas las pruebas de Synapse (el skip es el caso sql de `validate_query` con columnas, cubierto por `validate_table`).
+- PASA — `pytest -m synapse -v -s`: `9 passed`.
+  - `test_select_1`, `test_parameters_supported_on_serverless`, `test_read_test_table`, `test_for_database`.
+  - `test_gx_query_sql_with_columns_is_rejected`: `ValueError` en sql, `success=True` en pandas.
+  - `test_validate_table_particion_sql_matches_pandas`: en sql pasan conteo, columna existe y sin nulos; la forzada (`expect_column_values_to_be_null`) falla; pandas da las mismas fallidas. SQL generado (saneado):
+
+    ```sql
+    SELECT count(*) AS [table.row_count] FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1
+    SELECT TOP 20 fecha AS unexpected_values FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1 WHERE fecha IS NULL
+    SELECT sum(CASE WHEN (fecha IS NULL) THEN ? ELSE ? END) ..., sum(CASE WHEN (fecha IS NOT NULL) THEN ? ELSE ? END) ...
+      FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1
+    ```
+
+    Sin `DISTINCT`, sin `TOP 1 1`, sin funciones sobre la columna ni `#`. MB procesados anotados: sql=60,0 (seis consultas, mínimo 10 MB cada una), pandas=25,0.
+  - `test_validate_table_completa_falla_por_trampa`: `ErrorMotorCalidad` con el error de Parquet de la carpeta dañada.
+  - `test_validate_table_sin_particion_se_niega` y `test_validate_table_columna_que_no_es_particion`: `ParticionInvalida`.
+- PASA — El reintento del 42109 (pool en frío) tiene prueba unitaria; en esta corrida no apareció el error.
+
+### Bloque 2
+
+- PASA — 01_datalake: mismos resultados que la corrida 2 (cliente, lectura y escritura, `resumir_ventas` → 2, `RecursoNoDeclarado`, conexión con nombre, runner, `borrada:`).
+- PASA — 02_great_expectations: §1 a §4 como en la corrida 2. §5: `validate_table` de la foto sana `sql -> success: True` y `pandas -> success: True`; el forzado `sql forzado -> success: False | fallidas: ['expect_column_values_to_be_null']`; sin partición imprime el `ParticionInvalida` que pide declararla o `'completa'`; el cruce en línea `cruce pandas -> success: True` y en sql imprime el `ValueError` que remite a `validate_table`.
+- PASA — 03_synapse: §1 a §5, §7 y §8 como en la corrida 2 (§4 saltado, sin esquema DDL). §6: `validate_table` con partición `sql: success=True` y `pandas: success=True` con los MB procesados, y `cruce pandas: success=True`.
+- PASA — Poda de particiones, con la trampa: la foto sana pasa en sql y `particion='completa'` falla con el error de Parquet (prueba de integración y spikes). Ningún `.ipynb` del repo lleva salidas.
+
+### Pendiente fuera de esta corrida
+
+- Bloques 3, 4 y 5 del checklist. En el bloque 4 queda por verificar con la identidad de la Function el `GRANT VIEW DEFINITION` (las pruebas locales corren con un admin de Entra).
+- Limpieza de la vista y las carpetas de la trampa, con los comandos entregados a Felipe.
