@@ -67,35 +67,130 @@ def test_for_database(client):
     assert client.for_database(other).scalar('SELECT DB_NAME()') == other
 
 
-def test_gx_native_sql_matches_pandas(client, caplog):
-    """Plan A: GX ejecuta la suite en serverless; da lo mismo que el plan B y se guarda el SQL generado.
-
-    Usa SYNAPSE_TEST_GX_QUERY (un SELECT con el filtro de partición) y SYNAPSE_TEST_GX_COLUMN (una columna
-    de esa consulta). Corre en la base de ``client`` (SYNAPSE_DATABASE).
-    """
-    import logging
-
-    query, column = _var('SYNAPSE_TEST_GX_QUERY'), _var('SYNAPSE_TEST_GX_COLUMN')
-    if not (query and column):
-        pytest.skip('SYNAPSE_TEST_GX_QUERY / SYNAPSE_TEST_GX_COLUMN no definidas')
-    gx = pytest.importorskip('great_expectations')
+def _toolkit():
+    """Toolkit GX efímero sin stores Azure."""
+    pytest.importorskip('great_expectations')
     pytest.importorskip('sqlalchemy')
     from centraal_dataframework.resources import GreatExpectationsToolKit, get_context
 
     settings = Settings(azure_storage_connection_string=None, storage_connection_setting='NO_EXISTE')
-    toolkit = GreatExpectationsToolKit(get_context(settings), 'integracion', settings)
+    return GreatExpectationsToolKit(get_context(settings), 'integracion', settings)
+
+
+def _sql_generado(caplog) -> str:
+    """SQL que GX mandó al motor durante el bloque capturado."""
+    return '\n'.join(r.getMessage() for r in caplog.records if r.name.startswith('sqlalchemy.engine'))
+
+
+@pytest.fixture
+def particion():
+    """Vista de prueba con la trampa (dos fotos sanas y una carpeta con un Parquet dañado), columna y foto sana."""
+    tabla = _var('SYNAPSE_TEST_PARTITION_TABLE')
+    columna = _var('SYNAPSE_TEST_PARTITION_COLUMN')
+    valor = _var('SYNAPSE_TEST_PARTITION_VALUE')
+    if not (tabla and columna and valor):
+        pytest.skip('SYNAPSE_TEST_PARTITION_TABLE / _COLUMN / _VALUE no definidas')
+    return tabla, columna, valor
+
+
+def test_gx_query_sql_with_columns_is_rejected(client):
+    """validate_query en sql no admite expectativas de columna; en pandas la misma suite sí corre.
+
+    GX no resuelve las columnas de una consulta suelta en SQL Server; el error remite a validate_table.
+    """
+    query, column = _var('SYNAPSE_TEST_GX_QUERY'), _var('SYNAPSE_TEST_GX_COLUMN')
+    if not (query and column):
+        pytest.skip('SYNAPSE_TEST_GX_QUERY / SYNAPSE_TEST_GX_COLUMN no definidas')
+    gx = pytest.importorskip('great_expectations')
+    toolkit = _toolkit()
     expectations = [
         gx.expectations.ExpectTableRowCountToBeBetween(min_value=0),
         gx.expectations.ExpectColumnToExist(column=column),
         gx.expectations.ExpectColumnValuesToNotBeNull(column=column, mostly=0.0),
     ]
+    with pytest.raises(ValueError, match='validate_table'):
+        toolkit.validate_query(client, 'gx_sql', query, expectations, modo='sql')
+    pandas = toolkit.validate_query(client, 'gx_pandas', query, expectations, modo='pandas')
+    assert pandas.success, pandas.failed
 
+
+def test_validate_table_particion_sql_matches_pandas(client, caplog, particion):
+    """La foto sana pasa en sql con expectativas de columna, la forzada falla, y pandas da lo mismo.
+
+    El SQL generado lleva el filtro ``WHERE <col> = ?`` sin funciones, sin DISTINCT previo, sin la sonda
+    ``TOP 1 1`` y sin tablas temporales: por eso no toca la carpeta con el Parquet dañado.
+    """
+    import logging
+
+    gx = pytest.importorskip('great_expectations')
+    tabla, columna, valor = particion
+    toolkit = _toolkit()
+    expectations = [
+        gx.expectations.ExpectTableRowCountToBeBetween(min_value=1),
+        gx.expectations.ExpectColumnToExist(column=columna),
+        gx.expectations.ExpectColumnValuesToNotBeNull(column=columna),
+        gx.expectations.ExpectColumnValuesToBeNull(column=columna),  # forzada: la partición nunca es nula
+    ]
     with caplog.at_level(logging.INFO, logger='sqlalchemy.engine'):
-        sql = toolkit.validate_query(client, 'gx_sql', query, expectations, modo='sql', medir_costo=True)
-    generated = [r.getMessage() for r in caplog.records if r.name.startswith('sqlalchemy.engine')]
-    pandas = toolkit.validate_query(client, 'gx_pandas', query, expectations, modo='pandas', medir_costo=True)
-
-    print('\n--- SQL generado por GX ---\n' + '\n'.join(generated))
+        sql = toolkit.validate_table(
+            client, 'tabla_sql', tabla, expectations, particion={columna: valor}, modo='sql', medir_costo=True
+        )
+    generado = _sql_generado(caplog)
+    pandas = toolkit.validate_table(
+        client, 'tabla_pandas', tabla, expectations, particion={columna: valor}, modo='pandas', medir_costo=True
+    )
+    print('\n--- SQL generado por GX ---\n' + generado)
     print(f"MB procesados: sql={sql.data_processed_mb} pandas={pandas.data_processed_mb}")
-    assert sql.success and pandas.success, (sql.failed, pandas.failed)
-    assert generated, 'GX no ejecutó SQL en el motor'
+
+    assert sql.failed == ['expect_column_values_to_be_null'], sql.failed
+    assert pandas.failed == sql.failed
+    texto = generado.lower()
+    assert f'where {columna.lower()} = ?' in texto
+    assert 'distinct' not in texto
+    assert 'top 1 1' not in texto
+    assert ' #' not in texto and 'into #' not in texto
+    assert not any(f'{f}({columna.lower()})' in texto for f in ('year', 'month', 'day', 'datepart'))
+
+
+def test_validate_table_completa_falla_por_trampa(client, particion):
+    """particion='completa' recorre la carpeta dañada y termina en ErrorMotorCalidad, no en fallo de calidad.
+
+    Demuestra que la trampa funciona: la validación por partición no la tocó.
+    """
+    gx = pytest.importorskip('great_expectations')
+    from centraal_dataframework import ErrorMotorCalidad
+
+    tabla, _columna, _valor = particion
+    with pytest.raises(ErrorMotorCalidad) as info:
+        _toolkit().validate_table(
+            client,
+            'completa',
+            tabla,
+            [gx.expectations.ExpectTableRowCountToBeBetween(min_value=1)],
+            particion='completa',
+            modo='sql',
+        )
+    assert 'parquet' in str(info.value).lower()
+
+
+def test_validate_table_sin_particion_se_niega(client, particion):
+    """Una vista particionada sin particion declarada no se valida entera por descuido."""
+    gx = pytest.importorskip('great_expectations')
+    from centraal_dataframework import ParticionInvalida
+
+    tabla, _columna, _valor = particion
+    with pytest.raises(ParticionInvalida, match='completa'):
+        _toolkit().validate_table(client, 'sin', tabla, [gx.expectations.ExpectTableRowCountToBeBetween(min_value=1)])
+
+
+def test_validate_table_columna_que_no_es_particion(client, particion):
+    """Declarar como partición una columna de datos se rechaza contra la definición de la vista."""
+    gx = pytest.importorskip('great_expectations')
+    from centraal_dataframework import ParticionInvalida
+
+    tabla, columna, _valor = particion
+    otra = next(c for c in client.read_df(f'SELECT TOP 0 * FROM {tabla}').columns if c.lower() != columna.lower())
+    with pytest.raises(ParticionInvalida, match='filepath'):
+        _toolkit().validate_table(
+            client, 'otra', tabla, [gx.expectations.ExpectTableRowCountToBeBetween(min_value=1)], particion={otra: 1}
+        )
