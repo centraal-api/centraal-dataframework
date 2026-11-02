@@ -4,9 +4,6 @@ from __future__ import annotations
 
 import json
 from types import SimpleNamespace
-from unittest.mock import MagicMock
-
-import azure.functions as func
 
 from centraal_dataframework.blueprints import execute_tasks_inqueue, queue_task
 from centraal_dataframework.excepciones import ErrorEnTarea
@@ -16,9 +13,11 @@ class FakeHttpRequest:
     """HttpRequest mínimo."""
 
     def __init__(self, body):
+        """Guarda el cuerpo (o la excepción a lanzar)."""
         self._body = body
 
     def get_json(self):
+        """Devuelve el cuerpo o lanza la excepción."""
         if isinstance(self._body, Exception):
             raise self._body
         return self._body
@@ -28,9 +27,11 @@ class FakeOut:
     """func.Out mínimo."""
 
     def __init__(self):
+        """Sin valor."""
         self.value = None
 
     def set(self, value):
+        """Guarda el valor."""
         self.value = value
 
 
@@ -147,3 +148,105 @@ def test_dependent_dq_failure_does_not_retry_parent(runner, monkeypatch):
 
     msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
     execute_tasks_inqueue(msg)  # type: ignore[arg-type]
+
+
+def _uses(*names):
+    """Tarea mínima que declara recursos."""
+
+    def fn(**kwargs):
+        return None
+
+    fn.uses = names
+    return fn
+
+
+def test_diag_ok_reports_version_python_and_drivers(runner, monkeypatch):
+    """diag: 200 con versión, Python y drivers ODBC cuando no hay problemas."""
+    import sys
+
+    from centraal_dataframework import __version__
+    from centraal_dataframework.blueprints import diagnostico
+
+    monkeypatch.setitem(sys.modules, 'pyodbc', SimpleNamespace(drivers=lambda: ['ODBC Driver 18 for SQL Server']))
+    runner.add_task(_uses(), 'alpha')
+    resp = diagnostico(SimpleNamespace())  # type: ignore[arg-type]
+    body = json.loads(resp.get_body())
+    assert resp.status_code == 200
+    assert body['version'] == __version__
+    assert body['python'] == '.'.join(map(str, sys.version_info[:3]))
+    assert body['odbc_drivers'] == ['ODBC Driver 18 for SQL Server']
+    assert body['problemas'] == {}
+
+
+def test_diag_503_when_a_task_resource_is_misconfigured(runner, monkeypatch):
+    """diag: 503 si la imagen perdió el driver; sirve para una alerta de disponibilidad."""
+    import sys
+
+    from centraal_dataframework.blueprints import diagnostico
+
+    monkeypatch.setenv('SYNAPSE_WORKSPACE', 'ws')
+    monkeypatch.setitem(sys.modules, 'pyodbc', SimpleNamespace(drivers=lambda: []))
+    runner.add_task(_uses('synapse'), 'carga')
+    resp = diagnostico(SimpleNamespace())  # type: ignore[arg-type]
+    body = json.loads(resp.get_body())
+    assert resp.status_code == 503
+    assert any('no está instalado' in p for p in body['problemas']['carga'])
+
+
+def test_diag_without_pyodbc(runner, monkeypatch):
+    """diag: sin pyodbc instalado, odbc_drivers es null."""
+    import sys
+
+    from centraal_dataframework.blueprints import diagnostico
+
+    monkeypatch.setitem(sys.modules, 'pyodbc', None)
+    resp = diagnostico(SimpleNamespace())  # type: ignore[arg-type]
+    assert json.loads(resp.get_body())['odbc_drivers'] is None
+
+
+def test_monitor_capacidad_logs_metrics_and_warns(monkeypatch, caplog):
+    """El timer de capacidad deja la medición en el log y avisa con CAPACIDAD si hace falta escalar."""
+    import logging
+
+    from centraal_dataframework import blueprints, capacidad
+
+    m = capacidad.Medicion(mensajes_en_cola=9, espera_max_min=90.0, memoria_pico_mb=100.0, memoria_limite_mb=3500.0)
+    monkeypatch.setattr(capacidad, 'medir', lambda *a, **k: m)
+    with caplog.at_level(logging.INFO, logger='centraal_dataframework.blueprints'):
+        blueprints.monitor_capacidad(SimpleNamespace(past_due=False))  # type: ignore[arg-type]
+    info = [r for r in caplog.records if r.levelno == logging.INFO and r.getMessage().startswith('capacidad ')]
+    assert json.loads(info[0].getMessage()[len('capacidad ') :])['mensajes_en_cola'] == 9
+    warnings = [r.getMessage() for r in caplog.records if r.levelno == logging.WARNING]
+    assert any(w.startswith('CAPACIDAD:') and 'instancia' in w for w in warnings)
+
+
+def test_monitor_capacidad_quiet_when_one_instance_is_enough(monkeypatch, caplog):
+    """Sin presión no hay avisos."""
+    import logging
+
+    from centraal_dataframework import blueprints, capacidad
+
+    m = capacidad.Medicion(mensajes_en_cola=0, espera_max_min=0.0, memoria_pico_mb=100.0, memoria_limite_mb=3500.0)
+    monkeypatch.setattr(capacidad, 'medir', lambda *a, **k: m)
+    with caplog.at_level(logging.INFO, logger='centraal_dataframework.blueprints'):
+        blueprints.monitor_capacidad(SimpleNamespace(past_due=False))  # type: ignore[arg-type]
+    assert not [r for r in caplog.records if r.levelno >= logging.WARNING]
+
+
+def test_execute_logs_queue_wait(runner, caplog):
+    """Cada ejecución registra cuánto esperó en la cola: es la señal de una instancia saturada."""
+    import logging
+    from datetime import datetime, timedelta, timezone
+
+    runner.add_task(lambda **k: None, 'beta')  # sin dependientes en la config de ejemplo
+    msg = SimpleNamespace(
+        get_body=lambda: b'{"task": "beta"}',
+        dequeue_count=1,
+        insertion_time=datetime.now(timezone.utc) - timedelta(minutes=7),
+    )
+    with caplog.at_level(logging.INFO, logger='centraal_dataframework.blueprints'):
+        execute_tasks_inqueue(msg)  # type: ignore[arg-type]
+    lines = [r.getMessage() for r in caplog.records if r.getMessage().startswith('tarea_capacidad ')]
+    data = json.loads(lines[0][len('tarea_capacidad ') :])
+    assert data['tarea'] == 'beta'
+    assert 6.9 < data['espera_cola_min'] < 7.5

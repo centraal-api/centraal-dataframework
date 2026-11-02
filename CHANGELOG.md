@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Calidad de datos en Synapse sin traer los datos a la Function: `ctx.gx.validate_query(synapse, name, query, expectations, params=..., modo='sql')`. GX traduce cada expectativa a SQL y serverless devuelve solo agregados (plan A). Con `modo='pandas'` la misma suite valida la consulta traída con `read_df` (plan B). Acepta `suite_name`, usa `result_format='SUMMARY'` por defecto y, con `medir_costo=True`, deja `data_processed_mb` en el `DQResult`.
+- `SynapseClient.sqlalchemy_url()`, `sqlalchemy_kwargs()` (token de Entra en `attrs_before`) y `data_processed_mb()`.
+- Variable `SYNAPSE_ODBC_DRIVER` (por defecto `ODBC Driver 18 for SQL Server`). `check-resources` y el runner avisan si el driver configurado no está instalado.
+- El extra `[synapse]` instala `sqlalchemy>=2.0`.
+- Guía `docs/PRUEBA_EN_FUNCTION.md`: probar una versión sin publicar en una Azure Function.
+- Endpoint `GET /api/diag`: versión, Python, drivers ODBC y problemas de configuración por tarea. Responde 503 si hay problemas, para usarlo en una prueba de disponibilidad.
+
+- Monitor de capacidad: timer `monitor_capacidad` cada 30 min que mide la cola de tareas (mensajes y espera del más viejo) y la memoria pico del worker frente a la de la instancia. Deja la traza `capacidad` y, sobre los umbrales `CAPACIDAD_COLA_MAX`, `CAPACIDAD_ESPERA_MAX_MIN` y `CAPACIDAD_MEMORIA_PCT`, advertencias `CAPACIDAD:` que recomiendan otra instancia o una más grande. Cada ejecución de la cola deja `tarea_capacidad` con su espera y la memoria pico. Guía en `docs/CAPACIDAD.md`.
+- Dependencia `azure-storage-queue` (para medir la cola).
+- `docs/02_great_expectations.ipynb` muestra la misma suite sobre un DataFrame en memoria, un archivo del datalake y Synapse, en `modo='sql'` y `modo='pandas'`. Checklist de pruebas en `docs/CHECKLIST_PRUEBAS.md`.
+
+### Changed
+
+- La plantilla de `init` despliega en plan Premium (Elastic Premium, Linux) con Python 3.11/3.12, identidad administrada, build remoto y variables `SYNAPSE_*`. Usa una instancia siempre encendida, sin escalado elástico ni pre-calentada (`instancias=1`, que es mínimo y máximo a la vez). En `host.json`: `functionTimeout` de 1 h y la cola de a un mensaje por instancia (`batchSize=1`, `newBatchThreshold=0`). Antes la plantilla usaba Consumption (Y1).
+
 ## [0.2.0] - 2026-10-06
 
 ### Breaking
@@ -32,7 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Registro de plataformas (`register_resource`): `datalake`, `synapse` y `gx` se registran con la misma API pública que un proyecto cliente usa para agregar las suyas. Conexiones con nombre (`'synapse:gold'`, `ctx.resource('synapse', 'gold')`) configuradas con variables con sufijo `__<NOMBRE>`: los datos de conexión (cuenta, workspace, base, credenciales) no se heredan de la conexión por defecto; el resto (timeouts, contenedores, SAS) sí.
 - Silencio temporal de alarmas de calidad (`silenciar_dq` con `hasta` y `motivo` en el YAML): no lanza ni notifica, deja log y deja correr las dependientes; vence solo y `validate-config` avisa los vencidos o por vencer.
 - Verificación de configuración sin conectarse: el runner no ejecuta una tarea con recursos sin configurar (`RecursoNoConfigurado`) y el comando `check-resources` revisa todas las tareas.
-- Prueba de integración con Synapse: notebook `docs/synapse_integracion.ipynb`, `pytest -m synapse` y `docs/synapse.env.example`.
+- Prueba de integración con Synapse: `pytest -m synapse` y `docs/synapse.env.example`.
+- Notebooks de uso por plataforma: `docs/01_datalake.ipynb`, `docs/02_great_expectations.ipynb` y `docs/03_synapse.ipynb` (reemplazan `usage_example.ipynb` y `synapse_integracion.ipynb`).
 
 ### Fixed
 
@@ -40,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Logs duplicados en handlers reutilizados.
 - Correos de DQ filtraban mal las expectativas fallidas.
 - Endpoint HTTP aceptaba listas vacías y no validaba tareas.
+- `ctx.gx.validate` fallaba al reutilizar la misma lista de expectativas en otra validación (GX 1.x liga cada expectativa a su suite).
 
 ### Security
 

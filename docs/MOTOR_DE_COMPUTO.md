@@ -1,7 +1,8 @@
 # Escalar el cómputo sin escalar la Azure Function
 
 Recomendaciones vigentes para centraal-dataframework 0.2: qué motor usar en cada caso y por qué.
-Ejemplos de código: [usage_example.ipynb](usage_example.ipynb).
+Ejemplos de código: [01_datalake.ipynb](01_datalake.ipynb), [02_great_expectations.ipynb](02_great_expectations.ipynb)
+y [03_synapse.ipynb](03_synapse.ipynb).
 
 ## La idea en una frase
 
@@ -16,14 +17,15 @@ La Function es el lugar más caro y más limitado para procesar volumen:
 | Límite | Valor | Consecuencia |
 |---|---|---|
 | Memoria por instancia | 1,5 GB en Consumption; 2 o 4 GB en Flex Consumption | Un CSV de pocos cientos de MB en pandas ya puede agotarla (pandas usa entre 5 y 10 veces el tamaño del archivo) |
-| Duración máxima | 10 min en Consumption (5 por defecto) | Un proceso largo se corta a mitad de camino |
+| Duración máxima | 10 min en Consumption (5 por defecto); 60 min garantizados en Premium | Un proceso largo se corta a mitad de camino |
 | Cobro | Memoria × tiempo, **incluido el tiempo que espera respuestas** | Traer datos a la Function cuesta transferencia, memoria y tiempo |
 
 Cuando la Function procesa datos, crecer obliga a subir de plan (Premium o Dedicated), agrandar las
 instancias o partir las tareas. Cuando procesa el motor, la Function sigue pequeña aunque el volumen crezca.
 
 > ⚠️ `SYNAPSE_QUERY_TIMEOUT` vale 1800 s (30 min) por defecto, más que el máximo de Consumption (10 min).
-> En ese plan, baje el timeout por debajo del `functionTimeout` o use Flex Consumption o Premium.
+> El plan recomendado es Premium. La plantilla de `init` usa `functionTimeout` de 1 h. En Consumption,
+> baje el timeout por debajo del `functionTimeout`.
 
 ## Por qué Synapse serverless es el motor
 
@@ -53,14 +55,14 @@ pandas se mantiene porque es el formato de intercambio de todo el stack actual:
 
 - `ctx.synapse.read_df` devuelve pandas.
 - `ctx.datalake` (`azure-datalake-utils`) lee a pandas.
-- Great Expectations 1.x, como lo usa `ctx.gx`, valida DataFrames de pandas.
+- `ctx.gx.validate` valida DataFrames de pandas (y es el plan B de la calidad sobre Synapse; ver abajo).
 
 Su lugar es **después** del motor, con datos ya reducidos:
 
 | Uso aconsejado | Ejemplo |
 |---|---|
 | Dar forma a un resultado de Synapse | Pivotear un resumen para un correo o un Excel |
-| Validar métricas con GX | Synapse calcula nulos, duplicados y conteos en 1 fila; GX valida esa fila |
+| Validar con GX lo que no corre en el motor | Plan B de `ctx.gx.validate_query`: una partición pequeña a pandas |
 | Archivos pequeños de negocio | Catálogo u homologación en Excel. Si se cruza con tablas grandes, se sube al lago y Synapse hace el cruce |
 | Datos que llegan de fuera | Respuesta de una API → Parquet en el lago → Synapse los procesa |
 | Lógica que SQL no expresa | Llamar una API por registro o usar una librería de Python, sobre un subconjunto que selecciona Synapse |
@@ -70,6 +72,63 @@ leer un archivo grande con `ctx.datalake` para transformarlo, ni usar `.head()` 
 
 **Señal de alerta:** un resultado de más de ~100 000 filas o ~100 MB en memoria. No es un límite técnico;
 indica que la Function está haciendo trabajo del motor.
+
+## Calidad de datos sobre Synapse: GX en el motor
+
+**Plan A (por defecto):** `ctx.gx.validate_query(..., modo='sql')`. GX traduce cada expectativa a SQL,
+serverless la ejecuta y a la Function solo vuelven agregados. **Plan B:** `modo='pandas'`, que trae la
+consulta con `read_df` y valida en la Function. La suite es la misma en los dos modos; se cambia de
+plan por dataset, sin tocar las expectativas.
+
+```python
+@task(uses=['gx', 'synapse'])
+def calidad_partner(ctx):
+    return ctx.gx.validate_query(
+        ctx.synapse_for('bronze'),
+        name='res_partner',
+        query="SELECT id, vat, active FROM atera.odoo_res_partner WHERE fecha = '{{fecha}}'",
+        params={'fecha': ctx.params['fecha']},
+        expectations=[...],
+        medir_costo=True,          # deja data_processed_mb en el DQResult y en el log
+    )
+```
+
+Para que el plan A sea barato:
+
+1. **Vistas bien tipadas.** `OPENROWSET ... WITH (...)` con tipos explícitos, en vez de dejar que
+   serverless infiera `varchar(8000)`. Collation `Latin1_General_100_BIN2_UTF8` en los textos de
+   Parquet, para que los filtros por string se empujen al archivo. La columna de partición expuesta
+   con `filepath()`.
+2. **La partición se filtra en la query**, con un literal sobre la columna de partición
+   (`WHERE fecha = '{{fecha}}'`). No use `add_batch_definition_monthly`: GX envuelve la columna en
+   funciones de fecha y serverless puede dejar de podar carpetas. Seleccione solo las columnas que
+   valida: con `SELECT *` paga por leerlas todas.
+3. **Suite pensada para serverless.** `result_format='SUMMARY'` (por defecto) o `'BASIC'`; `'COMPLETE'`
+   lanza consultas extra para traer filas inesperadas y vuelve a escanear. Nulos, rangos, conteos y
+   sets son baratos. Unicidad o distintos sobre columnas de alta cardinalidad son caros: córralos con
+   menos frecuencia. En desarrollo corra la suite completa una vez con `pytest -m synapse` y revise el
+   SQL que genera GX, para detectar lo que serverless no acepte antes de producción.
+4. **Costo y operación (en el workspace, fuera de la librería).** `sp_set_data_processed_limit` como
+   tope diario, semanal o mensual. `CREATE STATISTICS` sobre las columnas que más se filtran.
+   Managed identity en la Function (`SYNAPSE_AUTH=identity`, el valor por defecto), sin secretos de
+   service principal.
+
+**Cuándo pasar un dataset al plan B:** si `data_processed_mb` por corrida es alto, o si una
+expectativa no corre en serverless. Entonces se extrae esa partición una vez a pandas
+(`modo='pandas'`) y se valida ahí, con la misma suite. `data_processed_mb` sale del contador diario
+`sys.dm_external_data_processed`, que es de todo el workspace: con consultas en paralelo es
+aproximado. Para el detalle por consulta, use `sys.dm_exec_requests_history`.
+
+**Driver ODBC.** El plan A usa el mismo driver que `ctx.synapse` (`SYNAPSE_ODBC_DRIVER`, por defecto
+`ODBC Driver 18 for SQL Server`).
+- **Plan:** use Premium con Python 3.11 o 3.12; la imagen de Functions trae el 18 desde 3.11.
+- **Antes de la primera tarea:** `GET /api/diag` y `check-resources` fallan si el driver configurado no
+  está instalado.
+- **Si la imagen solo trae el 17:** configure `SYNAPSE_ODBC_DRIVER=ODBC Driver 17 for SQL Server`.
+
+En septiembre de 2023 la imagen de Python 3.11 salió una vez sin driver
+([issue](https://github.com/Azure/azure-functions-python-worker/issues/1317)). Por eso conviene una
+prueba de disponibilidad sobre `/api/diag`.
 
 ## Por qué no polars (por ahora)
 

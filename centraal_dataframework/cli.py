@@ -7,8 +7,8 @@ import importlib
 import json
 import sys
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from centraal_dataframework.config import load_framework_config, silence_warnings
 from centraal_dataframework.runner import Runner, reset_runner, set_runner

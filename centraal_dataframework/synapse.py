@@ -10,6 +10,7 @@ import time
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
+from urllib.parse import quote_plus
 
 from centraal_dataframework.excepciones import SynapseNoConfigurado
 from centraal_dataframework.settings import Settings, get_settings
@@ -35,9 +36,7 @@ def _import_pyodbc():
     try:
         import pyodbc
     except ImportError as exc:
-        raise SynapseNoConfigurado(
-            "Falta pyodbc: instale centraal-dataframework[synapse] y el 'ODBC Driver 18 for SQL Server'."
-        ) from exc
+        raise SynapseNoConfigurado(f"Falta pyodbc: instale centraal-dataframework[synapse] y el '{DRIVER}'.") from exc
     return pyodbc
 
 
@@ -112,6 +111,7 @@ class SynapseClient:
     query_timeout: int = 1800
     login_timeout: int = 30
     max_attempts: int = 3
+    odbc_driver: str = DRIVER
     credential: Any = field(default=None, repr=False)
 
     @classmethod
@@ -133,6 +133,7 @@ class SynapseClient:
             user=settings.synapse_user,
             password=password,
             query_timeout=settings.synapse_query_timeout,
+            odbc_driver=settings.synapse_odbc_driver,
         )
 
     def for_database(self, database: str) -> 'SynapseClient':
@@ -142,7 +143,7 @@ class SynapseClient:
     def connection_string(self) -> str:
         """Connection string ODBC (sin token)."""
         parts = [
-            f'Driver={{{DRIVER}}}',
+            f'Driver={{{self.odbc_driver}}}',
             f'Server=tcp:{self.server},1433',
             'Encrypt=yes',
             'TrustServerCertificate=no',
@@ -153,6 +154,19 @@ class SynapseClient:
         if self.auth == 'sql':
             parts += [f'Uid={_odbc_value(self.user or "")}', f'Pwd={_odbc_value(self.password or "")}']
         return ';'.join(parts) + ';'
+
+    def sqlalchemy_url(self) -> str:
+        """URL de SQLAlchemy (``mssql+pyodbc``) con el mismo connection string ODBC (sin token)."""
+        return 'mssql+pyodbc:///?odbc_connect=' + quote_plus(self.connection_string())
+
+    def sqlalchemy_kwargs(self) -> Dict[str, Any]:
+        """Argumentos de ``create_engine``: con identidad, el token de Entra en ``attrs_before``.
+
+        El token se pide al llamar (dura ~1 h): sirve para un engine efímero por ejecución.
+        """
+        if self.auth != 'identity':
+            return {}
+        return {'connect_args': {'attrs_before': {SQL_COPT_SS_ACCESS_TOKEN: _token_struct(self._get_token())}}}
 
     def _get_token(self) -> str:
         """Token de Entra; la credencial se crea una vez y cachea/renueva."""
@@ -209,6 +223,11 @@ class SynapseClient:
     def execute(self, sql: str, *params: Any) -> int:
         """Ejecuta DDL/DML/CETAS y devuelve rowcount (-1 si no aplica)."""
         return self._run(sql, params, lambda cursor: cursor.rowcount)
+
+    def data_processed_mb(self) -> float:
+        """MB procesados hoy por el pool serverless (contador de todo el workspace, aproximado)."""
+        value = self.scalar("SELECT data_processed_mb FROM sys.dm_external_data_processed WHERE type = 'daily'")
+        return float(value or 0)
 
     def execute_file(self, path: Union[str, os.PathLike], **params: Any) -> int:
         """Renderiza un .sql y ejecuta cada lote separado por GO."""

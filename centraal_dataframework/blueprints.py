@@ -10,6 +10,7 @@ from typing import List, Union
 
 import azure.functions as func
 
+from centraal_dataframework import capacidad
 from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaNoDefinida
 from centraal_dataframework.runner import get_runner
 from centraal_dataframework.settings import get_settings
@@ -141,6 +142,46 @@ def task_status(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse(json.dumps(rows, default=str), status_code=200, mimetype='application/json')
 
 
+@framework.schedule(schedule="0 */30 * * * *", arg_name="mytimer", run_on_startup=False)
+def monitor_capacidad(mytimer: func.TimerRequest) -> None:
+    """Cada 30 min: ¿alcanza una instancia con tareas en serie? Deja la medición y avisa con CAPACIDAD.
+
+    Es un timer y no una tarea de la cola: así mide aunque la cola esté ocupada con una tarea larga.
+    Alerta sugerida en Application Insights: trazas que empiecen con ``CAPACIDAD:``.
+    """
+    medicion = capacidad.medir(get_settings(), QUEUE_NAME, CONNECTION)
+    logger.info("capacidad %s", json.dumps(medicion.as_dict()))
+    for recomendacion in capacidad.evaluar(medicion, get_settings()):
+        logger.warning("CAPACIDAD: %s", recomendacion)
+
+
+@framework.route(methods=['get'], route="diag", auth_level=func.AuthLevel.FUNCTION)
+def diagnostico(req: func.HttpRequest) -> func.HttpResponse:
+    """Versión, Python, drivers ODBC y problemas de configuración de las tareas (sin conectarse).
+
+    Responde 503 si alguna tarea tiene un recurso sin configurar o sin driver: apunte aquí una prueba
+    de disponibilidad para enterarse si una actualización de la imagen de Functions quita el driver.
+    """
+    import platform
+
+    from centraal_dataframework import __version__
+
+    try:
+        import pyodbc
+
+        drivers = list(pyodbc.drivers())
+    except ImportError:
+        drivers = None
+    problemas = get_runner().check_resources()
+    body = {
+        'version': __version__,
+        'python': platform.python_version(),
+        'odbc_drivers': drivers,
+        'problemas': problemas,
+    }
+    return func.HttpResponse(json.dumps(body), status_code=503 if problemas else 200, mimetype='application/json')
+
+
 @framework.queue_trigger(arg_name="msg", queue_name=QUEUE_NAME, connection=CONNECTION)
 def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
     """Ejecuta tareas de acuerdo al queue."""
@@ -159,6 +200,26 @@ def execute_tasks_inqueue(msg: func.QueueMessage) -> None:
         logger.error("Tarea no definida: %s — no se reintentará", task_name)
         return
 
+    espera = capacidad.espera_de_mensaje(msg)
+    try:
+        _run_queued_task(runner, settings, msg, task_name, params, run_id)
+    finally:
+        # Espera en cola y memoria pico del worker por ejecución: las señales para decidir si escalar.
+        logger.info(
+            "tarea_capacidad %s",
+            json.dumps(
+                {
+                    'tarea': task_name,
+                    'run_id': run_id,
+                    'espera_cola_min': None if espera is None else round(espera, 2),
+                    'memoria_pico_mb': capacidad.memoria_pico_mb(),
+                }
+            ),
+        )
+
+
+def _run_queued_task(runner, settings, msg, task_name: str, params: dict, run_id: str) -> None:
+    """Ejecuta la tarea del mensaje y sus dependientes (en serie, en la misma ejecución)."""
     dequeue_count = getattr(msg, 'dequeue_count', 1) or 1
     max_retries = settings.max_retries
     is_last_attempt = dequeue_count >= max_retries

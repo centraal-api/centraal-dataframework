@@ -16,8 +16,13 @@ app = func.FunctionApp()
 app.register_functions(framework)
 '''
 
+# functionTimeout: 1 h, el máximo garantizado en Premium; queda por encima de SYNAPSE_QUERY_TIMEOUT (30 min).
+# En Consumption el máximo es 10 min: este host.json es para el plan Premium de infra/main.bicep.
+# Cola en serie: batchSize=1 y newBatchThreshold=0 => un mensaje (una tarea) a la vez por instancia.
+# Con N instancias corren N tareas independientes a la vez (ver docs/CAPACIDAD.md).
 HOST_JSON = '''{
   "version": "2.0",
+  "functionTimeout": "01:00:00",
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
@@ -27,6 +32,8 @@ HOST_JSON = '''{
   },
   "extensions": {
     "queues": {
+      "batchSize": 1,
+      "newBatchThreshold": 0,
       "maxDequeueCount": 5,
       "visibilityTimeout": "00:01:00"
     }
@@ -84,6 +91,8 @@ def hello_gx(ctx: TaskContext):
 '''
 
 REQUIREMENTS = '''centraal-dataframework>=0.2.0
+# Con tareas de Synapse (uses=['synapse']), use el extra en lugar de la línea anterior:
+# centraal-dataframework[synapse]>=0.2.0
 azure-functions>=1.17
 '''
 
@@ -91,43 +100,97 @@ _STORAGE_CONN = (
     "DefaultEndpointsProtocol=https;AccountName=${storage.name};"
     "AccountKey=${storage.listKeys().keys[0].value};EndpointSuffix=core.windows.net"
 )
-BICEP = f'''param location string = resourceGroup().location
+BICEP = f'''// Function App en plan Premium (Elastic Premium, Linux) con despliegue de código.
+// Por qué Premium: la imagen de Functions trae el ODBC Driver 18 para Python >= 3.11, sin contenedor
+// propio, y el plan no tiene el límite de 10 min de Consumption. Flex Consumption no deja instalar
+// paquetes del sistema si el driver faltara. Verifique después de cada despliegue: GET /api/diag.
+param location string = resourceGroup().location
 param appName string
 param storageName string
+
+@description('3.11 o 3.12: desde 3.11 la imagen trae ODBC Driver 18 (3.10 trae el 17).')
+@allowed([ '3.11', '3.12' ])
+param pythonVersion string = '3.12'
+
+@description('Tamaño de instancia del plan Premium.')
+@allowed([ 'EP1', 'EP2', 'EP3' ])
+param sku string = 'EP1'
+
+// Una instancia siempre encendida, sin escalado elástico ni pre-calentada: las tareas corren en serie
+// (host.json: un mensaje a la vez) y la memoria de la instancia es para una sola tarea. Se sube solo si
+// el monitor de capacidad lo pide (trazas CAPACIDAD:): N instancias = N tareas independientes a la vez.
+// Ver docs/CAPACIDAD.md.
+@description('Instancias siempre encendidas; también es el máximo (sin escalado elástico).')
+@minValue(1)
+param instancias int = 1
+
+@description('Workspace de Synapse (vacío si las tareas no usan Synapse).')
+param synapseWorkspace string = ''
 
 resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {{
   name: storageName
   location: location
   sku: {{ name: 'Standard_LRS' }}
   kind: 'StorageV2'
+  properties: {{
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+  }}
 }}
 
-// Y1 + Linux = Consumption. En ese plan Python 3.12 es la ultima version.
-// Para 3.13 o 3.14 usar Flex Consumption, Premium o Dedicated.
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-01-01' = {{
+resource plan 'Microsoft.Web/serverfarms@2023-01-01' = {{
   name: '${{appName}}-plan'
   location: location
-  sku: {{ name: 'Y1', tier: 'Dynamic' }}
-  properties: {{ reserved: true }}
+  kind: 'elastic'
+  sku: {{ name: sku, tier: 'ElasticPremium' }}
+  properties: {{
+    reserved: true
+    maximumElasticWorkerCount: instancias
+  }}
 }}
+
+var storageConnection = '{_STORAGE_CONN}'
 
 resource functionApp 'Microsoft.Web/sites@2023-01-01' = {{
   name: appName
   location: location
   kind: 'functionapp,linux'
+  // Identidad administrada: con ella la Function entra a Synapse y al lago sin secretos.
+  identity: {{ type: 'SystemAssigned' }}
   properties: {{
-    serverFarmId: appServicePlan.id
+    serverFarmId: plan.id
+    httpsOnly: true
     siteConfig: {{
-      linuxFxVersion: 'Python|3.12'
+      linuxFxVersion: 'Python|${{pythonVersion}}'
+      // Mínimo = máximo: nunca escala, y no hay pre-calentada porque no se crean por encima del máximo.
+      minimumElasticInstanceCount: instancias
+      functionAppScaleLimit: instancias
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
       appSettings: [
-        {{ name: 'AzureWebJobsStorage', value: '{_STORAGE_CONN}' }}
+        {{ name: 'AzureWebJobsStorage', value: storageConnection }}
+        {{ name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: storageConnection }}
+        {{ name: 'WEBSITE_CONTENTSHARE', value: toLower(appName) }}
+        {{ name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }}
         {{ name: 'FUNCTIONS_WORKER_RUNTIME', value: 'python' }}
+        // Build remoto: instala requirements.txt (incluida una wheel en wheels/) en la imagen Linux.
+        {{ name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }}
         {{ name: 'QUEUE_NAME', value: 'tareas' }}
         {{ name: 'LOGICAPP_EMAIL_URL', value: '' }}
+        {{ name: 'SYNAPSE_WORKSPACE', value: synapseWorkspace }}
+        {{ name: 'SYNAPSE_AUTH', value: 'identity' }}
+        {{ name: 'SYNAPSE_ODBC_DRIVER', value: 'ODBC Driver 18 for SQL Server' }}
+        {{ name: 'SYNAPSE_QUERY_TIMEOUT', value: '1800' }}
       ]
     }}
   }}
 }}
+
+// En cada base de Synapse que lean las tareas (lo ejecuta un admin de Entra del workspace):
+//   CREATE USER [<appName>] FROM EXTERNAL PROVIDER;
+//   ALTER ROLE db_datareader ADD MEMBER [<appName>];
+output principalId string = functionApp.identity.principalId
+output functionAppName string = functionApp.name
 '''
 
 FILES = {

@@ -149,3 +149,28 @@ def test_gx_check_reports_missing_package(monkeypatch):
     real = importlib.util.find_spec
     monkeypatch.setattr(importlib.util, 'find_spec', lambda n, *a: None if n == 'great_expectations' else real(n, *a))
     assert check_uses(['gx']) == ['gx: Falta great_expectations: instale great-expectations>=1.3.']
+
+
+def _fake_pyodbc(monkeypatch, drivers):
+    """Instala un pyodbc falso que lista los drivers dados."""
+    import sys
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(sys.modules, 'pyodbc', SimpleNamespace(drivers=lambda: list(drivers)))
+
+
+def test_synapse_check_reports_missing_odbc_driver(monkeypatch):
+    """Si el driver configurado no está instalado (p. ej. en la Function), el check lo dice."""
+    _fake_pyodbc(monkeypatch, ['ODBC Driver 17 for SQL Server'])
+    problems = registry._synapse_check(Settings(synapse_workspace='ws'))
+    assert len(problems) == 1
+    assert "'ODBC Driver 18 for SQL Server' no está instalado" in problems[0]
+    assert 'ODBC Driver 17 for SQL Server' in problems[0]
+    assert 'SYNAPSE_ODBC_DRIVER' in problems[0]
+
+
+def test_synapse_check_accepts_configured_driver(monkeypatch):
+    """Con el driver configurado instalado no hay problemas."""
+    _fake_pyodbc(monkeypatch, ['ODBC Driver 17 for SQL Server'])
+    settings = Settings(synapse_workspace='ws', synapse_odbc_driver='ODBC Driver 17 for SQL Server')
+    assert registry._synapse_check(settings) == []

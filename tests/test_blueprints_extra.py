@@ -1,18 +1,20 @@
 """Tests adicionales de blueprints."""
 
-from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from centraal_dataframework.blueprints import check_and_schedule_task, task_status
-from centraal_dataframework.utils import build_queue_message
 
 
 class FakeOut:
+    """func.Out mínimo."""
+
     def __init__(self):
+        """Sin valor."""
         self.value = None
 
     def set(self, value):
+        """Guarda el valor."""
         self.value = value
 
 

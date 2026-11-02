@@ -113,7 +113,7 @@ class FakeCredential:
 @pytest.fixture(autouse=True)
 def _clean_synapse_env(monkeypatch):
     """Aísla los tests de variables SYNAPSE_* exportadas en la máquina."""
-    for name in ('WORKSPACE', 'SERVER', 'DATABASE', 'AUTH', 'USER', 'PASSWORD', 'QUERY_TIMEOUT'):
+    for name in ('WORKSPACE', 'SERVER', 'DATABASE', 'AUTH', 'USER', 'PASSWORD', 'QUERY_TIMEOUT', 'ODBC_DRIVER'):
         monkeypatch.delenv(f'SYNAPSE_{name}', raising=False)
 
 
@@ -349,3 +349,54 @@ def test_connect_transient_error_is_retried(fake_odbc, client, monkeypatch):
     fake_odbc.outcomes.append({'cols': ['x'], 'rows': [(7,)]})
     assert client.scalar('SELECT 7') == 7
     assert len(calls) == 2
+
+
+def test_odbc_driver_is_configurable():
+    """SYNAPSE_ODBC_DRIVER cambia el driver del connection string (por si la imagen solo trae el 17)."""
+    c = SynapseClient.from_settings(
+        Settings(synapse_workspace='ws', synapse_odbc_driver='ODBC Driver 17 for SQL Server')
+    )
+    assert c.odbc_driver == 'ODBC Driver 17 for SQL Server'
+    assert 'Driver={ODBC Driver 17 for SQL Server}' in c.connection_string()
+
+
+def test_odbc_driver_default_is_18():
+    """Por defecto se usa el ODBC Driver 18."""
+    assert Settings().synapse_odbc_driver == 'ODBC Driver 18 for SQL Server'
+    assert SynapseClient(server='s').odbc_driver == 'ODBC Driver 18 for SQL Server'
+
+
+def test_sqlalchemy_url_wraps_the_odbc_connection_string(client):
+    """La URL de SQLAlchemy lleva el mismo connection string ODBC en odbc_connect."""
+    from urllib.parse import parse_qs, urlsplit
+
+    url = client.sqlalchemy_url()
+    assert url.startswith('mssql+pyodbc:///?odbc_connect=')
+    assert parse_qs(urlsplit(url).query)['odbc_connect'] == [client.connection_string()]
+
+
+def test_sqlalchemy_kwargs_identity_passes_token(client):
+    """Con identidad, el token de Entra va en attrs_before como en connect()."""
+    raw = 'tok'.encode('utf-16-le')
+    assert client.sqlalchemy_kwargs() == {
+        'connect_args': {'attrs_before': {1256: struct.pack(f'<I{len(raw)}s', len(raw), raw)}}
+    }
+
+
+def test_sqlalchemy_kwargs_sql_auth_is_empty():
+    """Con auth sql las credenciales ya van en el connection string."""
+    assert SynapseClient(server='s', auth='sql', user='u', password='p').sqlalchemy_kwargs() == {}
+
+
+def test_data_processed_mb_reads_daily_counter(fake_odbc, client):
+    """data_processed_mb lee el contador diario de serverless."""
+    fake_odbc.outcomes.append({'cols': ['data_processed_mb'], 'rows': [(123,)]})
+    assert client.data_processed_mb() == 123.0
+    sql, _ = fake_odbc.executed[0]
+    assert 'sys.dm_external_data_processed' in sql and "'daily'" in sql
+
+
+def test_data_processed_mb_without_row_is_zero(fake_odbc, client):
+    """Sin consumo en el día el contador no tiene fila: 0."""
+    fake_odbc.outcomes.append({'cols': ['data_processed_mb'], 'rows': []})
+    assert client.data_processed_mb() == 0.0

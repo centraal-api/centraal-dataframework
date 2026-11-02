@@ -21,6 +21,19 @@ Ese rango coincide con el runtime 4.x de Azure Functions, donde
 
 En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se agregan ahí. Para esas versiones hay que usar Flex Consumption, Premium o Dedicated.
 
+**Plan recomendado: Premium (Elastic Premium, Linux) con Python 3.11 o 3.12.**
+`centraal-dataframework init` genera `infra/main.bicep` para ese plan.
+- La imagen de Functions trae el *ODBC Driver 18* desde Python 3.11; 3.10 trae el 17.
+- No hay límite de 10 min por ejecución.
+- La Function entra a Synapse con identidad administrada.
+- Arranca con una instancia siempre encendida, sin escalado elástico ni pre-calentada, y ejecuta las
+  tareas en serie. El timer `monitor_capacidad` avisa con `CAPACIDAD:` si hace falta otra instancia
+  o una más grande.
+- Regla: **N instancias = N tareas independientes a la vez.** Ver [docs/CAPACIDAD.md](docs/CAPACIDAD.md).
+
+En Flex Consumption no se pueden instalar paquetes del sistema si el driver faltara. Después de cada
+despliegue, revise `GET /api/diag`: responde 503 si una tarea perdió su driver o su configuración.
+
 ## Variables de entorno
 
 | Variable | Default | Descripción |
@@ -37,6 +50,7 @@ En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se
 | `SOBREESCRIBIR_TAREA` | `true` | Permite re-registrar tareas |
 | `TAREA_DEBE_CONFIGURACION` | `true` | Exige tarea en YAML al ejecutar |
 | `MAX_RETRIES` | `5` | Alinear con `maxDequeueCount` |
+| `CAPACIDAD_COLA_MAX` / `CAPACIDAD_ESPERA_MAX_MIN` / `CAPACIDAD_MEMORIA_PCT` | `5` / `60` / `80` | Umbrales del monitor de capacidad ([docs/CAPACIDAD.md](docs/CAPACIDAD.md)) |
 | `HISTORY_ENABLED` | `false` | Historial en Table Storage |
 | `TEAMS_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` | — | Notificadores extra |
 | `SAS_*` | — | Expiración/IP de SAS para reportes |
@@ -124,6 +138,7 @@ pip install "centraal-dataframework[synapse]"
 | `SYNAPSE_AUTH` | `identity` | `identity` (Managed Identity / `DefaultAzureCredential`) o `sql` |
 | `SYNAPSE_USER` / `SYNAPSE_PASSWORD` | — | Solo con `SYNAPSE_AUTH=sql` (desarrollo local) |
 | `SYNAPSE_QUERY_TIMEOUT` | `1800` | Segundos por consulta (límite de serverless: 30 min) |
+| `SYNAPSE_ODBC_DRIVER` | `ODBC Driver 18 for SQL Server` | Driver ODBC instalado; `check-resources` avisa si no está |
 
 ```python
 @task(uses=['synapse'])
@@ -143,9 +158,40 @@ API de `SynapseClient`: `query` (lista de dicts), `scalar`, `execute` (DDL/CETAS
 `{{param}}` solo admiten letras, números y `_` separados por un `-`, `:` o `.` (fechas, ids).
 Reintenta errores transitorios de conexión y throttling; no reintenta errores de SQL ni de login.
 
+**Calidad sin traer los datos:** `ctx.gx.validate_query(ctx.synapse, name, query, expectations, params=...)`
+ejecuta la suite de GX en serverless (`modo='sql'`). Con `modo='pandas'` valida la misma suite sobre
+`read_df`. Declare `uses=['synapse', 'gx']`. Recomendaciones de costo en
+[docs/MOTOR_DE_COMPUTO.md](docs/MOTOR_DE_COMPUTO.md); para probar una versión sin publicar en una
+Function, [docs/PRUEBA_EN_FUNCTION.md](docs/PRUEBA_EN_FUNCTION.md).
+
 **Prueba de integración:** copie [docs/synapse.env.example](docs/synapse.env.example) a
 `.env.synapse` en la raíz, complete las variables del ambiente y ejecute el notebook
-[docs/synapse_integracion.ipynb](docs/synapse_integracion.ipynb) o `pytest -m synapse -v`.
+[docs/03_synapse.ipynb](docs/03_synapse.ipynb) o `pytest -m synapse -v`.
+
+| Síntoma | Causa probable | Qué hacer |
+|---|---|---|
+| `Falta pyodbc` | No se instaló el extra | `pip install -e ".[synapse]"` |
+| `IM002` / `Data source name not found` | Falta el driver de `SYNAPSE_ODBC_DRIVER` | Instalar el driver del sistema o ajustar `SYNAPSE_ODBC_DRIVER` al instalado (`pyodbc.drivers()`) |
+| `DefaultAzureCredential failed to retrieve a token` | No hay sesión de Azure CLI | `az login [--tenant <tenant-id>]` |
+| `Client with IP address '...' is not allowed` (40615) | IP fuera del firewall del workspace | `az synapse workspace firewall-rule create ...` |
+| `Login failed for user '<token-identified principal>'` (18456) | Sin usuario en esa base, o tenant distinto | `CREATE USER [...] FROM EXTERNAL PROVIDER` en la base; no reintentar en ráfaga |
+| `Cannot find the CREDENTIAL` / `... is not accessible` | Sin permiso sobre la credencial del lago | `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[...]` |
+| `EngineEdition` distinto de 11 | No es el endpoint serverless | Usar `SYNAPSE_WORKSPACE` sin `SYNAPSE_SERVER` |
+
+## Notebooks
+
+Checklist completo de pruebas antes de publicar (local, notebooks, Function Premium): [docs/CHECKLIST_PRUEBAS.md](docs/CHECKLIST_PRUEBAS.md).
+
+Uno por plataforma, en [docs/](docs/). Variables locales: [docs/datalake.env.example](docs/datalake.env.example)
+→ `.env` y [docs/synapse.env.example](docs/synapse.env.example) → `.env.synapse` (ambos ignorados por git).
+
+| Notebook | Contenido |
+|---|---|
+| [01_datalake.ipynb](docs/01_datalake.ipynb) | Leer/escribir CSV y Parquet, link SAS, tareas con `uses=['datalake']`, conexión con nombre, runner |
+| [02_great_expectations.ipynb](docs/02_great_expectations.ipynb) | La misma suite con tres orígenes: DataFrame en memoria, archivo del datalake y Synapse (`validate_query`: `modo='sql'`, donde el cómputo es de Synapse, y `modo='pandas'`). Además, fallo de calidad y `silenciar_dq`. Las secciones 1 a 3 corren sin storage |
+| [03_synapse.ipynb](docs/03_synapse.ipynb) | Lecturas, `?` vs `render`, `execute_file`, varias bases, métricas en SQL + GX, runner, pandas/polars |
+
+Limpie las salidas antes de commitear (*Clear All Outputs*): muestran datos del ambiente.
 
 ## YAML de configuración
 

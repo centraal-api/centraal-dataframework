@@ -150,8 +150,6 @@ def _synapse_factory(settings: Settings, ctx: 'TaskContext') -> Any:
 
 
 def _synapse_check(settings: Settings) -> List[str]:
-    import importlib.util
-
     problems = []
     if not (settings.synapse_server or settings.synapse_workspace):
         problems.append(f"Configure {settings.env_name('SYNAPSE_WORKSPACE')} o {settings.env_name('SYNAPSE_SERVER')}.")
@@ -160,8 +158,18 @@ def _synapse_check(settings: Settings) -> List[str]:
             f"{settings.env_name('SYNAPSE_AUTH')}=sql requiere {settings.env_name('SYNAPSE_USER')} "
             f"y {settings.env_name('SYNAPSE_PASSWORD')}."
         )
-    if importlib.util.find_spec('pyodbc') is None:
-        problems.append("Falta pyodbc: instale centraal-dataframework[synapse] y el 'ODBC Driver 18 for SQL Server'.")
+    driver = settings.synapse_odbc_driver
+    try:
+        import pyodbc
+    except ImportError:
+        problems.append(f"Falta pyodbc: instale centraal-dataframework[synapse] y el '{driver}'.")
+        return problems
+    installed = list(pyodbc.drivers())
+    if driver not in installed:
+        problems.append(
+            f"El driver ODBC '{driver}' no está instalado (instalados: {', '.join(installed) or 'ninguno'}). "
+            f"Instálelo o ajuste {settings.env_name('SYNAPSE_ODBC_DRIVER')}."
+        )
     return problems
 
 

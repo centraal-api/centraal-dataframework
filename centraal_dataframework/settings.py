@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     synapse_user: Optional[str] = Field(default=None, validation_alias='SYNAPSE_USER')
     synapse_password: Optional[SecretStr] = Field(default=None, validation_alias='SYNAPSE_PASSWORD')
     synapse_query_timeout: int = Field(default=1800, validation_alias='SYNAPSE_QUERY_TIMEOUT')
+    synapse_odbc_driver: str = Field(default='ODBC Driver 18 for SQL Server', validation_alias='SYNAPSE_ODBC_DRIVER')
+    # Monitoreo de capacidad (capacidad.py): umbrales para recomendar más instancias o una más grande.
+    capacidad_cola_max: int = Field(default=5, validation_alias='CAPACIDAD_COLA_MAX')
+    capacidad_espera_max_min: float = Field(default=60, validation_alias='CAPACIDAD_ESPERA_MAX_MIN')
+    capacidad_memoria_pct: float = Field(default=80, validation_alias='CAPACIDAD_MEMORIA_PCT')
 
     _instance: Optional[str] = PrivateAttr(default=None)
 

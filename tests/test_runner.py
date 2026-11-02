@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from centraal_dataframework.config import FrameworkConfig, TaskConfig
+from centraal_dataframework.config import TaskConfig
 from centraal_dataframework.excepciones import ErrorEnTarea, TareaDuplicada, TareaNoDefinida
 from centraal_dataframework.runner import Runner
 

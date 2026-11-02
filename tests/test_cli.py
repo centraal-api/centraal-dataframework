@@ -15,7 +15,7 @@ def test_next_runs(yaml_file):
 
 
 def test_init(tmp_path):
-    """init crea plantilla."""
+    """Init crea la plantilla."""
     target = tmp_path / 'proj'
     assert main(['init', str(target)]) == 0
     assert (target / 'function_app.py').exists()
@@ -24,7 +24,7 @@ def test_init(tmp_path):
 
 
 def test_scaffold_force(tmp_path):
-    """scaffold no sobrescribe sin force."""
+    """Scaffold no sobrescribe sin force."""
     scaffold(tmp_path)
     (tmp_path / 'function_app.py').write_text('keep', encoding='utf-8')
     scaffold(tmp_path, force=False)
@@ -57,3 +57,33 @@ def test_validate_config_warns_expired_silence(tmp_path, capsys):
     )
     assert main(['validate-config', '-c', str(path)]) == 0
     assert 'AVISO: alpha: el silencio de DQ venció el 2000-01-01' in capsys.readouterr().out
+
+
+def test_scaffold_targets_premium_with_odbc18_python(tmp_path):
+    """La plantilla despliega en Premium con Python >= 3.11 (ODBC 18 en la imagen) e identidad administrada."""
+    import json
+
+    scaffold(tmp_path)
+    bicep = (tmp_path / 'infra' / 'main.bicep').read_text(encoding='utf-8')
+    assert "tier: 'ElasticPremium'" in bicep
+    assert "param pythonVersion string = '3.12'" in bicep
+    assert "@allowed([ '3.11', '3.12' ])" in bicep
+    assert "identity: { type: 'SystemAssigned' }" in bicep
+    assert "{ name: 'SYNAPSE_ODBC_DRIVER', value: 'ODBC Driver 18 for SQL Server' }" in bicep
+    host = json.loads((tmp_path / 'host.json').read_text(encoding='utf-8'))
+    assert host['functionTimeout'] == '01:00:00'
+
+
+def test_scaffold_single_instance_serial_queue(tmp_path):
+    """Una instancia siempre encendida, sin elástico ni pre-calentada, y la cola de a un mensaje."""
+    import json
+
+    scaffold(tmp_path)
+    bicep = (tmp_path / 'infra' / 'main.bicep').read_text(encoding='utf-8')
+    assert 'param instancias int = 1' in bicep
+    assert 'maximumElasticWorkerCount: instancias' in bicep
+    assert 'minimumElasticInstanceCount: instancias' in bicep
+    assert 'functionAppScaleLimit: instancias' in bicep
+    assert 'preWarmedInstanceCount' not in bicep
+    queues = json.loads((tmp_path / 'host.json').read_text(encoding='utf-8'))['extensions']['queues']
+    assert queues['batchSize'] == 1 and queues['newBatchThreshold'] == 0

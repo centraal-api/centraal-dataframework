@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import copy
 import logging
 import os
 import tempfile
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from centraal_dataframework.excepciones import StorageNoConfigurado
 from centraal_dataframework.settings import Settings, get_settings
@@ -24,6 +25,8 @@ class DQResult:
     url: str = ''
     failed: List[str] = field(default_factory=list)
     raw: Any = None
+    modo: str = 'pandas'
+    data_processed_mb: Optional[float] = None
 
 
 def _import_datalake():
@@ -126,6 +129,10 @@ def _configure_azure_stores(context, settings: Settings, conn_str: str) -> None:
         logger.debug("add_data_docs_site no disponible o falló", exc_info=True)
 
 
+MODOS = ('sql', 'pandas')
+DEFAULT_RESULT_FORMAT = 'SUMMARY'
+
+
 @dataclass
 class GreatExpectationsToolKit:
     """Toolkit de Great Expectations 1.x por tarea."""
@@ -148,12 +155,82 @@ class GreatExpectationsToolKit:
         public: bool = False,
     ) -> DQResult:
         """Valida un DataFrame contra una lista de Expectation GX 1.x."""
+        return self._run_suite_on_df(df, name, self._build_suite(name, expectations), public=public)
+
+    def _build_suite(self, name: str, expectations: Sequence[Any]) -> Any:
+        """Registra una suite efímera con copias de las expectativas."""
         import great_expectations as gx
 
         suite_name = f"{self.name_task}_{name}_suite"
-        suite = gx.ExpectationSuite(name=suite_name, expectations=list(expectations))
-        suite = self.context.suites.add_or_update(suite)
-        return self._run_suite_on_df(df, name, suite, public=public)
+        # GX 1.x liga cada Expectation a su suite: copias para reutilizar la lista en otras validaciones.
+        suite = gx.ExpectationSuite(name=suite_name, expectations=[copy.copy(e) for e in expectations])
+        return self.context.suites.add_or_update(suite)
+
+    def validate_query(
+        self,
+        synapse: Any,
+        name: str,
+        query: str,
+        expectations: Optional[Sequence[Any]] = None,
+        *,
+        suite_name: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
+        modo: str = 'sql',
+        result_format: str = DEFAULT_RESULT_FORMAT,
+        medir_costo: bool = False,
+        public: bool = False,
+    ) -> DQResult:
+        """Valida el resultado de una consulta de Synapse con la misma suite en cualquier modo.
+
+        Args:
+            synapse: ``SynapseClient`` (``ctx.synapse`` o ``ctx.synapse_for(base)``).
+            name: Nombre de la validación (aparece en data docs y alarmas).
+            query: SELECT con solo las columnas que se validan y el filtro de partición, con ``{{param}}``.
+            expectations: Expectativas GX 1.x; o bien ``suite_name`` de una suite registrada.
+            suite_name: Suite existente en el contexto.
+            params: Valores de ``{{param}}``; pasan por la lista blanca de ``synapse.render``.
+            modo: ``'sql'`` (plan A): GX traduce cada expectativa a SQL y Synapse devuelve solo agregados.
+                ``'pandas'`` (plan B): trae la consulta a la Function con ``read_df`` y valida ahí.
+            result_format: ``'BASIC'`` o ``'SUMMARY'``. ``'COMPLETE'`` vuelve a escanear para traer filas.
+            medir_costo: Guarda en el resultado el delta de MB procesados del día (aproximado: el contador
+                es de todo el workspace).
+            public: URL pública de data docs.
+        """
+        from centraal_dataframework.synapse import render
+
+        if modo not in MODOS:
+            raise ValueError(f"modo debe ser uno de {MODOS}, no {modo!r}")
+        if suite_name:
+            suite = self.context.suites.get(suite_name)
+        elif expectations:
+            suite = self._build_suite(name, expectations)
+        else:
+            raise ValueError("validate_query necesita expectations o suite_name")
+        sql = render(query, **(params or {}))
+
+        before = synapse.data_processed_mb() if medir_costo else None
+        if modo == 'pandas':
+            out = self._run_suite_on_df(synapse.read_df(sql), name, suite, public=public, result_format=result_format)
+        else:
+            asset_name, batch_def = self._query_batch_definition(synapse, name, sql)
+            out = self._run_checkpoint(asset_name, batch_def, suite, {}, public=public, result_format=result_format)
+        out.modo = modo
+        if before is not None:
+            out.data_processed_mb = synapse.data_processed_mb() - before
+        logger.info("GX %s [%s] success=%s data_processed_mb=%s", name, modo, out.success, out.data_processed_mb)
+        return out
+
+    def _query_batch_definition(self, synapse: Any, name: str, sql: str) -> tuple:
+        """Asset de consulta sobre el datasource SQL de la base (uno por base y tarea)."""
+        database = getattr(synapse, 'database', None) or 'default'
+        datasource = self.context.data_sources.add_or_update_sql(
+            name=f"{self.name_task}_synapse_{database}",
+            connection_string=synapse.sqlalchemy_url(),
+            kwargs=synapse.sqlalchemy_kwargs(),
+        )
+        asset_name = f"{self.name_task}_{name}_{uuid.uuid4().hex[:8]}"
+        asset = datasource.add_query_asset(name=asset_name, query=sql)
+        return asset_name, asset.add_batch_definition_whole_table(f"{asset_name}_batch")
 
     def validate_suite(self, df: Any, name: str, suite_name: str, public: bool = False) -> DQResult:
         """Valida un DataFrame contra una suite existente."""
@@ -173,16 +250,29 @@ class GreatExpectationsToolKit:
         """Alias de validate_suite."""
         return self.validate_suite(df, name_of_df, expectations_suite_name, public=public)
 
-    def _run_suite_on_df(self, df: Any, name: str, suite: Any, public: bool = False) -> DQResult:
+    def _run_suite_on_df(
+        self, df: Any, name: str, suite: Any, public: bool = False, result_format: Optional[str] = None
+    ) -> DQResult:
         """Ejecuta checkpoint GX 1.x sobre un dataframe."""
+        asset_name = f"{self.name_task}_{name}_{uuid.uuid4().hex[:8]}"
+        asset = self.datasource.add_dataframe_asset(name=asset_name)
+        batch_def = asset.add_batch_definition_whole_dataframe(f"{asset_name}_batch")
+        return self._run_checkpoint(
+            asset_name, batch_def, suite, {'dataframe': df}, public=public, result_format=result_format
+        )
+
+    def _run_checkpoint(
+        self,
+        asset_name: str,
+        batch_def: Any,
+        suite: Any,
+        batch_parameters: Dict[str, Any],
+        public: bool = False,
+        result_format: Optional[str] = None,
+    ) -> DQResult:
+        """Valida un batch definition con un checkpoint (con data docs) y arma el DQResult."""
         import great_expectations as gx
         from great_expectations.checkpoint import UpdateDataDocsAction
-
-        uid = uuid.uuid4().hex[:8]
-        asset_name = f"{self.name_task}_{name}_{uid}"
-        batch_def_name = f"{asset_name}_batch"
-        asset = self.datasource.add_dataframe_asset(name=asset_name)
-        batch_def = asset.add_batch_definition_whole_dataframe(batch_def_name)
 
         validation_def = gx.ValidationDefinition(
             name=f"{asset_name}_validation",
@@ -201,9 +291,10 @@ class GreatExpectationsToolKit:
             name=f"{asset_name}_checkpoint",
             validation_definitions=[validation_def],
             actions=actions,
+            result_format=result_format or DEFAULT_RESULT_FORMAT,
         )
         checkpoint = self.context.checkpoints.add_or_update(checkpoint)
-        result = checkpoint.run(batch_parameters={'dataframe': df})
+        result = checkpoint.run(batch_parameters=batch_parameters)
 
         success = bool(getattr(result, 'success', False))
         failed = _failed_expectations(result)

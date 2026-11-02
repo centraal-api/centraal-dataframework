@@ -65,3 +65,37 @@ def test_for_database(client):
     if not other:
         pytest.skip('SYNAPSE_TEST_OTHER_DB no definida')
     assert client.for_database(other).scalar('SELECT DB_NAME()') == other
+
+
+def test_gx_native_sql_matches_pandas(client, caplog):
+    """Plan A: GX ejecuta la suite en serverless; da lo mismo que el plan B y se guarda el SQL generado.
+
+    Usa SYNAPSE_TEST_GX_QUERY (un SELECT con el filtro de partición) y SYNAPSE_TEST_GX_COLUMN (una columna
+    de esa consulta). Corre en la base de ``client`` (SYNAPSE_DATABASE).
+    """
+    import logging
+
+    query, column = _var('SYNAPSE_TEST_GX_QUERY'), _var('SYNAPSE_TEST_GX_COLUMN')
+    if not (query and column):
+        pytest.skip('SYNAPSE_TEST_GX_QUERY / SYNAPSE_TEST_GX_COLUMN no definidas')
+    gx = pytest.importorskip('great_expectations')
+    pytest.importorskip('sqlalchemy')
+    from centraal_dataframework.resources import GreatExpectationsToolKit, get_context
+
+    settings = Settings(azure_storage_connection_string=None, storage_connection_setting='NO_EXISTE')
+    toolkit = GreatExpectationsToolKit(get_context(settings), 'integracion', settings)
+    expectations = [
+        gx.expectations.ExpectTableRowCountToBeBetween(min_value=0),
+        gx.expectations.ExpectColumnToExist(column=column),
+        gx.expectations.ExpectColumnValuesToNotBeNull(column=column, mostly=0.0),
+    ]
+
+    with caplog.at_level(logging.INFO, logger='sqlalchemy.engine'):
+        sql = toolkit.validate_query(client, 'gx_sql', query, expectations, modo='sql', medir_costo=True)
+    generated = [r.getMessage() for r in caplog.records if r.name.startswith('sqlalchemy.engine')]
+    pandas = toolkit.validate_query(client, 'gx_pandas', query, expectations, modo='pandas', medir_costo=True)
+
+    print('\n--- SQL generado por GX ---\n' + '\n'.join(generated))
+    print(f"MB procesados: sql={sql.data_processed_mb} pandas={pandas.data_processed_mb}")
+    assert sql.success and pandas.success, (sql.failed, pandas.failed)
+    assert generated, 'GX no ejecutó SQL en el motor'

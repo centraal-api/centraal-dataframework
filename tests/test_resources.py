@@ -1,8 +1,7 @@
 """Tests de resources / DQResult."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pandas as pd
 import pytest
 
 from centraal_dataframework.excepciones import StorageNoConfigurado
@@ -11,7 +10,7 @@ from centraal_dataframework.settings import Settings
 
 
 def test_dq_result_defaults():
-    """DQResult defaults."""
+    """Valores por defecto de DQResult."""
     r = DQResult(success=True)
     assert r.failed == []
     assert r.url == ''

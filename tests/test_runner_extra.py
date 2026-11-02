@@ -1,12 +1,11 @@
 """Coverage extra runner."""
 
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
 import pytest
 
 from centraal_dataframework.config import TaskConfig
-from centraal_dataframework.runner import Runner, get_runner, reset_runner
+from centraal_dataframework.runner import get_runner, reset_runner
 
 
 def test_cron_programable(runner):
