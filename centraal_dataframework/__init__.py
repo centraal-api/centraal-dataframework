@@ -6,7 +6,9 @@ __version__ = '0.2.0'
 
 from centraal_dataframework.excepciones import (
     ErrorEnTarea,
+    ErrorMotorCalidad,
     ErrorTareaCalidadDatos,
+    ParticionInvalida,
     RecursoDesconocido,
     RecursoNoConfigurado,
     RecursoNoDeclarado,
@@ -26,6 +28,8 @@ __all__ = [
     'SynapseClient',
     'ErrorEnTarea',
     'ErrorTareaCalidadDatos',
+    'ErrorMotorCalidad',
+    'ParticionInvalida',
     'TareaDuplicada',
     'TareaNoDefinida',
     'RecursoDesconocido',

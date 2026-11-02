@@ -6966,4 +6966,4 @@ synapse = ["pyodbc", "sqlalchemy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<3.15"
-content-hash = "0674aa635706c7df234b0bd67d5f718337bf4d5b71ce985f81bf54e37b4432ff"
+content-hash = "f504ddc6db71713c1809bae0773172705bc3ee381e664e3f71725c1312c2139a"

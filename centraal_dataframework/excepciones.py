@@ -98,3 +98,26 @@ class RecursoNoConfigurado(Exception):
         self.problems = problems
         self.message = f"La tarea {task_name!r} tiene recursos sin configurar: " + '; '.join(problems)
         super().__init__(self.message)
+
+
+class ParticionInvalida(Exception):
+    """Excepción cuando la partición declarada no se puede verificar o aplicar sobre el objeto de Synapse."""
+
+    def __init__(self, tabla: str, motivo: str):
+        """Inicializa con el objeto (esquema.tabla) y el motivo."""
+        self.tabla = tabla
+        self.motivo = motivo
+        self.message = f"Partición inválida en {tabla!r}: {motivo}"
+        super().__init__(self.message)
+
+
+class ErrorMotorCalidad(Exception):
+    """Excepción cuando GX no pudo evaluar una expectativa (error técnico, no un fallo de calidad)."""
+
+    def __init__(self, name: str, modo: str, mensajes: list):
+        """Inicializa con el nombre de la validación, el modo y los mensajes de GX."""
+        self.name = name
+        self.modo = modo
+        self.mensajes = list(mensajes)
+        self.message = f"GX no pudo evaluar {name!r} en modo {modo!r}: " + ' | '.join(self.mensajes)
+        super().__init__(self.message)
