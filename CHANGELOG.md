@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ctx.gx.validate_table(synapse, name, 'esquema.vista', expectations, particion={'columna': valor}, modo='sql'|'pandas')`: el caso principal de calidad en Synapse. Valida una tabla o vista con nombre; en bronze, solo la partición declarada. La partición se verifica contra la definición de la vista (`OBJECT_DEFINITION`: la columna debe salir de `filepath(n)` sobre la carpeta `<columna>=*`); una vista particionada sin `particion` se rechaza, y `particion='completa'` la valida entera a propósito. Excepción nueva `ParticionInvalida`.
+- `ErrorMotorCalidad`: cuando GX no puede evaluar una expectativa (columna inexistente, archivo dañado) la validación lanza esta excepción en vez de reportar un falso fallo de calidad. Aplica a `validate_table` y `validate_query` en los dos modos.
+- `TableAssetSynapse` (`gx_synapse.py`): table asset de GX que no sondea la tabla entera al registrarse ni lista los valores distintos de la columna de partición; aplica el filtro como `WHERE <columna> = ?`, sin funciones. `comprobar_api_gx()` es la prueba de humo de los nombres privados de GX de los que depende.
+- `SynapseClient.tipo_objeto`, `SynapseClient.definicion_objeto` y `separar_tabla`; parser `particiones.py`.
+- Variables de prueba `SYNAPSE_TEST_PARTITION_TABLE`, `SYNAPSE_TEST_PARTITION_COLUMN` y `SYNAPSE_TEST_PARTITION_VALUE` para la vista con la trampa de poda (dos fotos sanas y una carpeta con un Parquet dañado).
+
 - Calidad de datos en Synapse sin traer los datos a la Function: `ctx.gx.validate_query(synapse, name, query, expectations, params=..., modo='sql')`. GX traduce cada expectativa a SQL y serverless devuelve solo agregados (plan A). Con `modo='pandas'` la misma suite valida la consulta traída con `read_df` (plan B). Acepta `suite_name`, usa `result_format='SUMMARY'` por defecto y, con `medir_costo=True`, deja `data_processed_mb` en el `DQResult`.
 - `SynapseClient.sqlalchemy_url()`, `sqlalchemy_kwargs()` (token de Entra en `attrs_before`) y `data_processed_mb()`.
 - Variable `SYNAPSE_ODBC_DRIVER` (por defecto `ODBC Driver 18 for SQL Server`). `check-resources` y el runner avisan si el driver configurado no está instalado.
@@ -22,7 +28,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `validate_query` en `modo='sql'` solo admite expectativas de tabla: con expectativas de columna lanza `ValueError` que remite a `validate_table` o a `modo='pandas'`. GX no resuelve las columnas de una consulta suelta en SQL Server (`column_reflection_fallback` sobre un `TextClause`), lo que producía falsos fallos de calidad.
+- `great-expectations` acotado a `>=1.24,<1.25`: `TableAssetSynapse` depende de nombres privados de GX; subir la cota es una decisión explícita que pasa por `tests/test_gx_synapse.py` y `pytest -m synapse`.
+- La identidad que valida necesita `GRANT VIEW DEFINITION` en las bases con vistas particionadas.
 - La plantilla de `init` despliega en plan Premium (Elastic Premium, Linux) con Python 3.11/3.12, identidad administrada, build remoto y variables `SYNAPSE_*`. Usa una instancia siempre encendida, sin escalado elástico ni pre-calentada (`instancias=1`, que es mínimo y máximo a la vez). En `host.json`: `functionTimeout` de 1 h y la cola de a un mensaje por instancia (`batchSize=1`, `newBatchThreshold=0`). Antes la plantilla usaba Consumption (Y1).
+
+### Fixed
+
+- `docs/datalake.env.example` dejaba `AZURE_STORAGE_CONNECTION_STRING=` vacía y descomentada, lo que rompía la autenticación por identidad (adlfs la tomaba como una conexión real). Ahora va comentada.
+- `SynapseClient` reintenta el error 42109 (`The SQL pool is warming up`) como transitorio: antes la primera consulta tras un rato inactivo fallaba sin reintento.
 
 ## [0.2.0] - 2026-10-06
 

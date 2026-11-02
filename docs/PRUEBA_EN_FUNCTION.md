@@ -76,6 +76,7 @@ del workspace:
 ```sql
 CREATE USER [<app>] FROM EXTERNAL PROVIDER;
 ALTER ROLE db_datareader ADD MEMBER [<app>];
+GRANT VIEW DEFINITION TO [<app>];  -- validate_table lee la definición de la vista para verificar la partición
 -- si las vistas leen el lago con credencial:
 -- GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>] TO [<app>];
 ```
@@ -127,7 +128,7 @@ Revise también las trazas `capacidad` y `tarea_capacidad` del monitor ([CAPACID
 Publique cuando se cumpla todo esto en la Function Premium:
 
 - `/api/diag` responde 200 con la versión `.dev0` y el driver 18;
-- una tarea `@task(uses=['gx', 'synapse'])` con `ctx.gx.validate_query(..., modo='sql')` termina bien;
+- una tarea `@task(uses=['gx', 'synapse'])` con `ctx.gx.validate_table(..., particion={...}, modo='sql')` termina bien;
 - el `data_processed_mb` que deja en el log es razonable para el dataset.
 
 Entonces fije la versión con `bump2version`, mueva `[Unreleased]` del CHANGELOG y empuje el tag

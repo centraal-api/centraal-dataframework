@@ -62,7 +62,7 @@ Su lugar es **después** del motor, con datos ya reducidos:
 | Uso aconsejado | Ejemplo |
 |---|---|
 | Dar forma a un resultado de Synapse | Pivotear un resumen para un correo o un Excel |
-| Validar con GX lo que no corre en el motor | Plan B de `ctx.gx.validate_query`: una partición pequeña a pandas |
+| Validar con GX lo que no corre en el motor | Plan B de `ctx.gx.validate_table`: una partición pequeña a pandas |
 | Archivos pequeños de negocio | Catálogo u homologación en Excel. Si se cruza con tablas grandes, se sube al lago y Synapse hace el cruce |
 | Datos que llegan de fuera | Respuesta de una API → Parquet en el lago → Synapse los procesa |
 | Lógica que SQL no expresa | Llamar una API por registro o usar una librería de Python, sobre un subconjunto que selecciona Synapse |
@@ -75,34 +75,41 @@ indica que la Function está haciendo trabajo del motor.
 
 ## Calidad de datos sobre Synapse: GX en el motor
 
-**Plan A (por defecto):** `ctx.gx.validate_query(..., modo='sql')`. GX traduce cada expectativa a SQL,
-serverless la ejecuta y a la Function solo vuelven agregados. **Plan B:** `modo='pandas'`, que trae la
-consulta con `read_df` y valida en la Function. La suite es la misma en los dos modos; se cambia de
-plan por dataset, sin tocar las expectativas.
+**Plan A (por defecto):** `ctx.gx.validate_table(..., particion={'fecha': valor}, modo='sql')`. GX traduce cada
+expectativa a SQL, serverless la ejecuta sobre la tabla o vista con nombre, leyendo solo la partición declarada,
+y a la Function solo vuelven agregados. **Plan B:** `modo='pandas'`, que trae la partición con `read_df` y
+valida en la Function. La suite es la misma en los dos modos; se cambia de plan por dataset, sin tocar las
+expectativas, y nunca por cuenta de la librería: el modo pedido se ejecuta o se lanza un error.
 
 ```python
 @task(uses=['gx', 'synapse'])
 def calidad_partner(ctx):
-    return ctx.gx.validate_query(
+    return ctx.gx.validate_table(
         ctx.synapse_for('bronze'),
-        name='res_partner',
-        query="SELECT id, vat, active FROM atera.odoo_res_partner WHERE fecha = '{{fecha}}'",
-        params={'fecha': ctx.params['fecha']},
+        name='partner',
+        tabla='esquema.vista_partner',
+        particion={'fecha': ctx.params['fecha']},   # la foto del día; se verifica contra la definición de la vista
         expectations=[...],
         medir_costo=True,          # deja data_processed_mb en el DQResult y en el log
     )
 ```
+
+Los cruces (un SELECT sin nombre) van por `ctx.gx.validate_query(..., modo='pandas')`; en modo sql GX no
+resuelve las columnas de una consulta suelta en SQL Server y la librería lo rechaza con un error claro. Un
+cruce que deba correr en el motor se publica como vista con nombre y se valida con `validate_table`.
 
 Para que el plan A sea barato:
 
 1. **Vistas bien tipadas.** `OPENROWSET ... WITH (...)` con tipos explícitos, en vez de dejar que
    serverless infiera `varchar(8000)`. Collation `Latin1_General_100_BIN2_UTF8` en los textos de
    Parquet, para que los filtros por string se empujen al archivo. La columna de partición expuesta
-   con `filepath()`.
-2. **La partición se filtra en la query**, con un literal sobre la columna de partición
-   (`WHERE fecha = '{{fecha}}'`). No use `add_batch_definition_monthly`: GX envuelve la columna en
-   funciones de fecha y serverless puede dejar de podar carpetas. Seleccione solo las columnas que
-   valida: con `SELECT *` paga por leerlas todas.
+   con `filepath()` y con el mismo nombre que la carpeta (`CAST(r.filepath(1) AS date) AS [fecha]` sobre
+   `.../fecha=*/`): es lo que `validate_table` verifica antes de validar.
+2. **La partición la aplica la librería** con `WHERE <columna> = ?`, sin funciones sobre la columna.
+   `validate_table` no usa `add_batch_definition_daily` ni similares (GX envuelve la columna en funciones
+   de fecha y serverless puede dejar de podar carpetas), no sondea la tabla entera al registrar el asset
+   ni lista los valores distintos de la columna. Se demostró con una vista de prueba con una carpeta
+   dañada: la validación por partición pasa y `particion='completa'` falla al tocarla.
 3. **Suite pensada para serverless.** `result_format='SUMMARY'` (por defecto) o `'BASIC'`; `'COMPLETE'`
    lanza consultas extra para traer filas inesperadas y vuelve a escanear. Nulos, rangos, conteos y
    sets son baratos. Unicidad o distintos sobre columnas de alta cardinalidad son caros: córralos con

@@ -158,11 +158,30 @@ API de `SynapseClient`: `query` (lista de dicts), `scalar`, `execute` (DDL/CETAS
 `{{param}}` solo admiten letras, números y `_` separados por un `-`, `:` o `.` (fechas, ids).
 Reintenta errores transitorios de conexión y throttling; no reintenta errores de SQL ni de login.
 
-**Calidad sin traer los datos:** `ctx.gx.validate_query(ctx.synapse, name, query, expectations, params=...)`
-ejecuta la suite de GX en serverless (`modo='sql'`). Con `modo='pandas'` valida la misma suite sobre
-`read_df`. Declare `uses=['synapse', 'gx']`. Recomendaciones de costo en
-[docs/MOTOR_DE_COMPUTO.md](docs/MOTOR_DE_COMPUTO.md); para probar una versión sin publicar en una
-Function, [docs/PRUEBA_EN_FUNCTION.md](docs/PRUEBA_EN_FUNCTION.md).
+**Calidad sin traer los datos (caso principal):** `ctx.gx.validate_table(ctx.synapse, name, 'esquema.vista',
+expectations, particion={'fecha': valor}, modo='sql')` ejecuta la suite de GX en serverless sobre una tabla o
+vista con nombre. En bronze la vista acumula fotos particionadas por carpeta y la tarea valida la de un día con
+`particion`; en silver y gold la tabla candidata ya es un solo lote y se llama sin `particion`. La partición
+declarada se verifica contra la definición de la vista (la columna debe salir de `filepath(n)` sobre la carpeta
+`<columna>=*`); si no lo es, o la vista está particionada y no se declaró, se lanza `ParticionInvalida`
+(`particion='completa'` valida toda la vista a propósito). La vista que se valida debe ser la que define el
+`OPENROWSET` (no se siguen vistas sobre vistas) y se admite una sola columna de partición. Con `modo='pandas'`
+la misma suite valida `SELECT *` de la tabla (filtrado por la partición) traído con `read_df`: las filas viajan a
+la Function, solo para tablas pequeñas. El motor es explícito: si el modo pedido no puede ejecutarse se lanza
+un error, nunca se cambia de motor. Un error técnico de GX (columna inexistente, archivo dañado) es
+`ErrorMotorCalidad`, no un fallo de calidad.
+
+**Cruces:** `ctx.gx.validate_query(ctx.synapse, name, query, expectations, params=..., modo='pandas')` valida
+el resultado de un SELECT. En `modo='sql'` solo admite expectativas de tabla (conteo de filas): GX no resuelve
+las columnas de una consulta suelta en SQL Server, así que con expectativas de columna lanza `ValueError`
+que remite a `validate_table` o a pandas. Un cruce que necesite modo sql se publica como vista con nombre.
+
+Declare `uses=['synapse', 'gx']`. La identidad que valida necesita `GRANT VIEW DEFINITION` en las bases con
+vistas particionadas (además de `db_datareader`), porque la verificación lee `OBJECT_DEFINITION`.
+`great-expectations` está acotado a `>=1.24,<1.25`: `validate_table` usa un `TableAsset` propio que depende de
+nombres privados de GX; subir la cota es una decisión explícita que pasa por `tests/test_gx_synapse.py` y por
+`pytest -m synapse`. Recomendaciones de costo en [docs/MOTOR_DE_COMPUTO.md](docs/MOTOR_DE_COMPUTO.md); para
+probar una versión sin publicar en una Function, [docs/PRUEBA_EN_FUNCTION.md](docs/PRUEBA_EN_FUNCTION.md).
 
 **Prueba de integración:** copie [docs/synapse.env.example](docs/synapse.env.example) a
 `.env.synapse` en la raíz, complete las variables del ambiente y ejecute el notebook
@@ -176,6 +195,7 @@ Function, [docs/PRUEBA_EN_FUNCTION.md](docs/PRUEBA_EN_FUNCTION.md).
 | `Client with IP address '...' is not allowed` (40615) | IP fuera del firewall del workspace | `az synapse workspace firewall-rule create ...` |
 | `Login failed for user '<token-identified principal>'` (18456) | Sin usuario en esa base, o tenant distinto | `CREATE USER [...] FROM EXTERNAL PROVIDER` en la base; no reintentar en ráfaga |
 | `Cannot find the CREDENTIAL` / `... is not accessible` | Sin permiso sobre la credencial del lago | `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[...]` |
+| `ParticionInvalida: ... GRANT VIEW DEFINITION` | La identidad lee datos pero no la definición de la vista | `GRANT VIEW DEFINITION TO [...]` en esa base |
 | `EngineEdition` distinto de 11 | No es el endpoint serverless | Usar `SYNAPSE_WORKSPACE` sin `SYNAPSE_SERVER` |
 
 ## Notebooks
@@ -188,7 +208,7 @@ Uno por plataforma, en [docs/](docs/). Variables locales: [docs/datalake.env.exa
 | Notebook | Contenido |
 |---|---|
 | [01_datalake.ipynb](docs/01_datalake.ipynb) | Leer/escribir CSV y Parquet, link SAS, tareas con `uses=['datalake']`, conexión con nombre, runner |
-| [02_great_expectations.ipynb](docs/02_great_expectations.ipynb) | La misma suite con tres orígenes: DataFrame en memoria, archivo del datalake y Synapse (`validate_query`: `modo='sql'`, donde el cómputo es de Synapse, y `modo='pandas'`). Además, fallo de calidad y `silenciar_dq`. Las secciones 1 a 3 corren sin storage |
+| [02_great_expectations.ipynb](docs/02_great_expectations.ipynb) | La misma suite con tres orígenes: DataFrame en memoria, archivo del datalake y Synapse (`validate_table` con partición en `modo='sql'`, donde el cómputo es de Synapse, y `modo='pandas'`; `validate_query` para cruces). Además, fallo de calidad y `silenciar_dq`. Las secciones 1 a 3 corren sin storage |
 | [03_synapse.ipynb](docs/03_synapse.ipynb) | Lecturas, `?` vs `render`, `execute_file`, varias bases, métricas en SQL + GX, runner, pandas/polars |
 
 Limpie las salidas antes de commitear (*Clear All Outputs*): muestran datos del ambiente.

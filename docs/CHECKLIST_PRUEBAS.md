@@ -17,17 +17,22 @@ y [CAPACIDAD.md](CAPACIDAD.md).
   - `SYNAPSE_TEST_TABLE`: una vista de bronze;
   - `SYNAPSE_TEST_GX_QUERY`: un SELECT de esa vista con 2 o 3 columnas y `WHERE fecha = '<foto>'`;
   - `SYNAPSE_TEST_GX_COLUMN`: una columna de esa consulta;
+  - `SYNAPSE_TEST_PARTITION_TABLE`, `SYNAPSE_TEST_PARTITION_COLUMN`, `SYNAPSE_TEST_PARTITION_VALUE`: la vista de
+    prueba con la trampa (dos fotos sanas y una carpeta con un `.parquet` dañado, en el contenedor de pruebas, con su
+    propio `OPENROWSET ... WITH (...)` en un esquema de prueba), su columna de partición y una foto sana;
   - opcionales: `SYNAPSE_TEST_OTHER_DB` y `SYNAPSE_TEST_DDL_SCHEMA`.
-- [ ] Su IP en el firewall del workspace y su usuario en cada base: `CREATE USER [...] FROM EXTERNAL PROVIDER` + `db_datareader`.
+- [ ] Su IP en el firewall del workspace y su usuario en cada base: `CREATE USER [...] FROM EXTERNAL PROVIDER` + `db_datareader` + `GRANT VIEW DEFINITION`.
 
 ## 1. Pruebas automáticas (local)
 
-- [ ] `make test`: isort, black, flake8 y pytest en verde. Las pruebas de Synapse se saltan.
+- [ ] `make test`: isort, black, flake8 y pytest en verde. Con `.env.synapse` lleno, las pruebas de Synapse también corren aquí; sin él se saltan.
 - [ ] `pytest -m synapse -v -s` contra el workspace real:
-  - [ ] pasan `test_select_1`, `test_parameters_supported_on_serverless` y `test_read_test_table`;
-  - [ ] pasa `test_gx_native_sql_matches_pandas`, y en la salida aparece `--- SQL generado por GX ---`;
-  - [ ] ese SQL no trae `SELECT *` ni tablas temporales (`#`), ni errores de serverless;
-  - [ ] anotar los `MB procesados` de `sql` y de `pandas`.
+  - [ ] pasan `test_select_1`, `test_parameters_supported_on_serverless`, `test_read_test_table` y `test_for_database`;
+  - [ ] pasa `test_gx_query_sql_with_columns_is_rejected`: `validate_query` en sql con columnas da `ValueError`, y en pandas pasa;
+  - [ ] pasa `test_validate_table_particion_sql_matches_pandas`, y en la salida aparece `--- SQL generado por GX ---`;
+  - [ ] ese SQL lleva `WHERE <columna> = ?`, sin `DISTINCT`, sin `TOP 1 1`, sin funciones sobre la columna ni tablas temporales (`#`);
+  - [ ] pasan `test_validate_table_completa_falla_por_trampa` (error de Parquet como `ErrorMotorCalidad`), `test_validate_table_sin_particion_se_niega` y `test_validate_table_columna_que_no_es_particion`;
+  - [ ] anotar los `MB procesados` de `sql` y de `pandas` (cada consulta cuenta 10 MB como mínimo).
 
 ## 2. Notebooks (todas las celdas, de arriba abajo, reiniciando el kernel antes de cada uno)
 
@@ -55,10 +60,11 @@ y [CAPACIDAD.md](CAPACIDAD.md).
   - por el runner sale `error de calidad: [...]`.
 - [ ] 3. Silencio: no lanza error y muestra el aviso de vencimiento.
 - [ ] 4. Datalake: `datalake -> success: True`, y la carpeta temporal se borra.
-- [ ] 5. Synapse:
-  - [ ] `sql -> success: True` y `pandas -> success: True`, con el mismo resultado;
-  - [ ] el caso con `-5.0` da `sql -> success: False | fallidas: ['expect_column_values_to_be_between']`, o sea que la expectativa se evaluó en Synapse;
-  - [ ] la tabla real da `success: True` y muestra los MB procesados.
+- [ ] 5. Synapse (requiere `SYNAPSE_TEST_PARTITION_*`):
+  - [ ] `validate_table` de la foto sana: `sql -> success: True` y `pandas -> success: True`, con el mismo resultado y los MB procesados;
+  - [ ] el caso forzado da `sql -> success: False | fallidas: ['expect_column_values_to_be_null']`, o sea que la expectativa se evaluó en Synapse;
+  - [ ] sin `particion` imprime el `ParticionInvalida` que pide declararla o `'completa'`;
+  - [ ] `validate_query` del cruce en línea: `pandas -> success: True`, y en `sql` imprime el `ValueError` que remite a `validate_table`.
 
 ### [03_synapse.ipynb](03_synapse.ipynb) (requiere `.env.synapse`)
 
@@ -71,14 +77,17 @@ y [CAPACIDAD.md](CAPACIDAD.md).
 - [ ] 3. Tareas: `contar_tabla` devuelve el mismo conteo.
 - [ ] 4. Transformar (con `SYNAPSE_TEST_DDL_SCHEMA`): crea la vista, la cuenta y la borra.
 - [ ] 5. Varias bases (con `SYNAPSE_TEST_OTHER_DB`): devuelve los nombres de las dos bases.
-- [ ] 6. Calidad: `sql` y `pandas` dan el mismo resultado, y se imprimen los MB procesados.
+- [ ] 6. Calidad: `validate_table` con partición en `sql` y `pandas` da el mismo resultado, se imprimen los MB procesados, y el cruce por `validate_query` en pandas pasa.
 - [ ] 7. Runner: imprime `recursos configurados` y el conteo.
 - [ ] 8. pandas/polars: muestra 10 filas.
 
-### Poda de particiones (con la vista real)
+### Poda de particiones (con la trampa)
 
-- [ ] Correr la misma suite con `WHERE fecha = '<foto>'` y sin ese filtro, con `medir_costo=True` y sin otras consultas en paralelo.
-- [ ] Con el filtro, los MB son claramente menores. Si salen iguales, Synapse no está saltándose carpetas: revise `filepath()` y el filtro antes de seguir.
+Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverless lee solo las columnas que usa. Se usa la vista de `SYNAPSE_TEST_PARTITION_TABLE`, que tiene dos fotos sanas y una carpeta con un `.parquet` dañado.
+
+- [ ] `validate_table` de la foto sana en `sql` pasa: ni el registro del asset ni la suite tocaron la carpeta dañada.
+- [ ] `particion='completa'` falla con `ErrorMotorCalidad` y el error de Parquet: la trampa funciona.
+- [ ] Si la foto sana falla con el error de Parquet, Synapse no está podando: revise que la columna salga de `filepath(n)` con el nombre de la carpeta, y el SQL generado, antes de seguir.
 
 ## 3. Imagen de Functions (local, con Docker Desktop encendido)
 
@@ -95,7 +104,7 @@ y [CAPACIDAD.md](CAPACIDAD.md).
 - [ ] En el portal, en el plan, *Scale out*:
   - [ ] mínimo 1, máximo 1 y una sola instancia activa;
   - [ ] ninguna pre-calentada: `az functionapp show ... --query siteConfig.preWarmedInstanceCount`.
-- [ ] Identidad de la app en Synapse: `CREATE USER [<app>] FROM EXTERNAL PROVIDER` + `db_datareader` en cada base.
+- [ ] Identidad de la app en Synapse: `CREATE USER [<app>] FROM EXTERNAL PROVIDER` + `db_datareader` en cada base, y `GRANT VIEW DEFINITION` en las que tengan vistas particionadas (lo exige `validate_table`; riesgo por verificar: las pruebas locales corren con un admin que ya lo tiene).
 - [ ] Las IP de salida de la Function están en el firewall del workspace.
 - [ ] Si la cola se lee con identidad: rol *Storage Queue Data Reader*.
 
@@ -114,7 +123,7 @@ y [CAPACIDAD.md](CAPACIDAD.md).
 - [ ] `POST /api/queue_task?code=<key>` con `{"task_name": "<tarea>", "params": {...}}`:
   - [ ] en Application Insights aparecen el inicio, el fin y `tarea_capacidad` con `espera_cola_min`;
   - [ ] con `HISTORY_ENABLED=true`, `GET /api/status/<run_id>` muestra la ejecución exitosa.
-- [ ] Una tarea con `validate_query(..., modo='sql')` termina bien, y el log muestra `GX <nombre> [sql] success=True data_processed_mb=...`.
+- [ ] Una tarea con `validate_table(..., particion={...}, modo='sql')` termina bien, y el log muestra `GX <nombre> [sql] tabla=... particion=... success=True data_processed_mb=...`.
 - [ ] Un fallo de calidad forzado notifica en el primer intento y no se reintenta.
 - [ ] En serie: encolar `{"task_name": ["a", "b", "c"]}`. Cada tarea empieza cuando termina la anterior, y `espera_cola_min` crece.
 - [ ] El timer `monitor_capacidad` deja `capacidad {...}` cada 30 min, con `memoria_limite_mb` cerca de 3500 en EP1.
