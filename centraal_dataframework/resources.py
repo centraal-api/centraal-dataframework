@@ -8,7 +8,7 @@ import os
 import tempfile
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from centraal_dataframework.excepciones import ErrorMotorCalidad, StorageNoConfigurado
 from centraal_dataframework.settings import Settings, get_settings
@@ -233,17 +233,33 @@ class GreatExpectationsToolKit:
         logger.info("GX %s [%s] success=%s data_processed_mb=%s", name, modo, out.success, out.data_processed_mb)
         return out
 
-    def _query_batch_definition(self, synapse: Any, name: str, sql: str) -> tuple:
-        """Asset de consulta sobre el datasource SQL de la base (uno por base y tarea)."""
+    def _sql_datasource(self, synapse: Any) -> Any:
+        """Datasource SQL de GX para la base del cliente (uno por base y tarea)."""
         database = getattr(synapse, 'database', None) or 'default'
-        datasource = self.context.data_sources.add_or_update_sql(
+        return self.context.data_sources.add_or_update_sql(
             name=f"{self.name_task}_synapse_{database}",
             connection_string=synapse.sqlalchemy_url(),
             kwargs=synapse.sqlalchemy_kwargs(),
         )
+
+    def _query_batch_definition(self, synapse: Any, name: str, sql: str) -> tuple:
+        """Asset de consulta sobre el datasource SQL de la base."""
+        datasource = self._sql_datasource(synapse)
         asset_name = f"{self.name_task}_{name}_{uuid.uuid4().hex[:8]}"
         asset = datasource.add_query_asset(name=asset_name, query=sql)
         return asset_name, asset.add_batch_definition_whole_table(f"{asset_name}_batch")
+
+    def _table_batch_definition(
+        self, synapse: Any, name: str, schema: str, table: str, particion: Optional[Tuple[str, Any]]
+    ) -> Tuple[str, Any, Dict[str, Any]]:
+        """Asset de tabla (``TableAssetSynapse``) y su batch: entera o una partición ``(columna, valor)``."""
+        from centraal_dataframework.gx_synapse import batch_definition_tabla, registrar_table_asset
+
+        datasource = self._sql_datasource(synapse)
+        asset_name = f"{self.name_task}_{name}_{uuid.uuid4().hex[:8]}"
+        asset = registrar_table_asset(datasource, asset_name, schema, table)
+        batch_def, batch_parameters = batch_definition_tabla(asset, particion)
+        return asset_name, batch_def, batch_parameters
 
     def validate_suite(self, df: Any, name: str, suite_name: str, public: bool = False) -> DQResult:
         """Valida un DataFrame contra una suite existente."""
