@@ -9,10 +9,10 @@ import pytest
 from tests.test_resources_gx import _SqliteSynapse, sqlite_synapse, toolkit  # noqa: F401 fixtures
 
 
-def _suite_conteo(toolkit, nombre):
+def _suite_conteo(tk, nombre):
     import great_expectations as gx
 
-    return toolkit._build_suite(nombre, [gx.expectations.ExpectTableRowCountToBeBetween(min_value=1)])
+    return tk._build_suite(nombre, [gx.expectations.ExpectTableRowCountToBeBetween(min_value=1)])
 
 
 def _sql_emitido(caplog):
