@@ -4,7 +4,7 @@ from __future__ import annotations
 
 
 def test_particion_invalida_message():
-    """ParticionInvalida guarda tabla y motivo y arma el mensaje."""
+    """La excepción de partición guarda tabla y motivo y arma el mensaje."""
     from centraal_dataframework import ParticionInvalida
 
     exc = ParticionInvalida('bronze.vista', 'la columna fecha no sale de filepath()')
@@ -13,7 +13,7 @@ def test_particion_invalida_message():
 
 
 def test_error_motor_calidad_message():
-    """ErrorMotorCalidad guarda nombre, modo y mensajes de GX."""
+    """La excepción de motor guarda nombre, modo y mensajes de GX."""
     from centraal_dataframework import ErrorMotorCalidad
 
     exc = ErrorMotorCalidad('ventas', 'sql', ['a', 'b'])
