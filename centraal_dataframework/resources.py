@@ -10,7 +10,7 @@ import uuid
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
-from centraal_dataframework.excepciones import StorageNoConfigurado
+from centraal_dataframework.excepciones import ErrorMotorCalidad, StorageNoConfigurado
 from centraal_dataframework.settings import Settings, get_settings
 from centraal_dataframework.utils import parse_connection_string
 
@@ -213,7 +213,9 @@ class GreatExpectationsToolKit:
             out = self._run_suite_on_df(synapse.read_df(sql), name, suite, public=public, result_format=result_format)
         else:
             asset_name, batch_def = self._query_batch_definition(synapse, name, sql)
-            out = self._run_checkpoint(asset_name, batch_def, suite, {}, public=public, result_format=result_format)
+            out = self._run_checkpoint(
+                asset_name, batch_def, suite, {}, public=public, result_format=result_format, name=name, modo='sql'
+            )
         out.modo = modo
         if before is not None:
             out.data_processed_mb = synapse.data_processed_mb() - before
@@ -258,7 +260,14 @@ class GreatExpectationsToolKit:
         asset = self.datasource.add_dataframe_asset(name=asset_name)
         batch_def = asset.add_batch_definition_whole_dataframe(f"{asset_name}_batch")
         return self._run_checkpoint(
-            asset_name, batch_def, suite, {'dataframe': df}, public=public, result_format=result_format
+            asset_name,
+            batch_def,
+            suite,
+            {'dataframe': df},
+            public=public,
+            result_format=result_format,
+            name=name,
+            modo='pandas',
         )
 
     def _run_checkpoint(
@@ -269,8 +278,14 @@ class GreatExpectationsToolKit:
         batch_parameters: Dict[str, Any],
         public: bool = False,
         result_format: Optional[str] = None,
+        name: str = '',
+        modo: str = '',
     ) -> DQResult:
-        """Valida un batch definition con un checkpoint (con data docs) y arma el DQResult."""
+        """Valida un batch definition con un checkpoint (con data docs) y arma el DQResult.
+
+        Si GX no pudo evaluar alguna expectativa (``exception_info``), lanza ``ErrorMotorCalidad`` en vez de
+        devolver un fallo de calidad: un problema del motor no es un problema de los datos.
+        """
         import great_expectations as gx
         from great_expectations.checkpoint import UpdateDataDocsAction
 
@@ -296,6 +311,9 @@ class GreatExpectationsToolKit:
         checkpoint = self.context.checkpoints.add_or_update(checkpoint)
         result = checkpoint.run(batch_parameters=batch_parameters)
 
+        mensajes = _raised_exceptions(result)
+        if mensajes:
+            raise ErrorMotorCalidad(name or asset_name, modo or 'pandas', mensajes)
         success = bool(getattr(result, 'success', False))
         failed = _failed_expectations(result)
         url = self._get_url(result, public=public)
@@ -341,6 +359,23 @@ class GreatExpectationsToolKit:
             except Exception:  # noqa: BLE001
                 logger.debug("No se pudo generar SAS para docs", exc_info=True)
         return url
+
+
+def _raised_exceptions(result: Any) -> List[str]:
+    """Mensajes de las expectativas que GX no pudo evaluar (``exception_info.raised_exception``), sin repetir."""
+    mensajes: List[str] = []
+    run_results = getattr(result, 'run_results', None) or {}
+    for value in run_results.values():
+        vr = getattr(value, 'validation_result', value)
+        for item in getattr(vr, 'results', []) or []:
+            info = getattr(item, 'exception_info', None) or {}
+            entradas = info.values() if 'raised_exception' not in info else [info]
+            for entrada in entradas:
+                if isinstance(entrada, dict) and entrada.get('raised_exception'):
+                    mensaje = str(entrada.get('exception_message') or 'error sin mensaje')
+                    if mensaje not in mensajes:
+                        mensajes.append(mensaje)
+    return mensajes
 
 
 def _failed_expectations(result: Any) -> List[str]:

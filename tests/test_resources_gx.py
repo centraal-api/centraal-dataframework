@@ -252,3 +252,17 @@ def test_validate_query_twice_reuses_the_sql_datasource(toolkit, sqlite_synapse)
     toolkit.validate_query(sqlite_synapse, 'b', QUERY, _expectations(), params={'fecha': '2026-11-01'})
     names = [ds.name for ds in toolkit.context.data_sources.all().values()]
     assert names.count('t_synapse_bronze') == 1
+
+
+@pytest.mark.parametrize('modo', ['sql', 'pandas'])
+def test_run_checkpoint_raises_on_metric_exception(toolkit, sqlite_synapse, modo):
+    """Un error técnico de GX (columna inexistente) es ErrorMotorCalidad, no un fallo de calidad."""
+    import great_expectations as gx
+
+    from centraal_dataframework import ErrorMotorCalidad
+
+    # TODO Task 7: en modo sql pasar a validate_table cuando validate_query rechace expectativas de columna.
+    exps = [gx.expectations.ExpectColumnValuesToNotBeNull(column='no_existe')]
+    with pytest.raises(ErrorMotorCalidad) as info:
+        toolkit.validate_query(sqlite_synapse, 'ventas', QUERY, exps, params={'fecha': '2026-11-01'}, modo=modo)
+    assert info.value.modo == modo and info.value.mensajes
