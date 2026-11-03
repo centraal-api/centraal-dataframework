@@ -92,9 +92,11 @@ Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverle
 ## 3. Imagen de Functions (local, con Docker Desktop encendido)
 
 - [ ] `docker run --rm mcr.microsoft.com/azure-functions/python:4-python3.12 odbcinst -q -d` lista `[ODBC Driver 18 for SQL Server]`.
-- [ ] Construir la wheel:
-  - [ ] `poetry version 0.3.0.dev0 && poetry build`;
-  - [ ] `git checkout -- pyproject.toml`, para volver a la versión del repo.
+- [ ] Construir la wheel de prueba, con la misma versión en los dos lugares donde vive (`/api/diag` lee `__version__`, no `pyproject.toml`):
+  - [ ] `poetry version 0.3.0.dev0`;
+  - [ ] `sed -i "s/^__version__ = '.*'/__version__ = '0.3.0.dev0'/" centraal_dataframework/__init__.py`;
+  - [ ] `poetry build`, y comprobar que `unzip -p dist/*.whl centraal_dataframework/__init__.py | grep __version__` dice `0.3.0.dev0`;
+  - [ ] `git checkout -- pyproject.toml centraal_dataframework/__init__.py`, para volver a la versión del repo; `git status` queda limpio (`dist/` está en `.gitignore`).
 
 ## 4. Function Premium en Azure
 
