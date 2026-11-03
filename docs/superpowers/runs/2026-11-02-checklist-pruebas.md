@@ -166,5 +166,24 @@ Código: rama `feature/version_020` tras el plan `docs/superpowers/plans/2026-11
 
 ### Pendiente fuera de esta corrida
 
-- Bloques 3, 4 y 5 del checklist. En el bloque 4 queda por verificar con la identidad de la Function el `GRANT VIEW DEFINITION` (las pruebas locales corren con un admin de Entra).
-- Limpieza de la vista y las carpetas de la trampa, con los comandos entregados a Felipe.
+- Bloques 4 y 5 del checklist. El bloque 4 no se corre en la suscripción usada para las pruebas; dónde se valida la Function está por decidir. En él queda por verificar con la identidad de la Function el `GRANT VIEW DEFINITION` (las pruebas locales corren con un admin de Entra). El bloque 5 es decisión de release.
+- Limpieza de la vista y las carpetas de la trampa: hecha por Felipe antes del push de la rama.
+
+## Corrida 4, bloque 3 (imagen de Functions y wheel)
+
+Ejecutada el 2026-11-02 sobre `f89a4b1`, en el mismo WSL (Ubuntu 24.04, systemd activo). Alcance: solo el bloque 3.
+
+### Preparación de la máquina
+
+- Docker no estaba instalado ni en el WSL ni en Windows. Se eligió Docker Engine dentro del WSL (repositorio oficial de Docker, paquetes `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`) en lugar de Docker Desktop: el checklist solo necesita `docker run` desde esta shell, la distro ya corre systemd y no se instala nada en Windows. Instalación ejecutada por Felipe con sudo; quedó Docker 29.9.2 cliente y servidor, servicio `docker` activo y habilitado, usuario en el grupo `docker`.
+- Poetry 2.5.1 ya estaba instalado (pipx). Nada más se instaló.
+
+### Resultados
+
+- PASA — `docker run --rm mcr.microsoft.com/azure-functions/python:4-python3.12 odbcinst -q -d` imprime `[ODBC Driver 18 for SQL Server]`. Detalle de la imagen (digest `sha256:98d384b6…`): `msodbcsql18 18.7.1.1-1`, `unixodbc 2.3.11`, Python 3.12.16, driver en `/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.7.so.1.1`.
+- PASA — `poetry version 0.3.0.dev0 && poetry build`: `dist/centraal_dataframework-0.3.0.dev0-py3-none-any.whl` (57,8 KB) y el sdist `.tar.gz`. La metadata de la wheel lleva `Version: 0.3.0.dev0`, `Provides-Extra: synapse`, `great-expectations (>=1.24,<1.25)` y `pyodbc` bajo el extra. Poetry emite avisos de deprecación de `[tool.poetry.extras]`, `[tool.poetry.scripts]` y clasificadores de licencia; no afectan el build.
+- PASA — `git checkout -- pyproject.toml`: `version = "0.2.0"` de vuelta y árbol limpio. `dist/` está en `.gitignore`; la wheel no se versiona.
+
+### Observación para el bloque 4
+
+`poetry version` solo cambia `pyproject.toml`. `__version__` en `centraal_dataframework/__init__.py` sigue en `0.2.0` dentro de la wheel, y `/api/diag` reporta ese valor. Con la wheel tal como se construye en el bloque 3, el ítem del bloque 4 que espera `version` `0.3.0.dev0` no cuadra: o el bloque 3 cambia también `__version__` en `__init__.py` antes de `poetry build` y restaura los dos archivos con `git checkout` (bump2version no está instalado y su configuración no contempla sufijos `dev`), o el ítem del bloque 4 espera `0.2.0`. Queda para decidir antes de correr el bloque 4.
