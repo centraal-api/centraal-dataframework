@@ -39,7 +39,7 @@ despliegue, revise `GET /api/diag`: responde 503 si una tarea perdió su driver 
 | Variable | Default | Descripción |
 |----------|---------|-------------|
 | `AZURE_STORAGE_CONNECTION_STRING` | — | Connection string del storage/datalake |
-| `STORAGE_ACCOUNT_NAME` | — | Alternativa con Managed Identity |
+| `STORAGE_ACCOUNT_NAME` | — | Alternativa con Managed Identity. El historial también acepta la conexión por identidad del host (`AzureWebJobsStorage__accountName`) |
 | `STORAGE_CONNECTION_SETTING` | `AzureWebJobsStorage` | App setting del binding de cola |
 | `QUEUE_NAME` | `tareas` | Nombre de la cola |
 | `YAML_CONFIGURACION` | `centraal_dataframework.yaml` | Ruta al YAML |

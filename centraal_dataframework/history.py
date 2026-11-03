@@ -21,13 +21,26 @@ class RunHistory:
         if not settings.history_enabled:
             return
         conn = settings.resolve_storage_connection_string()
-        if not conn:
-            logger.warning("HISTORY_ENABLED pero no hay connection string; historial desactivado.")
+        account = settings.resolve_storage_account_name()
+        if not conn and not account:
+            logger.warning(
+                "HISTORY_ENABLED pero no hay connection string ni cuenta "
+                "(%s__accountName o STORAGE_ACCOUNT_NAME); historial desactivado.",
+                settings.storage_connection_setting,
+            )
             return
         try:
             from azure.data.tables import TableServiceClient
 
-            service = TableServiceClient.from_connection_string(conn)
+            if conn:
+                service = TableServiceClient.from_connection_string(conn)
+            else:
+                # Conexión por identidad administrada, como la del host (AzureWebJobsStorage__accountName).
+                from azure.identity import DefaultAzureCredential
+
+                service = TableServiceClient(
+                    endpoint=f'https://{account}.table.core.windows.net', credential=DefaultAzureCredential()
+                )
             self._table = service.create_table_if_not_exists(settings.history_table_name)
         except Exception:  # noqa: BLE001
             logger.exception("No se pudo inicializar historial de tablas.")

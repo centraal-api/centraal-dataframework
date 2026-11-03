@@ -94,6 +94,16 @@ class Settings(BaseSettings):
             return None
         return os.environ.get(self.storage_connection_setting) or os.environ.get('AzureWebJobsStorage')
 
+    def resolve_storage_account_name(self) -> Optional[str]:
+        """Cuenta de storage para conexiones por identidad: STORAGE_ACCOUNT_NAME o ``<conexión>__accountName``.
+
+        ``<conexión>__accountName`` es la forma en que el host de Functions declara la conexión por identidad
+        administrada (``AzureWebJobsStorage__accountName``), sin cadena de conexión ni llave.
+        """
+        if self.storage_account_name:
+            return self.storage_account_name
+        return os.environ.get(f'{self.storage_connection_setting}__accountName') or None
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

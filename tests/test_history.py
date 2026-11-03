@@ -54,3 +54,72 @@ def test_history_record_with_mock_table(monkeypatch):
     assert h.get_run('rid')['status'] == 'success'
     table.query_entities.return_value = [{'RowKey': 'rid'}]
     assert h.list_runs(task_name='alpha')
+
+
+def _modulos_falsos(monkeypatch, registro):
+    """Módulos azure.data.tables y azure.identity falsos: registran el endpoint y la credencial usados."""
+
+    class FakeTSC:
+        def __init__(self, endpoint, credential=None):
+            registro['endpoint'] = endpoint
+            registro['credential'] = credential
+
+        @staticmethod
+        def from_connection_string(conn):
+            registro['conn'] = conn
+            return FakeTSC('conn', None)
+
+        def create_table_if_not_exists(self, name):
+            registro['tabla'] = name
+            return MagicMock()
+
+    class FakeCredential:
+        pass
+
+    modules = __import__('sys').modules
+    monkeypatch.setitem(modules, 'azure.data.tables', MagicMock(TableServiceClient=FakeTSC, UpdateMode=MagicMock()))
+    monkeypatch.setitem(modules, 'azure.identity', MagicMock(DefaultAzureCredential=FakeCredential))
+    return FakeCredential
+
+
+def test_history_con_identidad_por_account_name(monkeypatch):
+    """Sin connection string, con <conexión>__accountName, el historial usa la identidad administrada."""
+    monkeypatch.delenv('AzureWebJobsStorage', raising=False)
+    monkeypatch.setenv('AzureWebJobsStorage__accountName', 'stcuenta')
+    registro = {}
+    credencial = _modulos_falsos(monkeypatch, registro)
+    settings = Settings(_env_file=None, history_enabled=True, azure_storage_connection_string=None)
+
+    h = RunHistory(settings)
+
+    assert h.enabled is True
+    assert registro['endpoint'] == 'https://stcuenta.table.core.windows.net'
+    assert isinstance(registro['credential'], credencial)
+    assert registro['tabla'] == 'taskruns'
+
+
+def test_history_con_identidad_por_storage_account_name(monkeypatch):
+    """STORAGE_ACCOUNT_NAME también sirve para el historial por identidad."""
+    monkeypatch.delenv('AzureWebJobsStorage', raising=False)
+    monkeypatch.delenv('AzureWebJobsStorage__accountName', raising=False)
+    registro = {}
+    _modulos_falsos(monkeypatch, registro)
+    settings = Settings(
+        _env_file=None, history_enabled=True, azure_storage_connection_string=None, storage_account_name='stotra'
+    )
+
+    assert RunHistory(settings).enabled is True
+    assert registro['endpoint'] == 'https://stotra.table.core.windows.net'
+
+
+def test_history_sin_conexion_ni_cuenta_avisa(monkeypatch, caplog):
+    """Sin connection string ni cuenta, el historial queda desactivado y el aviso nombra las dos opciones."""
+    monkeypatch.delenv('AzureWebJobsStorage', raising=False)
+    monkeypatch.delenv('AzureWebJobsStorage__accountName', raising=False)
+    settings = Settings(
+        _env_file=None, history_enabled=True, azure_storage_connection_string=None, storage_account_name=None
+    )
+    with caplog.at_level('WARNING'):
+        h = RunHistory(settings)
+    assert h.enabled is False
+    assert 'AzureWebJobsStorage__accountName' in caplog.text
