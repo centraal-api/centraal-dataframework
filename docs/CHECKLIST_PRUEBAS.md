@@ -126,7 +126,7 @@ corrida 5 del registro (`docs/superpowers/runs/2026-11-02-checklist-pruebas.md`)
 - [x] Una partición sin datos falla por calidad (`expect_table_row_count_to_be_between`), no por motor, y no se reintenta. — corrida 5.
 - [x] Parámetros inválidos (fecha que no es ISO, identificador con `;`) fallan con `ValueError` antes de abrir Synapse (cero trazas `GX`). Hoy la cola los reintenta hasta `maxDequeueCount` como cualquier error de tarea; si debe reintentar o no es una decisión aparte (ver `PRUEBA_EN_FUNCTION.md`). — corrida 5.
 - [x] En serie: encolar `{"task_name": ["a", "b", "c"]}`. Las tareas corren una tras otra y en orden (`requests` sin solapar); `espera_cola_min` solo crece si las tareas duran más que unos segundos. — corrida 5.
-- [ ] El timer `monitor_capacidad` deja `capacidad {...}` cada 30 min, con `memoria_limite_mb` cerca de 1750 en B1 y de 3500 en EP1. Corrida 5: las trazas llegaron, pero con `memoria_limite_mb: null` en el contenedor de App Service (pendiente de arreglo).
+- [ ] El timer `monitor_capacidad` deja `capacidad {...}` cada 30 min, con `memoria_limite_mb` cerca de 1750 en B1 y de 3500 en EP1. Corrida 5: las trazas llegaron, pero con `memoria_limite_mb: null` en el contenedor de App Service; arreglado en `cce8a1b` (sin límite de cgroup usa `MemTotal`), pendiente de verificar en la Function con una imagen desde ese commit o posterior.
 
 ### Alertas y costos
 
