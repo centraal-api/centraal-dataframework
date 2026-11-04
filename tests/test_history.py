@@ -1,6 +1,8 @@
 """Tests de historial (sin Azure real)."""
 
+import sys
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from centraal_dataframework.history import RunHistory
@@ -123,3 +125,55 @@ def test_history_sin_conexion_ni_cuenta_avisa(monkeypatch, caplog):
         h = RunHistory(settings)
     assert h.enabled is False
     assert 'AzureWebJobsStorage__accountName' in caplog.text
+
+
+def _tabla_con_merge():
+    """Tabla falsa con la semántica de MERGE de Table Storage: lo que no se envía se conserva."""
+    filas = {}
+
+    class Tabla:
+        def upsert_entity(self, entity, mode=None):
+            clave = (entity['PartitionKey'], entity['RowKey'])
+            filas.setdefault(clave, {}).update(entity)
+
+        def get_entity(self, partition_key, row_key):
+            return filas[(partition_key, row_key)]
+
+    return Tabla(), filas
+
+
+def _historial_con_merge(monkeypatch):
+    monkeypatch.setitem(sys.modules, 'azure.data.tables', MagicMock(UpdateMode=MagicMock(MERGE='merge')))
+    tabla, filas = _tabla_con_merge()
+    h = RunHistory.__new__(RunHistory)
+    h.settings = Settings(history_enabled=True)
+    h._table = tabla
+    return h, filas
+
+
+def test_record_success_limpia_el_error_de_intentos_anteriores(monkeypatch):
+    """Un run_id que falló y luego pasó queda 'success' sin el texto del error viejo ni su url."""
+    h, filas = _historial_con_merge(monkeypatch)
+    started = datetime.now(timezone.utc)
+
+    h.record_start('alpha', 'rid', {'a': 1})
+    h.record_failure('alpha', 'rid', started, RuntimeError('se cayó'), url='http://viejo')
+    h.record_success('alpha', 'rid', started)
+
+    fila = filas[('alpha', 'rid')]
+    assert fila['status'] == 'success'
+    assert fila['error'] == ''
+    assert fila['url'] == ''
+    assert fila['params'] == "{'a': 1}"
+
+
+def test_record_success_conserva_la_url_del_resultado(monkeypatch):
+    """Si el resultado trae url (por ejemplo los data docs de una validación), esa es la que queda."""
+    h, filas = _historial_con_merge(monkeypatch)
+    started = datetime.now(timezone.utc)
+
+    h.record_failure('alpha', 'rid', started, RuntimeError('se cayó'), url='http://viejo')
+    h.record_success('alpha', 'rid', started, result=SimpleNamespace(url='http://nuevo'))
+
+    assert filas[('alpha', 'rid')]['url'] == 'http://nuevo'
+    assert filas[('alpha', 'rid')]['error'] == ''

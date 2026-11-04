@@ -75,6 +75,9 @@ class RunHistory:
                 'started_at': started.isoformat(),
                 'ended_at': ended.isoformat(),
                 'duration_seconds': duration,
+                # MERGE conserva lo que no se envía: un intento anterior fallido dejaría su error en una fila 'success'.
+                'error': '',
+                'url': getattr(result, 'url', '') or '',
             }
         )
 
