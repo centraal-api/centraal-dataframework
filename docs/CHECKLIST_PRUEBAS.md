@@ -1,6 +1,6 @@
 # Checklist de pruebas antes de publicar
 
-Va en orden: local, notebooks, imagen de Functions, Function Premium en Azure y publicación.
+Va en orden: local, notebooks, imagen de Functions, la librería en una Function de Azure y publicación.
 Si un bloque falla, no siga al siguiente. Más detalle en [PRUEBA_EN_FUNCTION.md](PRUEBA_EN_FUNCTION.md)
 y [CAPACIDAD.md](CAPACIDAD.md).
 
@@ -98,42 +98,40 @@ Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverle
   - [ ] `poetry build`, y comprobar que `unzip -p dist/*.whl centraal_dataframework/__init__.py | grep __version__` dice `0.3.0.dev0`;
   - [ ] `git checkout -- pyproject.toml centraal_dataframework/__init__.py`, para volver a la versión del repo; `git status` queda limpio (`dist/` está en `.gitignore`).
 
-## 4. Function Premium en Azure
+## 4. La librería en una Function de Azure
+
+Dos formas de desplegar, las dos válidas: **A** código en plan Premium (Elastic Premium, Linux, `infra/main.bicep` de
+`init`) o **B** contenedor en plan Dedicado (App Service Linux, imagen propia sobre la oficial de Functions). Evidencia:
+corrida 5 del registro (`docs/superpowers/runs/2026-11-02-checklist-pruebas.md`), hecha con la forma B en un plan B1.
 
 ### Infraestructura
 
-- [ ] Desplegar `infra/main.bicep` con `instancias=1`, `pythonVersion=3.12` y `synapseWorkspace=<ws>`.
-- [ ] En el portal, en el plan, *Scale out*:
-  - [ ] mínimo 1, máximo 1 y una sola instancia activa;
-  - [ ] ninguna pre-calentada: `az functionapp show ... --query siteConfig.preWarmedInstanceCount`.
-- [ ] Identidad de la app en Synapse: `CREATE USER [<app>] FROM EXTERNAL PROVIDER` + `db_datareader` en cada base, `GRANT VIEW DEFINITION` en las que tengan vistas particionadas (lo exige `validate_table`) y, si las vistas leen el lago con `OPENROWSET` sobre una fuente con credencial, `GRANT ADMINISTER DATABASE BULK OPERATIONS` y `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>]` (sin ellos, error 4834 *bulk load statement*; verificado en la corrida 5: las pruebas locales con un admin no lo detectan).
-- [ ] Las IP de salida de la Function están en el firewall del workspace.
-- [ ] Si la cola se lee con identidad: rol *Storage Queue Data Reader*.
+- [x] Plan e instancia. **A:** `infra/main.bicep` con `instancias=1`, `pythonVersion=3.12` y `synapseWorkspace=<ws>`; en el plan, *Scale out* con mínimo 1, máximo 1 y ninguna pre-calentada (`az functionapp show ... --query siteConfig.preWarmedInstanceCount`). **B:** plan App Service Linux (B1 o mayor) con `capacity: 1`, `alwaysOn: true` (sin Always On el host se duerme y los timers paran), `linuxFxVersion: DOCKER|<imagen con digest>`, `WEBSITES_ENABLE_APP_SERVICE_STORAGE=false` y pull del registro con identidad. — corrida 5 (B).
+- [x] Storage del host por identidad, sin llave: `AzureWebJobsStorage__accountName` (con identidad asignada por el usuario, además `__credential=managedidentity`, `__clientId` y `AZURE_CLIENT_ID`); roles *Storage Blob Data Owner*, *Storage Queue Data Contributor* y *Storage Table Data Contributor*; cuenta sin namespace jerárquico. Cubre la cola, el timer y el historial. — corrida 5.
+- [x] Identidad de la app en Synapse serverless, sin privilegios de administrador: `CREATE USER [<identidad>] FROM EXTERNAL PROVIDER`, `db_datareader`, `GRANT VIEW DEFINITION` (lo exige `validate_table`) y, si las vistas leen el lago con `OPENROWSET` sobre una fuente con credencial, `GRANT ADMINISTER DATABASE BULK OPERATIONS` y `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>]`. Sin estos dos, error 4834 *bulk load statement*; un administrador no lo nota porque ya los tiene. — corrida 5.
+- [x] Red. **A:** las IP de salida de la Function en el firewall del workspace. **B con VNet:** subred propia delegada a `Microsoft.Web/serverFarms`, *Route All* y NAT Gateway; la IP del NAT es la única regla de la Function en el firewall. — corrida 5 (B con VNet).
+- [x] `YAML_CONFIGURACION` con **ruta absoluta** (`/home/site/wwwroot/centraal_dataframework.yaml`): el worker no arranca en la carpeta de la app. — corrida 5.
 
 ### Despliegue
 
-- [ ] La wheel está en `wheels/` y `requirements.txt` la referencia con `[synapse]`.
-- [ ] `func azure functionapp publish <app>` termina, y el log del build remoto muestra que instaló la wheel.
+- [ ] **A:** la wheel está en `wheels/` y `requirements.txt` la referencia con `[synapse]`; `func azure functionapp publish <app>` termina y el log del build remoto muestra que instaló la wheel.
+- [x] **B:** `requirements.txt` con `centraal-dataframework[synapse] @ https://github.com/centraal-api/centraal-dataframework/archive/<sha>.tar.gz` (commit fijado por SHA, ya empujado); el Dockerfile comprueba `'ODBC Driver 18 for SQL Server' in pyodbc.drivers()` y la construcción falla si la imagen base dejó de traerlo; las pruebas de la app corren dentro de la imagen en una etapa `pruebas` (`docker build --target pruebas`), antes de la etapa `app`, así que una imagen con pruebas rotas no existe; imagen construida con `az acr build` y referenciada por digest. — corrida 5.
 
 ### Verificación
 
-- [ ] `GET /api/diag?code=<key>` responde 200 con:
-  - `version` `0.3.0.dev0`;
-  - `python` 3.12.x;
-  - el driver 18 en `odbc_drivers`;
-  - `problemas: {}`.
-- [ ] `POST /api/queue_task?code=<key>` con `{"task_name": "<tarea>", "params": {...}}`:
-  - [ ] en Application Insights aparecen el inicio, el fin y `tarea_capacidad` con `espera_cola_min`;
-  - [ ] con `HISTORY_ENABLED=true`, `GET /api/status/<run_id>` muestra la ejecución exitosa.
-- [ ] Una tarea con `validate_table(..., particion={...}, modo='sql')` termina bien, y el log muestra `GX <nombre> [sql] tabla=... particion=... success=True data_processed_mb=...`.
-- [ ] Un fallo de calidad forzado notifica en el primer intento y no se reintenta.
-- [ ] En serie: encolar `{"task_name": ["a", "b", "c"]}`. Cada tarea empieza cuando termina la anterior, y `espera_cola_min` crece.
-- [ ] El timer `monitor_capacidad` deja `capacidad {...}` cada 30 min, con `memoria_limite_mb` cerca de 3500 en EP1.
+- [x] `GET /api/diag?code=<key>` responde 200 con `version` (`0.3.0.dev0` con la wheel de prueba; la del commit, por ejemplo `0.2.0`, con el tarball), `python` 3.12.x, el driver 18 en `odbc_drivers` y `problemas: {}`. Si el host arranca con cero funciones y Application Insights solo dice `Worker failed to index functions`, reproduzca en local con la misma imagen (`PRUEBA_EN_FUNCTION.md`). — corrida 5.
+- [x] `POST /api/queue_task?code=<key>` con `{"task_name": "<tarea>", "params": {...}}`: en Application Insights aparecen el inicio, el fin y `tarea_capacidad` con `espera_cola_min`; con `HISTORY_ENABLED=true`, `GET /api/status/<run_id>` muestra `success` y `GET /api/status?task=<tarea>` lista la corrida. — corrida 5.
+- [x] Una tarea con `validate_table(..., particion={...}, modo='sql')` termina bien y el log muestra `GX <nombre> [sql] tabla=... particion=... success=True data_processed_mb=...`. — corrida 5 (40 MB: cuatro consultas al mínimo de 10 MB).
+- [x] Un fallo de calidad forzado notifica en el primer intento y no se reintenta: una sola ejecución de `execute_tasks_inqueue`, sin cola `*-poison`, historial `failed`. — corrida 5.
+- [x] Una partición sin datos falla por calidad (`expect_table_row_count_to_be_between`), no por motor, y no se reintenta. — corrida 5.
+- [x] Parámetros inválidos (fecha que no es ISO, identificador con `;`) fallan con `ValueError` antes de abrir Synapse (cero trazas `GX`). Hoy la cola los reintenta hasta `maxDequeueCount` como cualquier error de tarea; si debe reintentar o no es una decisión aparte (ver `PRUEBA_EN_FUNCTION.md`). — corrida 5.
+- [x] En serie: encolar `{"task_name": ["a", "b", "c"]}`. Las tareas corren una tras otra y en orden (`requests` sin solapar); `espera_cola_min` solo crece si las tareas duran más que unos segundos. — corrida 5.
+- [ ] El timer `monitor_capacidad` deja `capacidad {...}` cada 30 min, con `memoria_limite_mb` cerca de 1750 en B1 y de 3500 en EP1. Corrida 5: las trazas llegaron, pero con `memoria_limite_mb: null` en el contenedor de App Service (pendiente de arreglo).
 
 ### Alertas y costos
 
-- [ ] Prueba de disponibilidad de Application Insights sobre `/api/diag`, con alerta si falla.
-- [ ] Alerta sobre las trazas que contienen `CAPACIDAD:`.
+- [x] Prueba de disponibilidad de Application Insights sobre `/api/diag`, con alerta si falla. — corrida 5 (tres ubicaciones).
+- [x] Alerta sobre las trazas que contienen `CAPACIDAD:` (regla de consulta programada sobre `traces | where message startswith "CAPACIDAD:"`, cada 30 min, umbral mayor que 0, severidad 3, hacia el action group del ambiente). — corrida 5 (desplegada; sin disparo observado porque no hubo advertencias).
 - [ ] `sp_set_data_processed_limit` configurado en el workspace.
 - [ ] Un día de operación normal sin advertencias `CAPACIDAD:`, o con advertencias explicadas.
 
@@ -142,4 +140,4 @@ Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverle
 - [ ] Todo lo anterior marcado.
 - [ ] `bump2version` a la versión elegida, y mover `[Unreleased]` en el CHANGELOG.
 - [ ] Merge a main y push del tag `v<versión>`; `release.yml` publica en PyPI.
-- [ ] En la Function: cambiar la wheel por `centraal-dataframework[synapse]==<versión>`, borrar `wheels/`, redesplegar y repetir `/api/diag`.
+- [ ] En la Function: cambiar la wheel (A) o el tarball del commit (B) por `centraal-dataframework[synapse]==<versión>`, borrar `wheels/` si existe, redesplegar o reconstruir la imagen, y repetir `/api/diag`.
