@@ -80,7 +80,11 @@ Notas sobre las mediciones:
 
 - **Memoria pico:** es el máximo del proceso worker desde que arrancó (`ru_maxrss`). Refleja la tarea más
   pesada desde el último reinicio, no la de ahora.
-- **Memoria de la instancia:** sale del cgroup del contenedor.
+- **Memoria de la instancia:** sale del límite de cgroup del contenedor. App Service no le fija uno al contenedor
+  Linux, así que ahí se toma `MemTotal` de `/proc/meminfo`. Ojo: `MemTotal` es la memoria de la **VM**, no de la
+  app; coincide con la de la instancia solo cuando la app está sola en el plan (una app en B1: cerca de 1750 MB;
+  EP1: cerca de 3500 MB). Si el plan comparte varias apps, el porcentaje del monitor sale optimista; el aviso
+  `CAPACIDAD:` sigue usando el umbral configurado.
 - **En local (Windows) no hay datos de memoria:** esos campos quedan en `null` y no se evalúan.
 - **Cola:** se lee con la misma conexión del binding (`STORAGE_CONNECTION_SETTING`, por defecto
   `AzureWebJobsStorage`). Acepta un connection string o una identidad (`<conexión>__accountName`).

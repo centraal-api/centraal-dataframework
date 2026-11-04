@@ -67,11 +67,46 @@ def test_memoria_limite_cgroup_v2(tmp_path, monkeypatch):
 
 
 def test_memoria_limite_sin_limite(tmp_path, monkeypatch):
-    """'max' o un valor absurdo significa sin límite: None."""
+    """Sin límite de cgroup y sin /proc/meminfo: None."""
     f = tmp_path / 'memory.max'
     f.write_text('max')
     monkeypatch.setattr(capacidad, '_CGROUP_FILES', (str(f), str(tmp_path / 'no_existe')))
+    monkeypatch.setattr(capacidad, '_MEMINFO', str(tmp_path / 'sin_meminfo'))
     assert capacidad.memoria_limite_mb() is None
+
+
+def _fuentes(tmp_path, monkeypatch, cgroup=None, meminfo_kb=None):
+    """Monta las dos fuentes en un sistema de archivos falso: el cgroup y /proc/meminfo."""
+    f = tmp_path / 'memory.max'
+    f.write_text('max' if cgroup is None else str(cgroup * 1024 * 1024))
+    monkeypatch.setattr(capacidad, '_CGROUP_FILES', (str(f),))
+    m = tmp_path / 'meminfo'
+    if meminfo_kb is not None:
+        m.write_text(f'MemTotal:       {meminfo_kb} kB\nMemFree:        1000 kB\n')
+    monkeypatch.setattr(capacidad, '_MEMINFO', str(m))
+
+
+def test_memoria_limite_cgroup_gana_sobre_meminfo(tmp_path, monkeypatch):
+    """Con límite real de cgroup, ese manda aunque /proc/meminfo diga otra cosa."""
+    _fuentes(tmp_path, monkeypatch, cgroup=3584, meminfo_kb=16_000_000)
+    assert capacidad.memoria_limite_mb() == pytest.approx(3584)
+
+
+def test_memoria_limite_sin_cgroup_usa_meminfo(tmp_path, monkeypatch):
+    """App Service no fija límite de cgroup al contenedor: vale MemTotal de la VM (B1: 1,75 GB → cerca de 1750 MB)."""
+    _fuentes(tmp_path, monkeypatch, cgroup=None, meminfo_kb=1_792_000)
+    assert capacidad.memoria_limite_mb() == pytest.approx(1750)
+
+
+def test_memoria_limite_cgroup_v1_sin_limite_usa_meminfo(tmp_path, monkeypatch):
+    """El valor enorme de cgroup v1 también significa sin límite: se pasa a MemTotal."""
+    f = tmp_path / 'memory.limit_in_bytes'
+    f.write_text('9223372036854771712')
+    monkeypatch.setattr(capacidad, '_CGROUP_FILES', (str(f),))
+    m = tmp_path / 'meminfo'
+    m.write_text('MemTotal:       1792000 kB\n')
+    monkeypatch.setattr(capacidad, '_MEMINFO', str(m))
+    assert capacidad.memoria_limite_mb() == pytest.approx(1750)
 
 
 def test_estado_cola_cuenta_y_mensaje_mas_viejo():

@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `memoria_limite_mb` ya no queda en `null` en App Service Linux: sin límite de cgroup usa `MemTotal` de `/proc/meminfo`, la memoria de la VM (la de la instancia cuando la app está sola en el plan).
 - `POST /api/queue_task` deja siempre una lista de mensajes en la cola, aunque sea una sola tarea, y la anotación del binding de salida es `func.Out[List[str]]`. Con `Out[Union[str, List[str]]]` el worker de Functions rechazaba el binding (`binding msg has invalid non-type annotation`) y no indexaba ninguna función de la app: el host arrancaba sin rutas ni disparadores.
 
 ### Changed

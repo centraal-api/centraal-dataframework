@@ -22,6 +22,11 @@ logger = logging.getLogger(__name__)
 
 _CGROUP_FILES = ('/sys/fs/cgroup/memory.max', '/sys/fs/cgroup/memory/memory.limit_in_bytes')
 _SIN_LIMITE_MB = 1024 * 1024  # cgroup v1 reporta un número enorme cuando no hay límite
+# App Service no fija un límite de cgroup al contenedor Linux (el cgroup dice 'max'). Entonces la memoria de la
+# instancia se toma de MemTotal en /proc/meminfo: es la memoria de la VM, que coincide con la de la app solo cuando
+# la app está sola en el plan (una app en B1: cerca de 1750 MB). Con varias apps en el plan, el porcentaje del
+# monitor sale optimista.
+_MEMINFO = '/proc/meminfo'
 
 
 @dataclass
@@ -48,7 +53,16 @@ def memoria_pico_mb() -> Optional[float]:
 
 
 def memoria_limite_mb() -> Optional[float]:
-    """Memoria de la instancia según el cgroup; None si no hay límite o no se puede leer."""
+    """Memoria de la instancia: el límite del cgroup; si no lo hay, MemTotal de /proc/meminfo; si no, None.
+
+    MemTotal es la memoria de la VM, no de la app: vale como memoria de la instancia solo cuando la app está sola
+    en el plan (App Service Linux no fija límite de cgroup al contenedor).
+    """
+    limite = _limite_cgroup_mb()
+    return limite if limite is not None else _limite_meminfo_mb()
+
+
+def _limite_cgroup_mb() -> Optional[float]:
     for path in _CGROUP_FILES:
         try:
             raw = open(path, encoding='utf-8').read().strip()
@@ -61,6 +75,17 @@ def memoria_limite_mb() -> Optional[float]:
         except ValueError:
             continue
         return None if mb >= _SIN_LIMITE_MB else mb
+    return None
+
+
+def _limite_meminfo_mb() -> Optional[float]:
+    try:
+        with open(_MEMINFO, encoding='utf-8') as f:
+            for line in f:
+                if line.startswith('MemTotal:'):
+                    return int(line.split()[1]) / 1024
+    except (OSError, ValueError, IndexError):
+        return None
     return None
 
 
