@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from centraal_dataframework.config import TaskConfig
-from centraal_dataframework.excepciones import ErrorEnTarea, TareaDuplicada, TareaNoDefinida
+from centraal_dataframework.excepciones import ErrorEnTarea, ParametrosInvalidos, TareaDuplicada, TareaNoDefinida
 from centraal_dataframework.runner import Runner
 
 
@@ -108,3 +108,56 @@ def test_run_task_error_notifies(runner, monkeypatch):
 def test_dependents_of(runner):
     """Mapa de dependientes."""
     assert runner.dependents_of('alpha') == ['gamma']
+
+
+class _HistorialFalso:
+    """Historial que guarda lo que el runner le pide registrar."""
+
+    def __init__(self):
+        self.inicios, self.exitos, self.fallos = [], [], []
+
+    def record_start(self, task_name, run_id, params):
+        self.inicios.append(task_name)
+
+    def record_success(self, task_name, run_id, started, result=None):
+        self.exitos.append(task_name)
+
+    def record_failure(self, task_name, run_id, started, error, url=''):
+        self.fallos.append((task_name, str(error)))
+
+
+def test_parametros_invalidos_es_un_value_error():
+    """La excepción hereda de ValueError y nombra la tarea y el motivo."""
+    e = ParametrosInvalidos('alpha', "lote '24/09/2026' no es una fecha ISO")
+    assert isinstance(e, ValueError)
+    assert e.task_name == 'alpha'
+    assert 'alpha' in str(e) and '24/09/2026' in str(e)
+
+
+def test_run_task_parametros_invalidos_se_relanza_sin_envolver(runner, monkeypatch):
+    """Un fallo definitivo de parámetros: historial 'failed' con el motivo, aviso una vez y la excepción tal cual."""
+    avisos = []
+    monkeypatch.setattr(runner.notifier, 'notify_error', lambda *a, **k: avisos.append(a))
+    runner.history = _HistorialFalso()
+
+    def mal_llamada(**kwargs):
+        raise ParametrosInvalidos('alpha', 'lote no es ISO')
+
+    runner.add_task(mal_llamada, 'alpha')
+    with pytest.raises(ParametrosInvalidos):
+        runner.run_task('alpha', notify=False, notify_dq=True)
+
+    assert runner.history.fallos == [('alpha', "Parámetros inválidos en 'alpha': lote no es ISO")]
+    assert len(avisos) == 1  # con la regla de los fallos definitivos (notify_dq), no con la de notify
+
+
+def test_run_task_value_error_comun_sigue_como_error_en_tarea(runner, monkeypatch):
+    """Regresión: un ValueError común no es definitivo; sale envuelto en ErrorEnTarea como hoy."""
+    monkeypatch.setattr(runner.notifier, 'notify_error', lambda *a, **k: None)
+
+    def boom(**kwargs):
+        raise ValueError('algo')
+
+    runner.add_task(boom, 'alpha')
+    with pytest.raises(ErrorEnTarea):
+        runner.run_task('alpha', notify=True)

@@ -5,8 +5,10 @@ from __future__ import annotations
 import json
 from types import SimpleNamespace
 
+import pytest
+
 from centraal_dataframework.blueprints import execute_tasks_inqueue, queue_task
-from centraal_dataframework.excepciones import ErrorEnTarea
+from centraal_dataframework.excepciones import ErrorEnTarea, ParametrosInvalidos
 
 
 class FakeHttpRequest:
@@ -171,6 +173,40 @@ def test_dependent_dq_failure_does_not_retry_parent(runner, monkeypatch):
 
     msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
     execute_tasks_inqueue(msg)  # type: ignore[arg-type]
+
+
+def test_parametros_invalidos_no_se_reintenta_ni_corre_dependientes(runner, monkeypatch):
+    """Un fallo de parámetros es definitivo: una sola ejecución (el mensaje se consume), aviso y sin dependientes."""
+    from centraal_dataframework.tasks import task
+
+    @task(name='alpha')
+    def alpha(ctx):
+        raise ParametrosInvalidos('alpha', 'lote no es ISO')
+
+    avisos = []
+    monkeypatch.setattr(runner.notifier, 'notify_error', lambda *a, **k: avisos.append(True))
+    dependientes = []
+    monkeypatch.setattr(runner, 'dependents_of', lambda name: dependientes.append(name) or [])
+
+    msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
+    execute_tasks_inqueue(msg)  # type: ignore[arg-type]  # no lanza: no hay reintento ni cola poison
+
+    assert avisos == [True]
+    assert dependientes == []
+
+
+def test_value_error_comun_se_reintenta(runner, monkeypatch):
+    """Regresión: un ValueError común sigue siendo error de tarea y el disparador lo relanza (la cola reintenta)."""
+    from centraal_dataframework.tasks import task
+
+    @task(name='alpha')
+    def alpha(ctx):
+        raise ValueError('algo')
+
+    monkeypatch.setattr(runner.notifier, 'notify_error', lambda *a, **k: None)
+    msg = SimpleNamespace(get_body=lambda: b'alpha', dequeue_count=1)
+    with pytest.raises(ErrorEnTarea):
+        execute_tasks_inqueue(msg)  # type: ignore[arg-type]
 
 
 def _uses(*names):

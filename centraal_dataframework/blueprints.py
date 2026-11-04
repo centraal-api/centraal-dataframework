@@ -11,7 +11,12 @@ from typing import List
 import azure.functions as func
 
 from centraal_dataframework import capacidad
-from centraal_dataframework.excepciones import ErrorEnTarea, ErrorTareaCalidadDatos, TareaNoDefinida
+from centraal_dataframework.excepciones import (
+    ErrorEnTarea,
+    ErrorTareaCalidadDatos,
+    ParametrosInvalidos,
+    TareaNoDefinida,
+)
 from centraal_dataframework.runner import get_runner
 from centraal_dataframework.settings import get_settings
 from centraal_dataframework.utils import build_queue_message, parse_queue_message
@@ -234,6 +239,14 @@ def _run_queued_task(runner, settings, msg, task_name: str, params: dict, run_id
         return
     except ErrorTareaCalidadDatos:
         logger.error("Tarea %s falló por calidad de datos; no se reintenta ni se ejecutan dependientes", task_name)
+        return
+    except ParametrosInvalidos as error:
+        # Igual de definitivo que el fallo de calidad: una sola ejecución y el mensaje se consume (sin cola poison).
+        logger.error(
+            "Tarea %s falló por parámetros inválidos (%s); no se reintenta ni se ejecutan dependientes",
+            task_name,
+            error.motivo,
+        )
         return
     except ErrorEnTarea:
         if is_last_attempt:

@@ -99,6 +99,19 @@ Cada plataforma es un recurso distinto del contexto y cada tarea **declara** cu�
 - En la Function, un fallo de calidad se notifica en el primer intento y **no se reintenta** (los datos
   no cambian entre intentos), y sus dependientes no se ejecutan. Los demás errores se reintentan hasta
   `MAX_RETRIES` y notifican solo en el último intento.
+- Un error de **parámetros** también es definitivo si la tarea lo declara con `ParametrosInvalidos`: el
+  runner lo registra como `failed`, avisa una vez (con la regla de `notify_dq`) y la cola **no lo reintenta**
+  ni lo manda a `*-poison`. Un `ValueError` común sí se reintenta, porque la librería no sabe de dónde sale.
+
+  ```python
+  from centraal_dataframework import ParametrosInvalidos
+
+  @task(uses=['synapse'])
+  def validar_foto(ctx: TaskContext):
+      lote = str(ctx.params.get('lote', ''))
+      if not LOTE_ISO.match(lote):
+          raise ParametrosInvalidos('validar_foto', f"lote {lote!r} no es una fecha ISO")
+  ```
 
 **Conexiones con nombre.** `'datalake:curado'` usa solo las variables con sufijo `__CURADO`
 (`AZURE_STORAGE_CONNECTION_STRING__CURADO`, `STORAGE_ACCOUNT_NAME__CURADO`). `'synapse:gold'` usa

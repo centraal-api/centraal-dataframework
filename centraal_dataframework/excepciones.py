@@ -121,3 +121,18 @@ class ErrorMotorCalidad(Exception):
         self.mensajes = list(mensajes)
         self.message = f"GX no pudo evaluar {name!r} en modo {modo!r}: " + ' | '.join(self.mensajes)
         super().__init__(self.message)
+
+
+class ParametrosInvalidos(ValueError):
+    """Fallo definitivo: los parámetros de la tarea no sirven (no cambian entre intentos, así que no se reintenta).
+
+    La tarea la lanza al validar sus parámetros. Hereda de ``ValueError`` para que el código que captura
+    ``ValueError`` siga funcionando; el runner la distingue de un ``ValueError`` común, que sí se reintenta.
+    """
+
+    def __init__(self, task_name: str, motivo: str):
+        """Inicializa con la tarea y el motivo."""
+        self.task_name = task_name
+        self.motivo = motivo
+        self.message = f"Parámetros inválidos en {task_name!r}: {motivo}"
+        super().__init__(self.message)

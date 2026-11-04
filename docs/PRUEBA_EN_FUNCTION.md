@@ -84,7 +84,7 @@ GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>] TO [<app>];
 -- db_datareader esté; un administrador no lo nota porque ya los tiene.
 ```
 
-Dos cosas más que la primera Function real enseñó:
+Tres cosas más que la primera Function real enseñó:
 
 - `YAML_CONFIGURACION` va con **ruta absoluta** (`/home/site/wwwroot/centraal_dataframework.yaml`): el worker de
   Python no arranca en la carpeta de la app y una ruta relativa no se encuentra.
@@ -92,6 +92,10 @@ Dos cosas más que la primera Function real enseñó:
   detalle está en el worker: reproduzca en local con la misma imagen y llame a `loader.index_function_app` y
   `loader.process_indexed_function` del worker (`/azure-functions-host/workers/python/<versión>/LINUX/X64`).
   Una sola anotación de binding que el worker no acepte descarta todas las funciones.
+- Un error de parámetros (una fecha que no es ISO, un identificador con `;`) no cambia entre intentos. Si la tarea
+  lo lanza como `ParametrosInvalidos`, la cola lo trata como el fallo de calidad: una sola ejecución, aviso en el
+  primer intento, sin dependientes y sin mensaje en `*-poison`. Un `ValueError` común sigue reintentándose hasta
+  `maxDequeueCount`, como cualquier error de tarea.
 
 Si el workspace tiene firewall, agregue las IP de salida de la Function
 (`az functionapp show -g <rg> -n <app> --query outboundIpAddresses`) o use integración con VNet.

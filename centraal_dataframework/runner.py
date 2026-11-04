@@ -13,6 +13,7 @@ from centraal_dataframework.config import DQSilence, FrameworkConfig, TaskConfig
 from centraal_dataframework.excepciones import (
     ErrorEnTarea,
     ErrorTareaCalidadDatos,
+    ParametrosInvalidos,
     RecursoNoConfigurado,
     TareaDuplicada,
     TareaNoDefinida,
@@ -237,7 +238,9 @@ class Runner:
 
         Un DQResult fallido termina en ErrorTareaCalidadDatos, salvo que la tarea tenga un silencio de DQ
         vigente (``silenciar_dq`` en el YAML): entonces solo se registra en el log y se devuelve el resultado.
-        ``notify_dq`` controla la notificación de calidad aparte de ``notify`` (por defecto, igual a ``notify``).
+        ``notify_dq`` es la regla de aviso de los fallos definitivos, los que no cambian entre intentos: el fallo de
+        calidad y ``ParametrosInvalidos``. Va aparte de ``notify`` (por defecto, igual a ``notify``) para que la cola
+        los avise en el primer intento aunque los demás errores se avisen en el último.
         """
         func_to_execute = self.get_task(task_name)
         emails = self.get_emails(task_name)
@@ -281,6 +284,10 @@ class Runner:
             if raise_on_error:
                 raise
             return None
+        except ParametrosInvalidos as error:
+            return self._fallo_de_parametros(
+                task_name, run_id, started, error, emails, notify, notify_dq, raise_on_error
+            )
         except Exception as error_tarea:  # noqa: BLE001
             logger.error("se presento error en %s", task_name, exc_info=True)
             if self.history:
@@ -290,6 +297,20 @@ class Runner:
             if raise_on_error:
                 raise ErrorEnTarea(task_name) from error_tarea
             return None
+
+    def _fallo_de_parametros(self, task_name, run_id, started, error, emails, notify, notify_dq, raise_on_error):
+        """Fallo definitivo de parámetros: historial, aviso con la regla de ``notify_dq`` y la excepción tal cual.
+
+        Se relanza sin envolver en ``ErrorEnTarea`` para que la cola no la reintente.
+        """
+        logger.error("Parámetros inválidos en %s: %s", task_name, error.motivo)
+        if self.history:
+            self.history.record_failure(task_name, run_id, started, error)
+        if notify if notify_dq is None else notify_dq:
+            self.notifier.notify_error(emails, error, task_name)
+        if raise_on_error:
+            raise error
+        return None
 
 
 def _raise_if_dq_failed(task_name: str, result: Any) -> None:

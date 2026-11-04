@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Monitor de capacidad: timer `monitor_capacidad` cada 30 min que mide la cola de tareas (mensajes y espera del más viejo) y la memoria pico del worker frente a la de la instancia. Deja la traza `capacidad` y, sobre los umbrales `CAPACIDAD_COLA_MAX`, `CAPACIDAD_ESPERA_MAX_MIN` y `CAPACIDAD_MEMORIA_PCT`, advertencias `CAPACIDAD:` que recomiendan otra instancia o una más grande. Cada ejecución de la cola deja `tarea_capacidad` con su espera y la memoria pico. Guía en `docs/CAPACIDAD.md`.
 - Dependencia `azure-storage-queue` (para medir la cola).
+- `ParametrosInvalidos(ValueError)`: la tarea la lanza cuando sus parámetros no sirven. El runner lo trata como un fallo definitivo, igual que el de calidad: historial `failed` con el motivo, aviso en el primer intento (regla de `notify_dq`), y la cola no lo reintenta ni lo manda a `*-poison`. Un `ValueError` común se sigue reintentando.
 - El historial (`HISTORY_ENABLED`) funciona con la conexión por identidad administrada del host: sin cadena de conexión, toma la cuenta de `<conexión>__accountName` (por ejemplo `AzureWebJobsStorage__accountName`) o de `STORAGE_ACCOUNT_NAME` y usa `DefaultAzureCredential`. Nuevo `Settings.resolve_storage_account_name()`.
 - `docs/02_great_expectations.ipynb` muestra la misma suite sobre un DataFrame en memoria, un archivo del datalake y Synapse, en `modo='sql'` y `modo='pandas'`. Checklist de pruebas en `docs/CHECKLIST_PRUEBAS.md`.
 
