@@ -77,9 +77,21 @@ del workspace:
 CREATE USER [<app>] FROM EXTERNAL PROVIDER;
 ALTER ROLE db_datareader ADD MEMBER [<app>];
 GRANT VIEW DEFINITION TO [<app>];  -- validate_table lee la definición de la vista para verificar la partición
--- si las vistas leen el lago con credencial:
--- GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>] TO [<app>];
+-- Si las vistas leen el lago con OPENROWSET sobre una fuente externa con credencial (serverless), hacen falta los dos:
+GRANT ADMINISTER DATABASE BULK OPERATIONS TO [<app>];
+GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>] TO [<app>];
+-- Sin ellos, el SELECT falla con el error 4834 ("You do not have permission to use the bulk load statement") aunque
+-- db_datareader esté; un administrador no lo nota porque ya los tiene.
 ```
+
+Dos cosas más que la primera Function real enseñó:
+
+- `YAML_CONFIGURACION` va con **ruta absoluta** (`/home/site/wwwroot/centraal_dataframework.yaml`): el worker de
+  Python no arranca en la carpeta de la app y una ruta relativa no se encuentra.
+- Si el host arranca con cero funciones y Application Insights solo dice `Worker failed to index functions`, el
+  detalle está en el worker: reproduzca en local con la misma imagen y llame a `loader.index_function_app` y
+  `loader.process_indexed_function` del worker (`/azure-functions-host/workers/python/<versión>/LINUX/X64`).
+  Una sola anotación de binding que el worker no acepte descarta todas las funciones.
 
 Si el workspace tiene firewall, agregue las IP de salida de la Function
 (`az functionapp show -g <rg> -n <app> --query outboundIpAddresses`) o use integración con VNet.

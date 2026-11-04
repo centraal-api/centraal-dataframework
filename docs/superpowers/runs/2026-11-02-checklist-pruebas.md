@@ -187,3 +187,51 @@ Ejecutada el 2026-11-02 sobre `f89a4b1`, en el mismo WSL (Ubuntu 24.04, systemd 
 ### Observación para el bloque 4
 
 `poetry version` solo cambia `pyproject.toml`. `__version__` en `centraal_dataframework/__init__.py` sigue en `0.2.0` dentro de la wheel, y `/api/diag` reporta ese valor. Con la wheel tal como se construye en el bloque 3, el ítem del bloque 4 que espera `version` `0.3.0.dev0` no cuadra: o el bloque 3 cambia también `__version__` en `__init__.py` antes de `poetry build` y restaura los dos archivos con `git checkout` (bump2version no está instalado y su configuración no contempla sufijos `dev`), o el ítem del bloque 4 espera `0.2.0`. Queda para decidir antes de correr el bloque 4.
+
+## Corrida 5, bloque 4 (la librería en una Function real, plan Dedicado)
+
+Ejecutada el 2026-11-04 sobre `f317ddc`, en el ambiente de desarrollo de un cliente. El bloque 4 del checklist está
+escrito para una Function Premium con despliegue de código; aquí se corrió sobre una Function **en contenedor**
+(imagen oficial `azure-functions/python:4-python3.12`), en un plan App Service Linux **B1**, con identidad asignada por el
+usuario, storage del host por identidad (sin llave compartida) e integración con VNet. Los ítems de EP1 se adaptan a eso.
+Los nombres de recursos, bases, esquemas y tablas del cliente no se registran aquí.
+
+### Lo que encontró la corrida (y se arregló antes de seguir)
+
+- **FALLA → arreglado en `f317ddc`.** El host arrancaba con **cero funciones**: `Worker failed to index functions`, sin
+  detalle en Application Insights. Reproducido en local con la misma imagen: `process_indexed_function` del worker lanza
+  `FunctionLoadError: queue_task: binding msg has invalid non-type annotation azure.functions._abc.Out[typing.Union[str,
+  typing.List[str]]]`. El worker exige un tipo concreto en la anotación de un binding y, al rechazar uno, descarta todas
+  las funciones de la app. `queue_task` pasa a `func.Out[List[str]]` y encola siempre una lista.
+- **FALLA → documentado.** `YAML_CONFIGURACION` con ruta relativa no se encuentra: el worker no arranca en la carpeta de
+  la app (su directorio de trabajo es `/`). En la app hay que dar la ruta absoluta (`/home/site/wwwroot/...`).
+- **FALLA → documentado en el checklist y en `PRUEBA_EN_FUNCTION.md`.** Con `db_datareader` + `VIEW DEFINITION`, la
+  primera `validate_table` en modo `sql` falló con el error 4834 de SQL Server (*You do not have permission to use the
+  bulk load statement*). Las vistas de la capa leen el lago con `OPENROWSET` sobre una fuente externa con credencial, y
+  en el pool serverless eso exige además `ADMINISTER DATABASE BULK OPERATIONS` y `REFERENCES` sobre la credencial. Las
+  pruebas locales nunca lo vieron porque corren con un administrador. Es el riesgo que el ítem de identidad del bloque 4
+  dejaba "por verificar".
+
+### Resultados
+
+- PASA — `GET /api/diag`: 200 con `version` `0.2.0` (instalada desde el commit, no desde una wheel `.dev0`), Python 3.12.16,
+  `ODBC Driver 18 for SQL Server`, `problemas: {}`.
+- PASA — `POST /api/queue_task` con una tarea `validate_table(..., particion={...}, modo='sql')` sobre una vista
+  particionada de la primera capa: `GX … [sql] … particion=<columna> success=True data_processed_mb=40.0` (cuatro consultas
+  al mínimo de 10 MB). La misma llamada probó la salida por la IP fija de la VNet (única regla del firewall), el driver,
+  la identidad y la poda.
+- PASA — Historial por identidad administrada (`HISTORY_ENABLED=true`, sin cadena de conexión): `GET /api/status/<run_id>`
+  → `success` con inicio y fin; `GET /api/status?task=<tarea>` lista la corrida. Observación: la fila conserva el campo
+  `error` de intentos anteriores fallidos aunque el estado final sea `success`.
+- PASA — Fallo de calidad forzado (`expect_column_values_to_be_null` sobre la columna de partición): `success=False`,
+  "no se reintenta", una sola ejecución de `execute_tasks_inqueue`, sin cola `*-poison`; historial `failed`. 30 MB.
+- PASA — Partición sin datos: `success=False` por `expect_table_row_count_to_be_between`, sin `ErrorMotorCalidad`,
+  sin reintento. 20 MB.
+- PASA — Parámetros inválidos (fecha que no es ISO, identificador con `; drop`): la tarea falla con `ValueError` antes
+  de abrir Synapse (ninguna traza `GX`), y la cola la reintenta hasta `maxDequeueCount` como cualquier error de tarea.
+  Queda la pregunta de si un `ValueError` de parámetros debería reintentarse.
+- PASA — En serie: tres tareas encoladas juntas corren una tras otra y en orden (`requests` no solapados). Con tareas
+  de menos de 0,1 s, `espera_cola_min` no alcanza a crecer entre ellas: el criterio observable es el orden y la no
+  concurrencia.
+- Monitor de capacidad y alertas: la prueba de disponibilidad sobre `/api/diag` pasa desde tres ubicaciones; el resto se
+  completa al cierre de la corrida (ver el checkpoint del proyecto).

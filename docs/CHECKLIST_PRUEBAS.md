@@ -106,7 +106,7 @@ Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverle
 - [ ] En el portal, en el plan, *Scale out*:
   - [ ] mínimo 1, máximo 1 y una sola instancia activa;
   - [ ] ninguna pre-calentada: `az functionapp show ... --query siteConfig.preWarmedInstanceCount`.
-- [ ] Identidad de la app en Synapse: `CREATE USER [<app>] FROM EXTERNAL PROVIDER` + `db_datareader` en cada base, y `GRANT VIEW DEFINITION` en las que tengan vistas particionadas (lo exige `validate_table`; riesgo por verificar: las pruebas locales corren con un admin que ya lo tiene).
+- [ ] Identidad de la app en Synapse: `CREATE USER [<app>] FROM EXTERNAL PROVIDER` + `db_datareader` en cada base, `GRANT VIEW DEFINITION` en las que tengan vistas particionadas (lo exige `validate_table`) y, si las vistas leen el lago con `OPENROWSET` sobre una fuente con credencial, `GRANT ADMINISTER DATABASE BULK OPERATIONS` y `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>]` (sin ellos, error 4834 *bulk load statement*; verificado en la corrida 5: las pruebas locales con un admin no lo detectan).
 - [ ] Las IP de salida de la Function están en el firewall del workspace.
 - [ ] Si la cola se lee con identidad: rol *Storage Queue Data Reader*.
 
