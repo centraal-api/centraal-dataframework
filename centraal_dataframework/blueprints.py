@@ -6,7 +6,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from typing import List, Union
+from typing import List
 
 import azure.functions as func
 
@@ -45,8 +45,12 @@ def check_and_schedule_task(mytimer: func.TimerRequest, msg: func.Out[List[str]]
 
 @framework.route(methods=['post'], auth_level=func.AuthLevel.FUNCTION)
 @framework.queue_output(arg_name="msg", queue_name=QUEUE_NAME, connection=CONNECTION)
-def queue_task(req: func.HttpRequest, msg: func.Out[Union[str, List[str]]]) -> func.HttpResponse:
-    """Adiciona una o más tareas a la cola."""
+def queue_task(req: func.HttpRequest, msg: func.Out[List[str]]) -> func.HttpResponse:
+    """Adiciona una o más tareas a la cola.
+
+    La salida es siempre una lista de mensajes, aunque sea una sola tarea: el worker de Functions exige un tipo
+    concreto en la anotación del binding (con ``Union`` no indexa ninguna función de la app).
+    """
     runner = get_runner()
     try:
         req_body = req.get_json()
@@ -106,11 +110,7 @@ def queue_task(req: func.HttpRequest, msg: func.Out[Union[str, List[str]]]) -> f
             mimetype='application/json',
         )
 
-    messages = [build_queue_message(t, params=params) for t in task_names]
-    if len(messages) == 1:
-        msg.set(messages[0])
-    else:
-        msg.set(messages)
+    msg.set([build_queue_message(t, params=params) for t in task_names])
 
     return func.HttpResponse(
         json.dumps({"scheduled": task_names}),

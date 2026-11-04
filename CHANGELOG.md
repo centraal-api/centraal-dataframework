@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - El historial (`HISTORY_ENABLED`) funciona con la conexión por identidad administrada del host: sin cadena de conexión, toma la cuenta de `<conexión>__accountName` (por ejemplo `AzureWebJobsStorage__accountName`) o de `STORAGE_ACCOUNT_NAME` y usa `DefaultAzureCredential`. Nuevo `Settings.resolve_storage_account_name()`.
 - `docs/02_great_expectations.ipynb` muestra la misma suite sobre un DataFrame en memoria, un archivo del datalake y Synapse, en `modo='sql'` y `modo='pandas'`. Checklist de pruebas en `docs/CHECKLIST_PRUEBAS.md`.
 
+### Fixed
+
+- `POST /api/queue_task` deja siempre una lista de mensajes en la cola, aunque sea una sola tarea, y la anotación del binding de salida es `func.Out[List[str]]`. Con `Out[Union[str, List[str]]]` el worker de Functions rechazaba el binding (`binding msg has invalid non-type annotation`) y no indexaba ninguna función de la app: el host arrancaba sin rutas ni disparadores.
+
 ### Changed
 
 - `validate_query` en `modo='sql'` solo admite expectativas de tabla: con expectativas de columna lanza `ValueError` que remite a `validate_table` o a `modo='pandas'`. GX no resuelve las columnas de una consulta suelta en SQL Server (`column_reflection_fallback` sobre un `TextClause`), lo que producía falsos fallos de calidad.

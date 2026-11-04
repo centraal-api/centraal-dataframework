@@ -53,13 +53,36 @@ def test_queue_task_missing_task_404(runner):
 
 
 def test_queue_task_ok(runner):
-    """Encola tarea existente."""
+    """Encola tarea existente: siempre una lista de mensajes, aunque sea una sola tarea."""
     runner.add_task(lambda **k: None, 'alpha')
     req = FakeHttpRequest({'task_name': 'alpha', 'params': {'x': 1}})
     out = FakeOut()
     resp = queue_task(req, out)  # type: ignore[arg-type]
     assert resp.status_code == 200
-    assert 'alpha' in out.value
+    assert isinstance(out.value, list) and len(out.value) == 1
+    assert 'alpha' in out.value[0]
+
+
+def test_queue_task_varias_tareas_una_lista(runner):
+    """Varias tareas -> una lista con un mensaje por tarea, en orden."""
+    runner.add_task(lambda **k: None, 'alpha')
+    runner.add_task(lambda **k: None, 'beta')
+    out = FakeOut()
+    resp = queue_task(FakeHttpRequest({'task_name': ['alpha', 'beta']}), out)  # type: ignore[arg-type]
+    assert resp.status_code == 200
+    from centraal_dataframework.utils import parse_queue_message
+
+    assert [parse_queue_message(m)[0] for m in out.value] == ['alpha', 'beta']
+
+
+def test_queue_task_anotacion_de_salida_es_un_tipo_concreto():
+    """El worker de Functions rechaza Union en la anotación de un binding y no indexa ninguna función."""
+    from typing import List, get_type_hints
+
+    import azure.functions as func
+
+    funcion = queue_task._function.get_user_function()  # el decorador deja un FunctionBuilder
+    assert get_type_hints(funcion)['msg'] == func.Out[List[str]]
 
 
 def test_queue_task_non_object_400(runner):
