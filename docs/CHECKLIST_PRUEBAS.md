@@ -121,7 +121,7 @@ Si la foto sana falla con el error de Parquet, Synapse no está podando: revise 
 - [x] Versión en `pyproject.toml`, `centraal_dataframework/__init__.py` y `.bumpversion.cfg`, y `[Unreleased]` movido en el CHANGELOG.
 - [x] Merge a main y push del tag `v<versión>`; `release.yml` publica en PyPI. — `v0.3.0`, workflow de release en verde.
 - [x] La versión aparece en PyPI y se instala: `pip install "centraal-dataframework[synapse]==<versión>"`. — 0.3.0, instalada en un entorno limpio con Python 3.12.
-- [ ] El workflow `dev.yml` (tox) pasa en main. El entorno `build` instala las versiones más nuevas de mkdocs, sin el lock: con `pymdown-extensions` 12 falló por `uslugify`, que se eliminó; arreglado en `mkdocs.yml` con `pymdownx.slugs.slugify`.
+- [x] El workflow `dev.yml` (tox) pasa en main. El entorno `build` instala las versiones más nuevas de mkdocs, sin el lock: con `pymdown-extensions` 12 falló por `uslugify`, que se eliminó; arreglado en `mkdocs.yml` con `pymdownx.slugs.slugify`. — `02c373e`, 15 de 15 trabajos en verde.
 
 ## 5. Verificación en una Function de Azure (forma soportada)
 
