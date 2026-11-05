@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from centraal_dataframework import __version__
+
 FUNCTION_APP = '''"""Azure Function App — Centraal Data Framework."""
 import azure.functions as func
 
@@ -90,9 +92,11 @@ def hello_gx(ctx: TaskContext):
     ctx.logger.info("hello from hello_gx")
 '''
 
-REQUIREMENTS = '''centraal-dataframework>=0.2.0
+# La librería se instala desde PyPI con la versión exacta con la que se generó el proyecto.
+# Subir de versión es un cambio explícito en este archivo, seguido de un redespliegue y de GET /api/diag.
+REQUIREMENTS = f'''centraal-dataframework=={__version__}
 # Con tareas de Synapse (uses=['synapse']), use el extra en lugar de la línea anterior:
-# centraal-dataframework[synapse]>=0.2.0
+# centraal-dataframework[synapse]=={__version__}
 azure-functions>=1.17
 '''
 
@@ -138,6 +142,27 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-01-01' = {{
   }}
 }}
 
+// Application Insights: trazas de las tareas, monitor de capacidad (CAPACIDAD.md) y prueba de
+// disponibilidad sobre GET /api/diag.
+resource logs 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {{
+  name: '${{appName}}-logs'
+  location: location
+  properties: {{
+    sku: {{ name: 'PerGB2018' }}
+    retentionInDays: 30
+  }}
+}}
+
+resource insights 'Microsoft.Insights/components@2020-02-02' = {{
+  name: '${{appName}}-insights'
+  location: location
+  kind: 'web'
+  properties: {{
+    Application_Type: 'web'
+    WorkspaceResourceId: logs.id
+  }}
+}}
+
 resource plan 'Microsoft.Web/serverfarms@2023-01-01' = {{
   name: '${{appName}}-plan'
   location: location
@@ -173,7 +198,10 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {{
         {{ name: 'WEBSITE_CONTENTSHARE', value: toLower(appName) }}
         {{ name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }}
         {{ name: 'FUNCTIONS_WORKER_RUNTIME', value: 'python' }}
-        // Build remoto: instala requirements.txt (incluida una wheel en wheels/) en la imagen Linux.
+        {{ name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: insights.properties.ConnectionString }}
+        // Ruta absoluta: el worker de Python no arranca en la carpeta de la app.
+        {{ name: 'YAML_CONFIGURACION', value: '/home/site/wwwroot/centraal_dataframework.yaml' }}
+        // Build remoto: instala requirements.txt desde PyPI en la imagen Linux.
         {{ name: 'SCM_DO_BUILD_DURING_DEPLOYMENT', value: 'true' }}
         {{ name: 'QUEUE_NAME', value: 'tareas' }}
         {{ name: 'LOGICAPP_EMAIL_URL', value: '' }}
@@ -189,6 +217,11 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {{
 // En cada base de Synapse que lean las tareas (lo ejecuta un admin de Entra del workspace):
 //   CREATE USER [<appName>] FROM EXTERNAL PROVIDER;
 //   ALTER ROLE db_datareader ADD MEMBER [<appName>];
+//   GRANT VIEW DEFINITION TO [<appName>];  -- validate_table lee la definición de la vista
+// Si las vistas leen el lago con OPENROWSET sobre una fuente externa con credencial, además
+// (sin ellos, error 4834 "bulk load statement"):
+//   GRANT ADMINISTER DATABASE BULK OPERATIONS TO [<appName>];
+//   GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[<credencial>] TO [<appName>];
 output principalId string = functionApp.identity.principalId
 output functionAppName string = functionApp.name
 '''

@@ -87,3 +87,39 @@ def test_scaffold_single_instance_serial_queue(tmp_path):
     assert 'preWarmedInstanceCount' not in bicep
     queues = json.loads((tmp_path / 'host.json').read_text(encoding='utf-8'))['extensions']['queues']
     assert queues['batchSize'] == 1 and queues['newBatchThreshold'] == 0
+
+
+def test_scaffold_yaml_absolute_path_in_azure(tmp_path):
+    """En Azure el worker no arranca en la carpeta de la app: el YAML va con ruta absoluta."""
+    scaffold(tmp_path)
+    bicep = (tmp_path / 'infra' / 'main.bicep').read_text(encoding='utf-8')
+    assert "{ name: 'YAML_CONFIGURACION', value: '/home/site/wwwroot/centraal_dataframework.yaml' }" in bicep
+
+
+def test_scaffold_application_insights(tmp_path):
+    """Sin Application Insights no se ven las trazas, el monitor de capacidad ni la prueba de /api/diag."""
+    scaffold(tmp_path)
+    bicep = (tmp_path / 'infra' / 'main.bicep').read_text(encoding='utf-8')
+    assert "resource insights 'Microsoft.Insights/components@" in bicep
+    assert "WorkspaceResourceId: logs.id" in bicep
+    assert "{ name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: insights.properties.ConnectionString }" in bicep
+
+
+def test_scaffold_synapse_grants_documented(tmp_path):
+    """El bicep recuerda todos los permisos que la identidad necesita en Synapse serverless."""
+    scaffold(tmp_path)
+    bicep = (tmp_path / 'infra' / 'main.bicep').read_text(encoding='utf-8')
+    assert 'GRANT VIEW DEFINITION' in bicep
+    assert 'GRANT ADMINISTER DATABASE BULK OPERATIONS' in bicep
+    assert 'GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL' in bicep
+
+
+def test_scaffold_requirements_pins_installed_version(tmp_path):
+    """El proyecto instala la librería desde PyPI con la versión exacta con la que se generó."""
+    from centraal_dataframework import __version__
+
+    scaffold(tmp_path)
+    req = (tmp_path / 'requirements.txt').read_text(encoding='utf-8')
+    assert f'centraal-dataframework=={__version__}\n' in req
+    assert f'# centraal-dataframework[synapse]=={__version__}\n' in req
+    assert '>=' not in req.split('azure-functions')[0]
