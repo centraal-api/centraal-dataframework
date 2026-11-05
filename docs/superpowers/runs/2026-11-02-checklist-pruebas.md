@@ -235,3 +235,23 @@ Los nombres de recursos, bases, esquemas y tablas del cliente no se registran aq
   concurrencia.
 - Monitor de capacidad y alertas: la prueba de disponibilidad sobre `/api/diag` pasa desde tres ubicaciones; el resto se
   completa al cierre de la corrida (ver el checkpoint del proyecto).
+
+## Ensayo de release 0.3.0 (bloque 3)
+
+Ejecutado el 2026-11-05 sobre el árbol de trabajo de `feature/version_020` con la versión en 0.3.0, sin Docker: Python
+3.12 en Windows, entornos nuevos en una carpeta temporal. Alcance: los pasos de `release.yml` y la instalación de la
+wheel como la haría el build remoto de una Function.
+
+- FALLA → arreglado. `poetry run mkdocs build` con las versiones de `poetry.lock` (`mkdocstrings` 0.24.3,
+  `mkdocs-autorefs` 1.4.4): `AttributeError: 'dict' object has no attribute 'link_titles'` en el `on_config` de
+  autorefs. `mkdocs.yml` no declaraba `autorefs`, así que mkdocstrings lo instanciaba por su cuenta, y autorefs ≥ 1.3
+  ya no lo admite. Con eso el workflow se habría caído en "build documentation", antes de publicar en PyPI. Se declara
+  `autorefs` en `plugins` y el build termina (solo advertencias por páginas del `nav` que no existen).
+- NOTA. `poetry install --with doc` en Windows con 3.12 pide compilar `regex` 2022.10.31 (fijado por mkdocs-material
+  9.3.2). Es del entorno del ensayo: en PyPI esa versión tiene wheel `cp311-manylinux_2_17_x86_64`, que es la del
+  workflow. Para el ensayo se instaló un `regex` reciente.
+- PASA. `poetry build`: `centraal_dataframework-0.3.0-py3-none-any.whl` y el sdist; metadata `Version: 0.3.0`,
+  `Requires-Python: >=3.10,<3.15`, `Provides-Extra: synapse`.
+- PASA. La wheel con `[synapse]` se instala en un entorno limpio; importan `centraal_dataframework.blueprints` y
+  `gx_synapse` (great-expectations 1.24.1); `centraal-dataframework init` genera `requirements.txt` con
+  `centraal-dataframework==0.3.0` y el bicep con `YAML_CONFIGURACION` y Application Insights.

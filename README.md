@@ -21,8 +21,11 @@ Ese rango coincide con el runtime 4.x de Azure Functions, donde
 
 En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se agregan ahí. Para esas versiones hay que usar Flex Consumption, Premium o Dedicated.
 
-**Plan recomendado: Premium (Elastic Premium, Linux) con Python 3.11 o 3.12.**
-`centraal-dataframework init` genera `infra/main.bicep` para ese plan.
+**Despliegue soportado: código en plan Premium (Elastic Premium, Linux) con Python 3.11 o 3.12, y la librería
+desde PyPI con versión fija** (`centraal-dataframework[synapse]==<versión>` en `requirements.txt`).
+`centraal-dataframework init` genera el proyecto y `infra/main.bicep` para ese plan. Guía paso a paso, incluido el
+driver ODBC: [docs/DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md). Desplegar como contenedor propio no está
+soportado ([referencia](docs/DESPLIEGUE_CONTENEDOR.md)).
 - La imagen de Functions trae el *ODBC Driver 18* desde Python 3.11; 3.10 trae el 17.
 - No hay límite de 10 min por ejecución.
 - La Function entra a Synapse con identidad administrada.
@@ -194,7 +197,7 @@ vistas particionadas (además de `db_datareader`), porque la verificación lee `
 `great-expectations` está acotado a `>=1.24,<1.25`: `validate_table` usa un `TableAsset` propio que depende de
 nombres privados de GX; subir la cota es una decisión explícita que pasa por `tests/test_gx_synapse.py` y por
 `pytest -m synapse`. Recomendaciones de costo en [docs/MOTOR_DE_COMPUTO.md](docs/MOTOR_DE_COMPUTO.md); para
-probar una versión sin publicar en una Function, [docs/PRUEBA_EN_FUNCTION.md](docs/PRUEBA_EN_FUNCTION.md).
+desplegar en una Function, [docs/DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md).
 
 **Prueba de integración:** copie [docs/synapse.env.example](docs/synapse.env.example) a
 `.env.synapse` en la raíz, complete las variables del ambiente y ejecute el notebook
@@ -203,7 +206,7 @@ probar una versión sin publicar en una Function, [docs/PRUEBA_EN_FUNCTION.md](d
 | Síntoma | Causa probable | Qué hacer |
 |---|---|---|
 | `Falta pyodbc` | No se instaló el extra | `pip install -e ".[synapse]"` |
-| `IM002` / `Data source name not found` | Falta el driver de `SYNAPSE_ODBC_DRIVER` | Instalar el driver del sistema o ajustar `SYNAPSE_ODBC_DRIVER` al instalado (`pyodbc.drivers()`) |
+| `IM002` / `Data source name not found` | Falta el driver de `SYNAPSE_ODBC_DRIVER` | Instalar el driver del sistema o ajustar `SYNAPSE_ODBC_DRIVER` al instalado (`pyodbc.drivers()`); en Azure, ver [DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md#2-el-driver-odbc) |
 | `DefaultAzureCredential failed to retrieve a token` | No hay sesión de Azure CLI | `az login [--tenant <tenant-id>]` |
 | `Client with IP address '...' is not allowed` (40615) | IP fuera del firewall del workspace | `az synapse workspace firewall-rule create ...` |
 | `Login failed for user '<token-identified principal>'` (18456) | Sin usuario en esa base, o tenant distinto | `CREATE USER [...] FROM EXTERNAL PROVIDER` en la base; no reintentar en ráfaga |
@@ -213,7 +216,7 @@ probar una versión sin publicar en una Function, [docs/PRUEBA_EN_FUNCTION.md](d
 
 ## Notebooks
 
-Checklist completo de pruebas antes de publicar (local, notebooks, Function Premium): [docs/CHECKLIST_PRUEBAS.md](docs/CHECKLIST_PRUEBAS.md).
+Checklist completo de pruebas antes de publicar (local, notebooks, build y Function Premium): [docs/CHECKLIST_PRUEBAS.md](docs/CHECKLIST_PRUEBAS.md).
 
 Uno por plataforma, en [docs/](docs/). Variables locales: [docs/datalake.env.example](docs/datalake.env.example)
 → `.env` y [docs/synapse.env.example](docs/synapse.env.example) → `.env.synapse` (ambos ignorados por git).
