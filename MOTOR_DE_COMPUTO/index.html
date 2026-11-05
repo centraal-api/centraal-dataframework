@@ -1,0 +1,784 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://centraal-api.github.io/centraal-dataframework/MOTOR_DE_COMPUTO/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.3.2">
+    
+    
+      
+        <title>MOTOR DE COMPUTO - centraal_dataframework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.30068a00.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#escalar-el-cómputo-sin-escalar-la-azure-function" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="centraal_dataframework" class="md-header__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            centraal_dataframework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              MOTOR DE COMPUTO
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="centraal_dataframework" class="md-nav__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    centraal_dataframework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#escalar-el-cómputo-sin-escalar-la-azure-function" class="md-nav__link">
+    Escalar el cómputo sin escalar la Azure Function
+  </a>
+  
+    <nav class="md-nav" aria-label="Escalar el cómputo sin escalar la Azure Function">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#la-idea-en-una-frase" class="md-nav__link">
+    La idea en una frase
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-qué-la-function-no-debe-procesar-datos" class="md-nav__link">
+    Por qué la Function no debe procesar datos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-qué-synapse-serverless-es-el-motor" class="md-nav__link">
+    Por qué Synapse serverless es el motor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-qué-pandas-y-solo-para-resultados-pequeños" class="md-nav__link">
+    Por qué pandas, y solo para resultados pequeños
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#calidad-de-datos-sobre-synapse-gx-en-el-motor" class="md-nav__link">
+    Calidad de datos sobre Synapse: GX en el motor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#por-qué-no-polars-por-ahora" class="md-nav__link">
+    Por qué no polars (por ahora)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convención-de-diseño-un-motor-por-plataforma-en-el-contexto" class="md-nav__link">
+    Convención de diseño: un motor por plataforma en el contexto
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bigquery-a-futuro" class="md-nav__link">
+    BigQuery a futuro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fuentes" class="md-nav__link">
+    Fuentes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>MOTOR DE COMPUTO</h1>
+
+<h2 id="escalar-el-cómputo-sin-escalar-la-azure-function">Escalar el cómputo sin escalar la Azure Function<a class="headerlink" href="#escalar-el-cómputo-sin-escalar-la-azure-function" title="Permanent link">&para;</a></h2>
+<p>Recomendaciones vigentes para centraal-dataframework 0.2: qué motor usar en cada caso y por qué.
+Ejemplos de código: <a href="../01_datalake.ipynb">01_datalake.ipynb</a>, <a href="../02_great_expectations.ipynb">02_great_expectations.ipynb</a>
+y <a href="../03_synapse.ipynb">03_synapse.ipynb</a>.</p>
+<h3 id="la-idea-en-una-frase">La idea en una frase<a class="headerlink" href="#la-idea-en-una-frase" title="Permanent link">&para;</a></h3>
+<p><strong>La Function orquesta y el motor procesa.</strong> La Function decide qué correr, cuándo, con qué parámetros y
+a quién avisar. Leer, cruzar, agregar y materializar los datos le toca al motor (hoy Synapse serverless,
+a futuro BigQuery). Si el volumen crece, crece el trabajo del motor, no el de la Function.</p>
+<h3 id="por-qué-la-function-no-debe-procesar-datos">Por qué la Function no debe procesar datos<a class="headerlink" href="#por-qué-la-function-no-debe-procesar-datos" title="Permanent link">&para;</a></h3>
+<p>La Function es el lugar más caro y más limitado para procesar volumen:</p>
+<table>
+<thead>
+<tr>
+<th>Límite</th>
+<th>Valor</th>
+<th>Consecuencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Memoria por instancia</td>
+<td>1,5 GB en Consumption; 2 o 4 GB en Flex Consumption</td>
+<td>Un CSV de pocos cientos de MB en pandas ya puede agotarla (pandas usa entre 5 y 10 veces el tamaño del archivo)</td>
+</tr>
+<tr>
+<td>Duración máxima</td>
+<td>10 min en Consumption (5 por defecto); 60 min garantizados en Premium</td>
+<td>Un proceso largo se corta a mitad de camino</td>
+</tr>
+<tr>
+<td>Cobro</td>
+<td>Memoria × tiempo, <strong>incluido el tiempo que espera respuestas</strong></td>
+<td>Traer datos a la Function cuesta transferencia, memoria y tiempo</td>
+</tr>
+</tbody>
+</table>
+<p>Cuando la Function procesa datos, crecer obliga a subir de plan (Premium o Dedicated), agrandar las
+instancias o partir las tareas. Cuando procesa el motor, la Function sigue pequeña aunque el volumen crezca.</p>
+<blockquote>
+<p>⚠️ <code>SYNAPSE_QUERY_TIMEOUT</code> vale 1800 s (30 min) por defecto, más que el máximo de Consumption (10 min).
+El plan recomendado es Premium. La plantilla de <code>init</code> usa <code>functionTimeout</code> de 1 h. En Consumption,
+baje el timeout por debajo del <code>functionTimeout</code>.</p>
+</blockquote>
+<h3 id="por-qué-synapse-serverless-es-el-motor">Por qué Synapse serverless es el motor<a class="headerlink" href="#por-qué-synapse-serverless-es-el-motor" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Cobra por datos procesados, no por tiempo ni por servidor encendido.</strong> El precio de referencia es
+   USD 5/TB, con un mínimo de 10 MB por consulta
+   (<a href="https://learn.microsoft.com/azure/synapse-analytics/sql/data-processed">Microsoft Learn</a>). No hay nada
+   que dimensionar ni apagar.</li>
+<li><strong>Escala solo.</strong> Una consulta sobre 1 GB o sobre 1 TB se escribe igual. La Function recibe el mismo
+   resultado pequeño en los dos casos.</li>
+<li><strong>Lee el lago donde está.</strong> Con <code>OPENROWSET</code>, vistas y tablas externas, los datos no se mueven.</li>
+<li><strong>El costo se controla escribiendo bien el SQL:</strong></li>
+<li>usar Parquet o Delta, que son columnares;</li>
+<li>filtrar por partición;</li>
+<li>pedir solo las columnas necesarias;</li>
+<li>materializar con CETAS lo que se lee muchas veces.</li>
+</ol>
+<p>Además, <code>sp_set_data_processed_limit</code> pone un tope de gasto diario, semanal o mensual.
+5. <strong>Crear vistas no cuesta.</strong> El DDL y la metadata no se cobran (salvo <code>CREATE STATISTICS</code>). Solo se paga
+   cuando alguien consulta.</p>
+<p>Una consulta que agrega 50 GB y devuelve 10 filas cuesta en Synapse lo mismo que una que devuelve los
+50 GB. La diferencia la paga la Function: en el segundo caso tiene que recibir y cargar 50 GB.</p>
+<h3 id="por-qué-pandas-y-solo-para-resultados-pequeños">Por qué pandas, y solo para resultados pequeños<a class="headerlink" href="#por-qué-pandas-y-solo-para-resultados-pequeños" title="Permanent link">&para;</a></h3>
+<p>pandas se mantiene porque es el formato de intercambio de todo el stack actual:</p>
+<ul>
+<li><code>ctx.synapse.read_df</code> devuelve pandas.</li>
+<li><code>ctx.datalake</code> (<code>azure-datalake-utils</code>) lee a pandas.</li>
+<li><code>ctx.gx.validate</code> valida DataFrames de pandas (y es el plan B de la calidad sobre Synapse; ver abajo).</li>
+</ul>
+<p>Su lugar es <strong>después</strong> del motor, con datos ya reducidos:</p>
+<table>
+<thead>
+<tr>
+<th>Uso aconsejado</th>
+<th>Ejemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dar forma a un resultado de Synapse</td>
+<td>Pivotear un resumen para un correo o un Excel</td>
+</tr>
+<tr>
+<td>Validar con GX lo que no corre en el motor</td>
+<td>Plan B de <code>ctx.gx.validate_table</code>: una partición pequeña a pandas</td>
+</tr>
+<tr>
+<td>Archivos pequeños de negocio</td>
+<td>Catálogo u homologación en Excel. Si se cruza con tablas grandes, se sube al lago y Synapse hace el cruce</td>
+</tr>
+<tr>
+<td>Datos que llegan de fuera</td>
+<td>Respuesta de una API → Parquet en el lago → Synapse los procesa</td>
+</tr>
+<tr>
+<td>Lógica que SQL no expresa</td>
+<td>Llamar una API por registro o usar una librería de Python, sobre un subconjunto que selecciona Synapse</td>
+</tr>
+</tbody>
+</table>
+<p><strong>No aconsejado:</strong> <code>read_df('SELECT * FROM tabla')</code> para luego filtrar, agrupar o cruzar en pandas. Tampoco
+leer un archivo grande con <code>ctx.datalake</code> para transformarlo, ni usar <code>.head()</code> en vez de <code>TOP</code>.</p>
+<p><strong>Señal de alerta:</strong> un resultado de más de ~100 000 filas o ~100 MB en memoria. No es un límite técnico;
+indica que la Function está haciendo trabajo del motor.</p>
+<h3 id="calidad-de-datos-sobre-synapse-gx-en-el-motor">Calidad de datos sobre Synapse: GX en el motor<a class="headerlink" href="#calidad-de-datos-sobre-synapse-gx-en-el-motor" title="Permanent link">&para;</a></h3>
+<p><strong>Plan A (por defecto):</strong> <code>ctx.gx.validate_table(..., particion={'fecha': valor}, modo='sql')</code>. GX traduce cada
+expectativa a SQL, serverless la ejecuta sobre la tabla o vista con nombre, leyendo solo la partición declarada,
+y a la Function solo vuelven agregados. <strong>Plan B:</strong> <code>modo='pandas'</code>, que trae la partición con <code>read_df</code> y
+valida en la Function. La suite es la misma en los dos modos; se cambia de plan por dataset, sin tocar las
+expectativas, y nunca por cuenta de la librería: el modo pedido se ejecuta o se lanza un error.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@task</span><span class="p">(</span><span class="n">uses</span><span class="o">=</span><span class="p">[</span><span class="s1">'gx'</span><span class="p">,</span> <span class="s1">'synapse'</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calidad_partner</span><span class="p">(</span><span class="n">ctx</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">gx</span><span class="o">.</span><span class="n">validate_table</span><span class="p">(</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">synapse_for</span><span class="p">(</span><span class="s1">'bronze'</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">'partner'</span><span class="p">,</span>
+        <span class="n">tabla</span><span class="o">=</span><span class="s1">'esquema.vista_partner'</span><span class="p">,</span>
+        <span class="n">particion</span><span class="o">=</span><span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">'fecha'</span><span class="p">]},</span>   <span class="c1"># la foto del día; se verifica contra la definición de la vista</span>
+        <span class="n">expectations</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">],</span>
+        <span class="n">medir_costo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          <span class="c1"># deja data_processed_mb en el DQResult y en el log</span>
+    <span class="p">)</span>
+</code></pre></div>
+<p>Los cruces (un SELECT sin nombre) van por <code>ctx.gx.validate_query(..., modo='pandas')</code>; en modo sql GX no
+resuelve las columnas de una consulta suelta en SQL Server y la librería lo rechaza con un error claro. Un
+cruce que deba correr en el motor se publica como vista con nombre y se valida con <code>validate_table</code>.</p>
+<p>Para que el plan A sea barato:</p>
+<ol>
+<li><strong>Vistas bien tipadas.</strong> <code>OPENROWSET ... WITH (...)</code> con tipos explícitos, en vez de dejar que
+   serverless infiera <code>varchar(8000)</code>. Collation <code>Latin1_General_100_BIN2_UTF8</code> en los textos de
+   Parquet, para que los filtros por string se empujen al archivo. La columna de partición expuesta
+   con <code>filepath()</code> y con el mismo nombre que la carpeta (<code>CAST(r.filepath(1) AS date) AS [fecha]</code> sobre
+   <code>.../fecha=*/</code>): es lo que <code>validate_table</code> verifica antes de validar.</li>
+<li><strong>La partición la aplica la librería</strong> con <code>WHERE &lt;columna&gt; = ?</code>, sin funciones sobre la columna.
+   <code>validate_table</code> no usa <code>add_batch_definition_daily</code> ni similares (GX envuelve la columna en funciones
+   de fecha y serverless puede dejar de podar carpetas), no sondea la tabla entera al registrar el asset
+   ni lista los valores distintos de la columna. Se demostró con una vista de prueba con una carpeta
+   dañada: la validación por partición pasa y <code>particion='completa'</code> falla al tocarla.</li>
+<li><strong>Suite pensada para serverless.</strong> <code>result_format='SUMMARY'</code> (por defecto) o <code>'BASIC'</code>; <code>'COMPLETE'</code>
+   lanza consultas extra para traer filas inesperadas y vuelve a escanear. Nulos, rangos, conteos y
+   sets son baratos. Unicidad o distintos sobre columnas de alta cardinalidad son caros: córralos con
+   menos frecuencia. En desarrollo corra la suite completa una vez con <code>pytest -m synapse</code> y revise el
+   SQL que genera GX, para detectar lo que serverless no acepte antes de producción.</li>
+<li><strong>Costo y operación (en el workspace, fuera de la librería).</strong> <code>sp_set_data_processed_limit</code> como
+   tope diario, semanal o mensual. <code>CREATE STATISTICS</code> sobre las columnas que más se filtran.
+   Managed identity en la Function (<code>SYNAPSE_AUTH=identity</code>, el valor por defecto), sin secretos de
+   service principal.</li>
+</ol>
+<p><strong>Cuándo pasar un dataset al plan B:</strong> si <code>data_processed_mb</code> por corrida es alto, o si una
+expectativa no corre en serverless. Entonces se extrae esa partición una vez a pandas
+(<code>modo='pandas'</code>) y se valida ahí, con la misma suite. <code>data_processed_mb</code> sale del contador diario
+<code>sys.dm_external_data_processed</code>, que es de todo el workspace: con consultas en paralelo es
+aproximado. Para el detalle por consulta, use <code>sys.dm_exec_requests_history</code>.</p>
+<p><strong>Driver ODBC.</strong> El plan A usa el mismo driver que <code>ctx.synapse</code> (<code>SYNAPSE_ODBC_DRIVER</code>, por defecto
+<code>ODBC Driver 18 for SQL Server</code>).
+- <strong>Plan:</strong> use Premium con Python 3.11 o 3.12; la imagen de Functions trae el 18 desde 3.11.
+- <strong>Antes de la primera tarea:</strong> <code>GET /api/diag</code> y <code>check-resources</code> fallan si el driver configurado no
+  está instalado.
+- <strong>Si la imagen solo trae el 17:</strong> configure <code>SYNAPSE_ODBC_DRIVER=ODBC Driver 17 for SQL Server</code>.</p>
+<p>En septiembre de 2023 la imagen de Python 3.11 salió una vez sin driver
+(<a href="https://github.com/Azure/azure-functions-python-worker/issues/1317">issue</a>). Por eso conviene una
+prueba de disponibilidad sobre <code>/api/diag</code>.</p>
+<h3 id="por-qué-no-polars-por-ahora">Por qué no polars (por ahora)<a class="headerlink" href="#por-qué-no-polars-por-ahora" title="Permanent link">&para;</a></h3>
+<p>polars es más eficiente que pandas: usa varios hilos, evalúa de forma perezosa, ocupa menos memoria y
+puede filtrar al leer Parquet (<a href="https://docs.pola.rs/user-guide/io/cloud-storage">docs</a>). Pero todas esas
+ventajas sirven para <strong>procesar volumen dentro de la Function</strong>, y eso es lo que esta guía evita.</p>
+<ul>
+<li>Usar polars para leer el lago directamente (<code>scan_parquet('abfss://…')</code>) no ahorra nada: el mismo
+  cómputo pasa a correr, y a cobrarse, en la Function, con sus límites de memoria y tiempo.</li>
+<li>No encaja con el stack: Great Expectations no lo soporta como datasource y <code>ctx.datalake</code> devuelve
+  pandas. Habría que convertir en cada paso.</li>
+<li>Es otra dependencia pesada (~30–40 MB) en el paquete de la Function.</li>
+</ul>
+<p><strong>Recomendación:</strong> no agregarlo a la librería. Si una tarea puntual lo necesita para un archivo mediano,
+puede instalarlo en su proyecto y convertir el resultado:
+<code>pl.DataFrame(ctx.synapse.query(...))</code>.</p>
+<h3 id="convención-de-diseño-un-motor-por-plataforma-en-el-contexto">Convención de diseño: un motor por plataforma en el contexto<a class="headerlink" href="#convención-de-diseño-un-motor-por-plataforma-en-el-contexto" title="Permanent link">&para;</a></h3>
+<p>Cada plataforma es un recurso distinto en <code>TaskContext</code>, con su propio cliente y su propia API:</p>
+<table>
+<thead>
+<tr>
+<th>Declaración</th>
+<th>Acceso</th>
+<th>Plataforma</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uses=['datalake']</code></td>
+<td><code>ctx.datalake</code></td>
+<td>Azure Data Lake (archivos)</td>
+<td>Disponible</td>
+</tr>
+<tr>
+<td><code>uses=['synapse']</code></td>
+<td><code>ctx.synapse</code>, <code>ctx.synapse_for(base)</code></td>
+<td>Synapse SQL serverless</td>
+<td>Disponible</td>
+</tr>
+<tr>
+<td><code>uses=['gx']</code></td>
+<td><code>ctx.gx</code></td>
+<td>Great Expectations (calidad)</td>
+<td>Disponible</td>
+</tr>
+<tr>
+<td><code>uses=['bigquery']</code></td>
+<td><code>ctx.resource('bigquery')</code></td>
+<td>Google BigQuery</td>
+<td>Futuro</td>
+</tr>
+</tbody>
+</table>
+<p>No se busca una capa SQL común que esconda el proveedor. Cada motor expone lo que sabe hacer, y la tarea
+dice explícitamente con qué plataforma trabaja. Cualquier plataforma nueva entra como un recurso más del
+contexto.</p>
+<p><strong>Qué se carga lo decide el código de la tarea:</strong> <code>@task(uses=[...])</code>.</p>
+<ul>
+<li>Usar un recurso no declarado <strong>falla</strong> (<code>RecursoNoDeclarado</code>). Así queda explícito, por ejemplo, que
+  una tarea de Synapse no lee el lago desde la Function.</li>
+<li>Si un recurso declarado no tiene configuración, la tarea no se ejecuta. El comando
+  <code>check-resources</code> revisa todas las tareas antes de desplegar.</li>
+<li>Puede haber varias conexiones del mismo tipo: <code>'synapse:gold'</code> o <code>'datalake:curado'</code>, configuradas
+  con variables con sufijo (<code>SYNAPSE_WORKSPACE__GOLD</code>). Los datos de conexión no se heredan de
+  la conexión por defecto; el resto de la configuración sí.</li>
+<li>Las plataformas se agregan con <code>register_resource(nombre, factory, check=...)</code>. Es la misma API para
+  las del core (<code>datalake</code>, <code>synapse</code>, <code>gx</code> y, a futuro, <code>bigquery</code>) y para las de un proyecto cliente.</li>
+</ul>
+<h3 id="bigquery-a-futuro">BigQuery a futuro<a class="headerlink" href="#bigquery-a-futuro" title="Permanent link">&para;</a></h3>
+<p>BigQuery on-demand sigue el mismo modelo de costo: USD 6,25 por TiB leído, con el primer TiB del mes
+gratis. Solo cobra las columnas y particiones que la consulta lee
+(<a href="https://www.doit.com/blog/bigquery-cost-optimization">DoiT</a>; confirmar en la página oficial de Google Cloud).
+Las recomendaciones de esta guía aplican igual: filtrar, pedir solo las columnas necesarias y agregar en
+el motor, y traer solo el resultado. BigQuery tiene sus propios controles de costo:</p>
+<ul>
+<li><em>dry run</em>, para estimar los bytes antes de ejecutar;</li>
+<li><code>maximum_bytes_billed</code>, que cancela la consulta si se pasaría del límite.</li>
+</ul>
+<p>Para que llegue sin fricción:</p>
+<ul>
+<li>Ponga el SQL en archivos <code>.sql</code> y ejecútelo con <code>execute_file</code>, no en strings dentro del Python.</li>
+<li>Separe la lógica de negocio de la tarea de la consulta, para que cambiar de motor sea cambiar el <code>.sql</code>
+  y la llamada a <code>ctx.bigquery</code>.</li>
+</ul>
+<h3 id="fuentes">Fuentes<a class="headerlink" href="#fuentes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="https://learn.microsoft.com/azure/synapse-analytics/sql/data-processed">Cost management for serverless SQL pool — Microsoft Learn</a></li>
+<li><a href="https://learn.microsoft.com/en-us/answers/questions/491491/serverless-sql-pool-built-in-cost">Serverless SQL pool cost — Microsoft Q&amp;A</a> (precio de referencia por TB; confirmar en la calculadora de Azure)</li>
+<li><a href="https://www.doit.com/blog/bigquery-cost-optimization">BigQuery cost optimization — DoiT</a></li>
+<li><a href="https://docs.pola.rs/user-guide/io/cloud-storage">Cloud storage — Polars</a></li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Tweet" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Facebook" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/centraal-api/centraal-dataframework" target="_blank" rel="noopener" title="Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:equipo@centraal.studio" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.indexes", "navigation.instant", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>

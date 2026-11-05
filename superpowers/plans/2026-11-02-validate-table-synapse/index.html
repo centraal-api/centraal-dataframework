@@ -1,0 +1,895 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://centraal-api.github.io/centraal-dataframework/superpowers/plans/2026-11-02-validate-table-synapse/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.3.2">
+    
+    
+      
+        <title>2026 11 02 validate table synapse - centraal_dataframework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.30068a00.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#validate_table-en-synapse-serverless-con-poda-de-particiones--implementation-plan" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../.." title="centraal_dataframework" class="md-header__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            centraal_dataframework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2026 11 02 validate table synapse
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="centraal_dataframework" class="md-nav__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    centraal_dataframework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#validate_table-en-synapse-serverless-con-poda-de-particiones--implementation-plan" class="md-nav__link">
+    validate_table en Synapse serverless con poda de particiones — Implementation Plan
+  </a>
+  
+    <nav class="md-nav" aria-label="validate_table en Synapse serverless con poda de particiones — Implementation Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-constraints" class="md-nav__link">
+    Global Constraints
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-focus" class="md-nav__link">
+    Review Focus
+  </a>
+  
+    <nav class="md-nav" aria-label="Review Focus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-1-excepciones-nuevas-y-cota-de-gx" class="md-nav__link">
+    Task 1: Excepciones nuevas y cota de GX
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-2-parser-puro-de-la-definición-de-la-vista" class="md-nav__link">
+    Task 2: Parser puro de la definición de la vista
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-3-catálogo-en-synapseclient-y-separación-de-nombres" class="md-nav__link">
+    Task 3: Catálogo en SynapseClient y separación de nombres
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-4-errores-técnicos-de-gx--errormotorcalidad" class="md-nav__link">
+    Task 4: Errores técnicos de GX → ErrorMotorCalidad
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-5-validate_query-en-sql-rechaza-expectativas-de-columna" class="md-nav__link">
+    Task 5: validate_query en sql rechaza expectativas de columna
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-6-tableassetsynapse-y-el-batch-definition-por-tabla" class="md-nav__link">
+    Task 6: TableAssetSynapse y el batch definition por tabla
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-7-validate_table" class="md-nav__link">
+    Task 7: validate_table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-7b-el-arranque-en-frío-de-serverless-42109-es-transitorio" class="md-nav__link">
+    Task 7b: El arranque en frío de serverless (42109) es transitorio
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-8-pruebas-de-integración-con-la-trampa-y-variables-de-ejemplo" class="md-nav__link">
+    Task 8: Pruebas de integración con la trampa y variables de ejemplo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-9-documentación-notebooks-checklist-y-changelog" class="md-nav__link">
+    Task 9: Documentación, notebooks, checklist y CHANGELOG
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-10-repetir-los-bloques-1-y-2-del-checklist-y-registrar" class="md-nav__link">
+    Task 10: Repetir los bloques 1 y 2 del checklist y registrar
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>2026 11 02 validate table synapse</h1>
+
+<h2 id="validate_table-en-synapse-serverless-con-poda-de-particiones--implementation-plan">validate_table en Synapse serverless con poda de particiones — Implementation Plan<a class="headerlink" href="#validate_table-en-synapse-serverless-con-poda-de-particiones--implementation-plan" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Que una tarea valide con GX, en modo <code>sql</code> sobre Synapse o en <code>pandas</code>, una tabla o vista con nombre, leyendo solo la partición que declara, y que <code>validate_query</code> en <code>sql</code> deje de dar falsos fallos de calidad.</p>
+<p><strong>Architecture:</strong> <code>GreatExpectationsToolKit.validate_table</code> verifica la partición contra la definición de la vista (<code>OBJECT_DEFINITION</code>, parser puro en <code>particiones.py</code>), registra un <code>TableAssetSynapse</code> (subclase de <code>TableAsset</code> de GX que no sondea la tabla ni lista valores distintos) con <code>PartitionerColumnValue</code>, y corre el checkpoint existente. Los errores técnicos de GX se convierten en <code>ErrorMotorCalidad</code>; <code>validate_query</code> en <code>sql</code> rechaza expectativas de columna antes de conectarse. GX queda acotado a <code>&gt;=1.24,&lt;1.25</code>.</p>
+<p><strong>Tech Stack:</strong> Python 3.10–3.14, great-expectations 1.24.x (fluent API), SQLAlchemy 2.x, pyodbc, pytest (SQLite en unitarias, marcador <code>synapse</code> en integración).</p>
+<p><strong>Spec:</strong> <code>docs/superpowers/specs/2026-11-02-validate-table-synapse-design.md</code></p>
+<h3 id="global-constraints">Global Constraints<a class="headerlink" href="#global-constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Estilo del repo: black <code>line-length = 120</code>, <code>skip-string-normalization</code> (comillas simples), isort, flake8 con docstrings google. Todo lo público lleva docstring en español, también en tests. <code>make test</code> en verde al cerrar cada tarea.</li>
+<li><code>from __future__ import annotations</code>; sin <code>match</code>. Python <code>&gt;=3.10,&lt;3.15</code>.</li>
+<li>Textos, errores y logs en español. Por el log viajan métricas, no filas ni valores de datos.</li>
+<li>Cambio genérico: sin nombres de workspace, bases, esquemas, tablas ni rutas del cliente en código, tests ni docs. Los datos de prueba salen de <code>.env.synapse</code>.</li>
+<li>Sin tablas temporales (<code>#</code>) en el SQL que se ejecute en serverless. Sin fallback de motor: el <code>modo</code> pedido se ejecuta o se lanza error.</li>
+<li><code>great-expectations = "&gt;=1.24,&lt;1.25"</code> en <code>pyproject.toml</code> (decisión del spec; subirlo es una decisión explícita que pasa por las pruebas de humo e integración).</li>
+<li>Lo que se cree o borre en Azure/Synapse lo ejecuta Felipe; el ejecutor del plan solo lee. No tocar <code>.env</code> ni <code>.env.synapse</code> más allá de leer nombres de variables.</li>
+<li>Commits pequeños por tarea, en la rama actual <code>feature/version_020</code>, <strong>sin <code>Co-Authored-By</code></strong> y sin push (Felipe decide con Germán si se juntan antes del push).</li>
+</ul>
+<h3 id="review-focus">Review Focus<a class="headerlink" href="#review-focus" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>particion={'fecha': valor}</code> con un valor con comillas, espacio, <code>;</code> o <code>--</code>: <code>ValueError</code> antes de tocar Synapse (Task 7, <code>test_validate_table_rejects_unsafe_partition_value</code>).</li>
+<li><code>particion</code> con dos columnas, o con dict vacío, o con un tipo que no es dict ni <code>'completa'</code>: <code>ValueError</code> claro (Task 7, <code>test_validate_table_particion_shape</code>).</li>
+<li>Vista cuya columna de partición se llama distinto a la carpeta (<code>CAST(r.filepath(1) AS date) AS [dia]</code> sobre <code>fecha=*</code>): <code>ParticionInvalida</code> que nombra ambas (Task 2, <code>test_verificar_particion_nombre_de_carpeta_distinto</code>).</li>
+<li><code>tabla</code> con tres partes y base distinta a la del cliente, o con una sola parte, o con caracteres fuera de <code>[A-Za-z0-9_]</code>: <code>ValueError</code> sin conectarse (Task 3, <code>test_separar_tabla_*</code>).</li>
+<li>GX devuelve <code>exception_info</code> en una expectativa (columna inexistente, Parquet dañado): el resultado no es <code>DQResult(success=False)</code> sino <code>ErrorMotorCalidad</code> con el mensaje de GX, en <code>sql</code> y en <code>pandas</code> (Task 4, <code>test_run_checkpoint_raises_on_metric_exception[sql|pandas]</code>).</li>
+</ol>
+<hr />
+<h4 id="task-1-excepciones-nuevas-y-cota-de-gx">Task 1: Excepciones nuevas y cota de GX<a class="headerlink" href="#task-1-excepciones-nuevas-y-cota-de-gx" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/excepciones.py</code> (al final)
+- Modify: <code>centraal_dataframework/__init__.py:7-34</code> (import y <code>__all__</code>)
+- Modify: <code>pyproject.toml:37</code>
+- Test: <code>tests/test_excepciones_dq.py</code> (nuevo)</p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>ParticionInvalida(Exception)</code> con <code>__init__(self, tabla: str, motivo: str)</code>, atributos <code>tabla</code>, <code>motivo</code>, <code>message = f"Partición inválida en {tabla!r}: {motivo}"</code>. <code>ErrorMotorCalidad(Exception)</code> con <code>__init__(self, name: str, modo: str, mensajes: list)</code>, atributos <code>name</code>, <code>modo</code>, <code>mensajes</code>, <code>message = f"GX no pudo evaluar {name!r} en modo {modo!r}: " + ' | '.join(mensajes)</code>. Ambas exportadas desde <code>centraal_dataframework</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Escribir el test que falla</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Excepciones de partición y de motor de calidad."""</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_particion_invalida_message</span><span class="p">():</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParticionInvalida</span>
+    <span class="n">exc</span> <span class="o">=</span> <span class="n">ParticionInvalida</span><span class="p">(</span><span class="s1">'bronze.vista'</span><span class="p">,</span> <span class="s1">'la columna fecha no sale de filepath()'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">exc</span><span class="o">.</span><span class="n">tabla</span> <span class="o">==</span> <span class="s1">'bronze.vista'</span> <span class="ow">and</span> <span class="n">exc</span><span class="o">.</span><span class="n">motivo</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'la columna'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"Partición inválida en 'bronze.vista': la columna fecha no sale de filepath()"</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_error_motor_calidad_message</span><span class="p">():</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorMotorCalidad</span>
+    <span class="n">exc</span> <span class="o">=</span> <span class="n">ErrorMotorCalidad</span><span class="p">(</span><span class="s1">'ventas'</span><span class="p">,</span> <span class="s1">'sql'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">exc</span><span class="o">.</span><span class="n">mensajes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span> <span class="ow">and</span> <span class="n">exc</span><span class="o">.</span><span class="n">modo</span> <span class="o">==</span> <span class="s1">'sql'</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"GX no pudo evaluar 'ventas' en modo 'sql': a | b"</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_excepciones_dq.py -v</code> — Expected: FAIL <code>ImportError: cannot import name 'ParticionInvalida'</code>.</li>
+<li>[ ] <strong>Step 3: Implementar las dos clases en <code>excepciones.py</code> y exportarlas en <code>__init__.py</code></strong> (import y entradas en <code>__all__</code>).</li>
+<li>[ ] <strong>Step 4: Cambiar <code>pyproject.toml:37</code> a <code>great-expectations = "&gt;=1.24,&lt;1.25"</code></strong> y regenerar el lock: <code>pipx install poetry</code> (sin sudo) si no está, luego <code>poetry lock</code> en la raíz. <code>release.yml</code> corre <code>poetry install</code> y falla con el lock desactualizado. Verificar con <code>grep -A1 'name = "great-expectations"' poetry.lock</code> que la versión resuelta sigue en 1.24.x.</li>
+<li>[ ] <strong>Step 5: Correr</strong> <code>.venv/bin/pytest tests/test_excepciones_dq.py -v</code> — Expected: 2 PASS.</li>
+<li>[ ] <strong>Step 6: Commit</strong> — <code>git add centraal_dataframework/excepciones.py centraal_dataframework/__init__.py pyproject.toml poetry.lock tests/test_excepciones_dq.py &amp;&amp; git commit -m "feat(dq): excepciones ParticionInvalida y ErrorMotorCalidad; GX acotado a 1.24.x"</code></li>
+</ul>
+<h4 id="task-2-parser-puro-de-la-definición-de-la-vista">Task 2: Parser puro de la definición de la vista<a class="headerlink" href="#task-2-parser-puro-de-la-definición-de-la-vista" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Create: <code>centraal_dataframework/particiones.py</code>
+- Test: <code>tests/test_particiones.py</code> (nuevo)</p>
+<p><strong>Interfaces:</strong>
+- Produces, en <code>particiones.py</code>:
+  - <code>columnas_filepath(definicion: str) -&gt; Dict[str, int]</code>: columna → <code>n</code> de <code>filepath(n)</code>. Reconoce <code>r.filepath(1) AS fecha</code>, <code>CAST(r.filepath(1) AS date) AS [fecha]</code> y <code>CONVERT(date, r.filepath(1)) AS fecha</code>; alias con o sin corchetes; mayúsculas indiferentes; devuelve el nombre sin corchetes y en minúsculas.
+  - <code>comodines_bulk(definicion: str) -&gt; List[Optional[str]]</code>: segmentos con <code>*</code> de la ruta <code>BULK '...'</code>, en orden; para <code>fecha=*</code> devuelve <code>'fecha'</code>, para <code>*.parquet</code> devuelve <code>None</code>.
+  - <code>verificar_particion(definicion: str, columna: str, tabla: str) -&gt; None</code>: lanza <code>ParticionInvalida(tabla, motivo)</code> si la columna no está en <code>columnas_filepath</code> (motivo: <code>"la columna 'X' no sale de filepath(n) en la definición de la vista"</code>), si hay más de una columna de <code>filepath</code> (motivo: <code>"la vista tiene particiones anidadas [a, b]; este cambio admite una sola"</code>), o si el comodín <code>n</code> no es <code>&lt;columna&gt;=*</code> (motivo: <code>"filepath(n) corresponde a la carpeta 'Y=*', no a 'X=*'"</code>). Comparaciones en minúsculas.
+  - <code>es_particionada(definicion: str) -&gt; bool</code>: <code>bool(columnas_filepath(definicion))</code>.
+- Consumes: <code>ParticionInvalida</code> (Task 1).</p>
+<ul>
+<li>[ ] <strong>Step 1: Escribir los tests que fallan</strong> (definiciones sintéticas como constantes del test; ninguna ruta real):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">DEF_SIMPLE</span> <span class="o">=</span> <span class="s2">"""CREATE VIEW demo.v AS</span>
+<span class="s2">SELECT CAST(r.filepath(1) AS date) AS [fecha], r.*</span>
+<span class="s2">FROM OPENROWSET(BULK 'capa/origen/tabla/fecha=*/*.parquet', DATA_SOURCE = 'Lago', FORMAT = 'PARQUET')</span>
+<span class="s2">WITH ([id] bigint, [nombre] varchar(100)) AS r"""</span>
+<span class="n">DEF_SIN_CAST</span> <span class="o">=</span> <span class="n">DEF_SIMPLE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'CAST(r.filepath(1) AS date) AS [fecha]'</span><span class="p">,</span> <span class="s1">'r.filepath(1) AS fecha'</span><span class="p">)</span>
+<span class="n">DEF_ANIDADA</span> <span class="o">=</span> <span class="n">DEF_SIMPLE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"AS [fecha], r.*"</span><span class="p">,</span> <span class="s2">"AS [anio], r.filepath(2) AS [mes], r.*"</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'fecha=*/*.parquet'</span><span class="p">,</span> <span class="s1">'anio=*/mes=*/*.parquet'</span><span class="p">)</span>
+<span class="n">DEF_ALIAS_DISTINTO</span> <span class="o">=</span> <span class="n">DEF_SIMPLE</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'AS [fecha]'</span><span class="p">,</span> <span class="s1">'AS [dia]'</span><span class="p">)</span>
+<span class="n">DEF_SIN_FILEPATH</span> <span class="o">=</span> <span class="s2">"""CREATE VIEW demo.v AS SELECT id, nombre FROM demo.tabla_externa"""</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_columnas_filepath_simple</span><span class="p">():</span> <span class="k">assert</span> <span class="n">columnas_filepath</span><span class="p">(</span><span class="n">DEF_SIMPLE</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_columnas_filepath_sin_cast</span><span class="p">():</span> <span class="k">assert</span> <span class="n">columnas_filepath</span><span class="p">(</span><span class="n">DEF_SIN_CAST</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_columnas_filepath_anidada</span><span class="p">():</span> <span class="k">assert</span> <span class="n">columnas_filepath</span><span class="p">(</span><span class="n">DEF_ANIDADA</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'anio'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'mes'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_columnas_filepath_ninguna</span><span class="p">():</span> <span class="k">assert</span> <span class="n">columnas_filepath</span><span class="p">(</span><span class="n">DEF_SIN_FILEPATH</span><span class="p">)</span> <span class="o">==</span> <span class="p">{}</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_comodines_bulk</span><span class="p">():</span> <span class="k">assert</span> <span class="n">comodines_bulk</span><span class="p">(</span><span class="n">DEF_SIMPLE</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'fecha'</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_es_particionada</span><span class="p">():</span> <span class="k">assert</span> <span class="n">es_particionada</span><span class="p">(</span><span class="n">DEF_SIMPLE</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">es_particionada</span><span class="p">(</span><span class="n">DEF_SIN_FILEPATH</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_verificar_particion_ok</span><span class="p">():</span> <span class="n">verificar_particion</span><span class="p">(</span><span class="n">DEF_SIMPLE</span><span class="p">,</span> <span class="s1">'FECHA'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">)</span>  <span class="c1"># no lanza</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_verificar_particion_columna_no_filepath</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ParticionInvalida</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">"no sale de filepath"</span><span class="p">):</span> <span class="n">verificar_particion</span><span class="p">(</span><span class="n">DEF_SIMPLE</span><span class="p">,</span> <span class="s1">'id'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_verificar_particion_anidada</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ParticionInvalida</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s1">'anidadas'</span><span class="p">):</span> <span class="n">verificar_particion</span><span class="p">(</span><span class="n">DEF_ANIDADA</span><span class="p">,</span> <span class="s1">'anio'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_verificar_particion_nombre_de_carpeta_distinto</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ParticionInvalida</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">"'fecha=</span><span class="se">\\</span><span class="s2">*', no a 'dia=</span><span class="se">\\</span><span class="s2">*'"</span><span class="p">):</span> <span class="n">verificar_particion</span><span class="p">(</span><span class="n">DEF_ALIAS_DISTINTO</span><span class="p">,</span> <span class="s1">'dia'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_particiones.py -v</code> — Expected: FAIL <code>ModuleNotFoundError: centraal_dataframework.particiones</code>.</li>
+<li>[ ] <strong>Step 3: Implementar <code>particiones.py</code></strong> con regex: columnas <code>re.compile(r"filepath\(\s*(\d+)\s*\)[^,]*?\bAS\s+\[?(\w+)\]?", re.I | re.S)</code> aplicada a la lista de selección; ruta <code>re.compile(r"BULK\s*'([^']+)'", re.I)</code>.</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_particiones.py -v</code> — Expected: 10 PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git add centraal_dataframework/particiones.py tests/test_particiones.py &amp;&amp; git commit -m "feat(dq): parser de particiones filepath() en definiciones de vistas"</code></li>
+</ul>
+<h4 id="task-3-catálogo-en-synapseclient-y-separación-de-nombres">Task 3: Catálogo en <code>SynapseClient</code> y separación de nombres<a class="headerlink" href="#task-3-catálogo-en-synapseclient-y-separación-de-nombres" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/synapse.py</code> (después de <code>render</code>, y métodos en <code>SynapseClient</code> junto a <code>data_processed_mb</code>)
+- Test: <code>tests/test_synapse.py</code> (añadir al final; usa las fixtures <code>fake_odbc</code> y <code>client</code> existentes y <code>FakePyodbc.results</code> si existe, si no, <code>monkeypatch.setattr(client, 'scalar', ...)</code>)</p>
+<p><strong>Interfaces:</strong>
+- Produces:
+  - <code>separar_tabla(tabla: str, database: Optional[str]) -&gt; Tuple[str, str]</code> (función de módulo en <code>synapse.py</code>): acepta <code>esquema.tabla</code> y <code>base.esquema.tabla</code>; cada parte debe cumplir <code>^[A-Za-z_][A-Za-z0-9_]*$</code> (sin corchetes); con tres partes, <code>base</code> debe ser igual a <code>database</code> (sin distinguir mayúsculas) o <code>ValueError("la base 'X' no coincide con la del cliente 'Y'; use synapse_for('X')")</code>; con una parte, <code>ValueError("indique esquema.tabla")</code>.
+  - <code>SynapseClient.tipo_objeto(self, tabla: str) -&gt; Optional[str]</code>: <code>SELECT type FROM sys.objects WHERE object_id = OBJECT_ID(?)</code> con <code>tabla</code> como <code>esquema.tabla</code>; devuelve <code>'V'</code>, <code>'U'</code>, etc. sin espacios, o <code>None</code>.
+  - <code>SynapseClient.definicion_objeto(self, tabla: str) -&gt; Optional[str]</code>: <code>SELECT OBJECT_DEFINITION(OBJECT_ID(?))</code>.
+- Consumes: nada nuevo.</p>
+<ul>
+<li>[ ] <strong>Step 1: Tests que fallan</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_separar_tabla_dos_partes</span><span class="p">():</span> <span class="k">assert</span> <span class="n">separar_tabla</span><span class="p">(</span><span class="s1">'bronze_x.vista'</span><span class="p">,</span> <span class="s1">'bronze'</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s1">'bronze_x'</span><span class="p">,</span> <span class="s1">'vista'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_separar_tabla_tres_partes_misma_base</span><span class="p">():</span> <span class="k">assert</span> <span class="n">separar_tabla</span><span class="p">(</span><span class="s1">'Bronze.s.v'</span><span class="p">,</span> <span class="s1">'bronze'</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="s1">'s'</span><span class="p">,</span> <span class="s1">'v'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_separar_tabla_base_distinta</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">"no coincide"</span><span class="p">):</span> <span class="n">separar_tabla</span><span class="p">(</span><span class="s1">'silver.s.v'</span><span class="p">,</span> <span class="s1">'bronze'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_separar_tabla_una_parte</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s1">'esquema.tabla'</span><span class="p">):</span> <span class="n">separar_tabla</span><span class="p">(</span><span class="s1">'v'</span><span class="p">,</span> <span class="s1">'bronze'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_separar_tabla_caracteres</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span> <span class="n">separar_tabla</span><span class="p">(</span><span class="s1">'s.v; DROP'</span><span class="p">,</span> <span class="s1">'bronze'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_tipo_y_definicion_objeto</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>  <span class="c1"># fake devuelve 'V ' y luego un texto</span>
+    <span class="o">...</span><span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">tipo_objeto</span><span class="p">(</span><span class="s1">'s.v'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'V'</span><span class="p">;</span> <span class="k">assert</span> <span class="s1">'OPENROWSET'</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">definicion_objeto</span><span class="p">(</span><span class="s1">'s.v'</span><span class="p">)</span>
+    <span class="o">...</span><span class="k">assert</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="n">contiene</span> <span class="s1">'sys.objects'</span> <span class="n">y</span> <span class="s1">'OBJECT_DEFINITION'</span> <span class="n">con</span> <span class="n">el</span> <span class="n">parámetro</span> <span class="p">(</span><span class="s1">'s.v'</span><span class="p">,)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_synapse.py -k "separar_tabla or objeto" -v</code> — Expected: FAIL <code>ImportError: separar_tabla</code>.</li>
+<li>[ ] <strong>Step 3: Implementar</strong> <code>separar_tabla</code>, <code>tipo_objeto</code>, <code>definicion_objeto</code>.</li>
+<li>[ ] <strong>Step 4: Correr</strong> el mismo comando — Expected: PASS. Luego <code>.venv/bin/pytest tests/test_synapse.py -v</code> — Expected: todo PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git commit -am "feat(synapse): separar_tabla, tipo_objeto y definicion_objeto"</code></li>
+</ul>
+<h4 id="task-4-errores-técnicos-de-gx--errormotorcalidad">Task 4: Errores técnicos de GX → <code>ErrorMotorCalidad</code><a class="headerlink" href="#task-4-errores-técnicos-de-gx--errormotorcalidad" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/resources.py:264-302</code> (<code>_run_checkpoint</code>) y <code>:346-357</code> (junto a <code>_failed_expectations</code>)
+- Test: <code>tests/test_resources_gx.py</code></p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>_raised_exceptions(result: Any) -&gt; List[str]</code> (función de módulo): recorre <code>run_results</code> → <code>results</code> → <code>exception_info</code> (dict de dicts, o dict plano con <code>raised_exception</code>) y devuelve los <code>exception_message</code> con <code>raised_exception</code> verdadero, sin duplicados, en orden. <code>_run_checkpoint(..., name: str = '', modo: str = '')</code> gana dos parámetros con valor por defecto y, si <code>_raised_exceptions(result)</code> no está vacío, lanza <code>ErrorMotorCalidad(name or asset_name, modo or 'pandas', mensajes)</code> en vez de devolver <code>DQResult</code>. <code>validate_query</code> y <code>_run_suite_on_df</code> pasan <code>name</code> y <code>modo</code>.
+- Consumes: <code>ErrorMotorCalidad</code> (Task 1).</p>
+<ul>
+<li>[ ] <strong>Step 1: Tests que fallan</strong> (en SQLite una columna inexistente produce <code>exception_info</code> en GX):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'modo'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'sql'</span><span class="p">,</span> <span class="s1">'pandas'</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_run_checkpoint_raises_on_metric_exception</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">sqlite_synapse</span><span class="p">,</span> <span class="n">modo</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Un error técnico de GX (columna inexistente) es ErrorMotorCalidad, no un fallo de calidad."""</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">great_expectations</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorMotorCalidad</span>
+    <span class="n">exps</span> <span class="o">=</span> <span class="p">[</span><span class="n">gx</span><span class="o">.</span><span class="n">expectations</span><span class="o">.</span><span class="n">ExpectTableRowCountToBeBetween</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span> <span class="k">if</span> <span class="n">modo</span> <span class="o">==</span> <span class="s1">'sql'</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">exps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gx</span><span class="o">.</span><span class="n">expectations</span><span class="o">.</span><span class="n">ExpectColumnValuesToNotBeNull</span><span class="p">(</span><span class="n">column</span><span class="o">=</span><span class="s1">'no_existe'</span><span class="p">))</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ErrorMotorCalidad</span><span class="p">)</span> <span class="k">as</span> <span class="n">info</span><span class="p">:</span>
+        <span class="n">toolkit</span><span class="o">.</span><span class="n">validate_query</span><span class="p">(</span><span class="n">sqlite_synapse</span><span class="p">,</span> <span class="s1">'ventas'</span><span class="p">,</span> <span class="n">QUERY</span><span class="p">,</span> <span class="n">exps</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="s1">'2026-11-01'</span><span class="p">},</span> <span class="n">modo</span><span class="o">=</span><span class="n">modo</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">modo</span> <span class="o">==</span> <span class="n">modo</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">mensajes</span>
+</code></pre></div>
+<p>Nota: en modo <code>sql</code> este test se escribe ahora y se mantiene cuando la Task 5 restrinja <code>validate_query</code>; en esa tarea se cambia a usar <code>validate_table</code> (Task 7) con una definición no particionada. Dejar un comentario <code># TODO Task 7</code> en el test.</p>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_resources_gx.py -k metric_exception -v</code> — Expected: FAIL (<code>DQResult</code> devuelto, no excepción).</li>
+<li>[ ] <strong>Step 3: Implementar</strong> <code>_raised_exceptions</code> y la lanzada en <code>_run_checkpoint</code>.</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_resources_gx.py -v</code> — Expected: PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git commit -am "feat(dq): ErrorMotorCalidad cuando GX no puede evaluar una expectativa"</code></li>
+</ul>
+<h4 id="task-5-validate_query-en-sql-rechaza-expectativas-de-columna">Task 5: <code>validate_query</code> en <code>sql</code> rechaza expectativas de columna<a class="headerlink" href="#task-5-validate_query-en-sql-rechaza-expectativas-de-columna" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/resources.py:169-221</code> (<code>validate_query</code>) y helper nuevo junto a <code>_build_suite</code>
+- Test: <code>tests/test_resources_gx.py:170-216</code> (los tests <code>sql</code> actuales de <code>validate_query</code> con columnas cambian)</p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>_expectativas_de_columna(suite: Any) -&gt; List[str]</code>: tipos de las expectativas cuya <code>configuration.kwargs</code> (o <code>.kwargs</code>) tiene alguna de <code>column</code>, <code>column_list</code>, <code>column_A</code>, <code>column_B</code>, <code>column_set</code>. <code>validate_query</code> en <code>modo='sql'</code> lanza, antes de <code>render</code> y de cualquier conexión, <code>ValueError("validate_query en modo 'sql' no admite expectativas de columna [tipos]: use validate_table(..., modo='sql') o modo='pandas' (las filas de la consulta viajan a la Function)")</code>.
+- Consumes: nada nuevo.</p>
+<ul>
+<li>[ ] <strong>Step 1: Tests que fallan y ajuste de los existentes</strong></li>
+<li>Nuevo: <code>test_validate_query_sql_rejects_column_expectations(toolkit, sqlite_synapse)</code>: <code>pytest.raises(ValueError, match='validate_table')</code> y <code>sqlite_synapse.kwargs_calls == 0</code> y <code>sqlite_synapse.queries == []</code>.</li>
+<li>Nuevo: <code>test_validate_query_sql_allows_table_expectations(toolkit, sqlite_synapse)</code>: solo <code>ExpectTableRowCountToBeBetween(min_value=1)</code> en <code>sql</code> → <code>success</code> True, <code>read_df</code> no llamado.</li>
+<li>Cambiar <code>test_validate_query_success_in_both_modes</code>, <code>test_validate_query_reports_failures_in_both_modes</code>, <code>test_validate_query_sql_mode_does_not_pull_rows</code>, <code>test_validate_query_with_existing_suite</code>, <code>test_validate_query_measures_data_processed</code>, <code>test_validate_query_without_cost_measure_has_none</code>, <code>test_validate_query_twice_reuses_the_sql_datasource</code>: donde usen <code>modo='sql'</code> con <code>_expectations()</code>, usar <code>_expectations_tabla()</code> (solo conteo) o <code>modo='pandas'</code>, conservando lo que cada test prueba (p. ej. "no trae filas" sigue en <code>sql</code> con conteo). El test de la Task 4 en <code>sql</code> pasa a <code>pytest.skip</code> temporal con el <code># TODO Task 7</code>.</li>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_resources_gx.py -v</code> — Expected: los dos nuevos FAIL.</li>
+<li>[ ] <strong>Step 3: Implementar</strong> <code>_expectativas_de_columna</code> y la comprobación en <code>validate_query</code>; actualizar el docstring de <code>validate_query</code> (pandas: las filas viajan a la Function; sql: solo expectativas de tabla; cruces por tabla → <code>validate_table</code>).</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_resources_gx.py -v</code> — Expected: PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git commit -am "feat(dq): validate_query en sql rechaza expectativas de columna con error claro"</code></li>
+</ul>
+<h4 id="task-6-tableassetsynapse-y-el-batch-definition-por-tabla">Task 6: <code>TableAssetSynapse</code> y el batch definition por tabla<a class="headerlink" href="#task-6-tableassetsynapse-y-el-batch-definition-por-tabla" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Create: <code>centraal_dataframework/gx_synapse.py</code>
+- Modify: <code>centraal_dataframework/resources.py</code> (nuevo método <code>_table_batch_definition</code> junto a <code>_query_batch_definition</code>)
+- Test: <code>tests/test_gx_synapse.py</code> (nuevo)</p>
+<p><strong>Interfaces:</strong>
+- Produces, en <code>gx_synapse.py</code>:
+  - <code>class TableAssetSynapse(TableAsset)</code>: <code>test_connection(self) -&gt; None</code> no ejecuta SQL (docstring: la existencia la comprueba <code>validate_table</code> por catálogo antes de registrar el asset); <code>_fully_specified_batch_requests(self, batch_request)</code> devuelve <code>([batch_request], _NoMatchDiagnostics(candidate_count=1, offending_param=None))</code> cuando <code>batch_request.partitioner</code> no es <code>None</code> y todos los <code>param_names</code> del particionador están en <code>batch_request.options</code>; si no, delega en <code>super()</code>.
+  - <code>registrar_table_asset(datasource: Any, name: str, schema: str, table: str) -&gt; Any</code>: construye <code>TableAssetSynapse(name=name, table_name=table, schema_name=schema)</code> y lo registra con <code>datasource._add_asset(asset)</code>.
+  - <code>batch_definition_tabla(asset: Any, particion: Optional[Tuple[str, Any]]) -&gt; Tuple[Any, Dict[str, Any]]</code>: sin partición → <code>asset.add_batch_definition_whole_table(f'{asset.name}_batch')</code>, <code>{}</code>; con <code>(columna, valor)</code> → <code>asset.add_batch_definition(f'{asset.name}_batch', partitioner=PartitionerColumnValue(column_name=columna), validate_partitioner=False)</code>, <code>{columna: valor}</code>.
+  - <code>NOMBRES_PRIVADOS_GX = ('_add_asset', '_fully_specified_batch_requests', '_effective_schema_name')</code> y <code>comprobar_api_gx() -&gt; None</code>, que lanza <code>ImportError</code> con mensaje si falta alguno de esos atributos en <code>SQLDatasource</code>/<code>TableAsset</code> o no se importa <code>_NoMatchDiagnostics</code>.
+- En <code>resources.py</code>: <code>GreatExpectationsToolKit._table_batch_definition(self, synapse: Any, name: str, schema: str, table: str, particion: Optional[Tuple[str, Any]]) -&gt; Tuple[str, Any, Dict[str, Any]]</code> que reutiliza el <code>add_or_update_sql</code> de <code>_query_batch_definition</code> (extraer <code>_sql_datasource(self, synapse) -&gt; Any</code>) y devuelve <code>(asset_name, batch_def, batch_parameters)</code>.
+- Consumes: nada de tareas previas salvo convenciones.</p>
+<ul>
+<li>[ ] <strong>Step 1: Tests que fallan</strong> (SQLite; capturar el SQL con un <code>logging.Handler</code> sobre <code>sqlalchemy.engine</code> como en los spikes):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_comprobar_api_gx_no_lanza</span><span class="p">():</span> <span class="n">comprobar_api_gx</span><span class="p">()</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_table_asset_sin_sonda_ni_distinct</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">sqlite_synapse</span><span class="p">,</span> <span class="n">caplog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Con partición especificada no hay SELECT DISTINCT ni LIMIT 1 de prueba; sí WHERE fecha = ?."""</span>
+    <span class="o">...</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">bd</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">toolkit</span><span class="o">.</span><span class="n">_table_batch_definition</span><span class="p">(</span><span class="n">sqlite_synapse</span><span class="p">,</span> <span class="s1">'v'</span><span class="p">,</span> <span class="s1">'main'</span><span class="p">,</span> <span class="s1">'ventas'</span><span class="p">,</span> <span class="p">(</span><span class="s1">'fecha'</span><span class="p">,</span> <span class="s1">'2026-11-01'</span><span class="p">))</span>
+    <span class="o">...</span><span class="n">out</span> <span class="o">=</span> <span class="n">toolkit</span><span class="o">.</span><span class="n">_run_checkpoint</span><span class="p">(</span><span class="n">asset_name</span><span class="p">,</span> <span class="n">bd</span><span class="p">,</span> <span class="n">suite_conteo</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'v'</span><span class="p">,</span> <span class="n">modo</span><span class="o">=</span><span class="s1">'sql'</span><span class="p">)</span>
+    <span class="n">sql</span> <span class="o">=</span> <span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">caplog</span><span class="o">.</span><span class="n">records</span> <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'sqlalchemy.engine'</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="s1">'distinct'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sql</span> <span class="ow">and</span> <span class="s1">'limit 1'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sql</span> <span class="ow">and</span> <span class="s1">'where fecha = ?'</span> <span class="ow">in</span> <span class="n">sql</span> <span class="ow">and</span> <span class="n">out</span><span class="o">.</span><span class="n">success</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_table_asset_whole_table</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">sqlite_synapse</span><span class="p">,</span> <span class="n">caplog</span><span class="p">):</span>  <span class="c1"># sin partición: WHERE 1 = 1, sin distinct</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_table_asset_particion_inexistente_no_valida_en_vacio</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">sqlite_synapse</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Un valor sin filas da row_count 0: la expectativa de conteo falla, no pasa en vacío."""</span>
+</code></pre></div>
+<p>Nota SQLite: el esquema por defecto se llama <code>main</code>; <code>TableAssetSynapse</code> debe aceptar <code>schema_name='main'</code> ahí. En SQLite el <code>expect_table_row_count_to_be_between(min_value=1)</code> con partición inexistente devuelve <code>success=False</code> (0 filas).</p>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_gx_synapse.py -v</code> — Expected: FAIL <code>ModuleNotFoundError</code>.</li>
+<li>[ ] <strong>Step 3: Implementar</strong> <code>gx_synapse.py</code> y <code>_table_batch_definition</code>/<code>_sql_datasource</code> en <code>resources.py</code>.</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_gx_synapse.py tests/test_resources_gx.py -v</code> — Expected: PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git add centraal_dataframework/gx_synapse.py centraal_dataframework/resources.py tests/test_gx_synapse.py &amp;&amp; git commit -m "feat(dq): TableAssetSynapse sin sonda ni DISTINCT, batch por tabla con PartitionerColumnValue"</code></li>
+</ul>
+<h4 id="task-7-validate_table">Task 7: <code>validate_table</code><a class="headerlink" href="#task-7-validate_table" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/resources.py</code> (nuevo método público después de <code>validate_query</code>)
+- Modify: <code>tests/test_resources_gx.py:96-130</code> (<code>_SqliteSynapse</code> gana <code>definicion</code>, <code>tipo</code> y <code>read_df(sql, *params)</code>)
+- Test: <code>tests/test_resources_gx.py</code> (nuevos tests) y el <code># TODO Task 7</code> de la Task 4</p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>GreatExpectationsToolKit.validate_table(self, synapse: Any, name: str, tabla: str, expectations: Optional[Sequence[Any]] = None, *, suite_name: Optional[str] = None, particion: Union[None, str, Dict[str, Any]] = None, modo: str = 'sql', result_format: str = DEFAULT_RESULT_FORMAT, medir_costo: bool = False, public: bool = False) -&gt; DQResult</code>. Orden de comprobaciones, todas antes de crear datasources:
+  1. <code>modo in MODOS</code> o <code>ValueError</code>; <code>expectations</code> o <code>suite_name</code> o <code>ValueError</code>.
+  2. <code>schema, table = separar_tabla(tabla, getattr(synapse, 'database', None))</code>.
+  3. Forma de <code>particion</code>: <code>None</code>, la cadena <code>'completa'</code>, o dict de exactamente una entrada <code>{columna: valor}</code> con <code>columna</code> que cumpla <code>^[A-Za-z_][A-Za-z0-9_]*$</code> y <code>str(valor)</code> que cumpla <code>_SAFE_VALUE_RE</code>; si no, <code>ValueError</code> que diga la forma esperada.
+  4. <code>tipo = synapse.tipo_objeto(f'{schema}.{table}')</code>; <code>None</code> → <code>ParticionInvalida(tabla, "el objeto no existe o la identidad no puede verlo")</code>.
+  5. Si <code>tipo == 'V'</code>: <code>definicion = synapse.definicion_objeto(...)</code>; <code>None</code> → <code>ParticionInvalida(tabla, "no se puede leer la definición de la vista: la identidad necesita GRANT VIEW DEFINITION además de db_datareader")</code>. Con dict: <code>verificar_particion(definicion, columna, tabla)</code>. Con <code>None</code>: si <code>es_particionada(definicion)</code> → <code>ParticionInvalida(tabla, "la vista está particionada por [cols]; declare particion={'col': valor} o particion='completa'")</code>. Con <code>'completa'</code>: pasa.
+  6. Si <code>tipo != 'V'</code>: con dict → <code>ParticionInvalida(tabla, "no es una vista con filepath(): no tiene particiones que aplicar")</code>; <code>None</code>/<code>'completa'</code> → tabla entera.
+  7. <code>modo == 'pandas'</code>: <code>sql = f'SELECT * FROM {schema}.{table}'</code> más <code>f" WHERE {columna} = '{valor}'"</code> si hay dict (valor ya validado por <code>_SAFE_VALUE_RE</code>), <code>df = synapse.read_df(sql)</code>, <code>_run_suite_on_df(df, name, suite, public, result_format)</code>.
+  8. <code>modo == 'sql'</code>: <code>_table_batch_definition(...)</code> + <code>_run_checkpoint(asset_name, batch_def, suite, params, public, result_format, name=name, modo='sql')</code>.
+  9. <code>out.modo = modo</code>; <code>medir_costo</code> como en <code>validate_query</code>; <code>logger.info("GX %s [%s] tabla=%s particion=%s success=%s data_processed_mb=%s", ...)</code> donde <code>particion</code> se loguea como la columna (no el valor).
+- <code>_SqliteSynapse.__init__(self, path, processed=(100.0, 112.5), definicion=None, tipo='V')</code> y métodos <code>tipo_objeto(tabla) -&gt; self.tipo</code>, <code>definicion_objeto(tabla) -&gt; self.definicion</code>, <code>read_df(sql, *params)</code> que registra <code>sql</code> en <code>queries</code>.
+- Consumes: Tasks 1–6.</p>
+<ul>
+<li>[ ] <strong>Step 1: Tests que fallan</strong> (usar <code>DEF_SIMPLE</code> y <code>DEF_SIN_FILEPATH</code> importados de <code>tests/test_particiones.py</code>, con la tabla <code>ventas</code> de SQLite y esquema <code>main</code>):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_sqlite_particionado</span><span class="p">(</span><span class="n">tmp_path</span><span class="p">):</span> <span class="k">return</span> <span class="n">_SqliteSynapse</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">definicion</span><span class="o">=</span><span class="n">DEF_SIMPLE</span><span class="p">)</span>  <span class="c1"># vista con fecha=*</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'modo'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'sql'</span><span class="p">,</span> <span class="s1">'pandas'</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_particion_ok</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">modo</span><span class="p">):</span> <span class="o">...</span> <span class="n">particion</span><span class="o">=</span><span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="s1">'2026-11-01'</span><span class="p">}</span> <span class="err">→</span> <span class="n">success</span> <span class="kc">True</span><span class="p">,</span> <span class="n">failed</span> <span class="o">==</span> <span class="p">[]</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'modo'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'sql'</span><span class="p">,</span> <span class="s1">'pandas'</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_particion_reports_failures</span><span class="p">(</span><span class="n">toolkit</span><span class="p">,</span> <span class="n">modo</span><span class="p">):</span> <span class="o">...</span> <span class="s1">'2026-10-31'</span> <span class="err">→</span> <span class="n">failed</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'expect_column_values_to_not_be_null'</span><span class="p">]</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_sql_does_not_pull_rows</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="o">...</span> <span class="n">queries</span> <span class="o">==</span> <span class="p">[]</span> <span class="n">y</span> <span class="n">kwargs_calls</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_pandas_reads_filtered_select</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="o">...</span> <span class="n">queries</span> <span class="o">==</span> <span class="p">[</span><span class="s2">"SELECT * FROM main.ventas WHERE fecha = '2026-11-01'"</span><span class="p">]</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_sin_particion_en_vista_particionada</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">ParticionInvalida</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s1">'completa'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_completa</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">particion</span><span class="o">=</span><span class="s1">'completa'</span> <span class="err">→</span> <span class="n">success</span> <span class="kc">False</span> <span class="p">(</span><span class="n">hay</span> <span class="n">un</span> <span class="n">nulo</span> <span class="n">en</span> <span class="n">el</span> <span class="n">total</span><span class="p">),</span> <span class="n">sin</span> <span class="n">excepción</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_columna_no_particion</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">particion</span><span class="o">=</span><span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span> <span class="err">→</span> <span class="n">ParticionInvalida</span> <span class="s1">'no sale de filepath'</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_definicion_ilegible</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">definicion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tipo</span><span class="o">=</span><span class="s1">'V'</span> <span class="err">→</span> <span class="n">ParticionInvalida</span> <span class="n">match</span> <span class="s1">'VIEW DEFINITION'</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_objeto_inexistente</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">tipo</span><span class="o">=</span><span class="kc">None</span> <span class="err">→</span> <span class="n">ParticionInvalida</span> <span class="n">match</span> <span class="s1">'no existe'</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_tabla_externa_entera</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">tipo</span><span class="o">=</span><span class="s1">'U'</span><span class="p">,</span> <span class="n">particion</span><span class="o">=</span><span class="kc">None</span> <span class="err">→</span> <span class="n">valida</span> <span class="n">entera</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_tabla_externa_con_particion</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">tipo</span><span class="o">=</span><span class="s1">'U'</span><span class="p">,</span> <span class="n">particion</span><span class="o">=</span><span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="o">...</span><span class="p">}</span> <span class="err">→</span> <span class="n">ParticionInvalida</span> <span class="s1">'no es una vista'</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_rejects_unsafe_partition_value</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="p">{</span><span class="s1">'fecha'</span><span class="p">:</span> <span class="s2">"2026-11-01' OR 1=1"</span><span class="p">}</span> <span class="err">→</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="n">kwargs_calls</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_particion_shape</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{},</span> <span class="s1">'otra'</span><span class="p">,</span> <span class="mi">5</span> <span class="err">→</span> <span class="ne">ValueError</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_base_distinta</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">tabla</span><span class="o">=</span><span class="s1">'silver.main.ventas'</span> <span class="err">→</span> <span class="ne">ValueError</span> <span class="s1">'no coincide'</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_validate_table_measures_data_processed</span><span class="p">(</span><span class="n">toolkit</span><span class="p">):</span> <span class="n">medir_costo</span><span class="o">=</span><span class="kc">True</span> <span class="err">→</span> <span class="n">data_processed_mb</span> <span class="o">==</span> <span class="mf">12.5</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_run_checkpoint_raises_on_metric_exception</span><span class="p">[</span><span class="n">sql</span><span class="p">]</span> <span class="p">(</span><span class="n">Task</span> <span class="mi">4</span><span class="p">):</span> <span class="n">ahora</span> <span class="n">con</span> <span class="n">validate_table</span> <span class="n">y</span> <span class="n">columna</span> <span class="s1">'no_existe'</span> <span class="err">→</span> <span class="n">ErrorMotorCalidad</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_resources_gx.py -k validate_table -v</code> — Expected: FAIL <code>AttributeError: validate_table</code>.</li>
+<li>[ ] <strong>Step 3: Implementar <code>validate_table</code></strong> con el orden de comprobaciones de arriba y los textos de error indicados. Docstring: caso principal de la plataforma; bronze con <code>particion</code>, silver/gold sin; pandas trae las filas a la Function.</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_resources_gx.py tests/test_gx_synapse.py -v</code> — Expected: PASS. Luego <code>make test</code> — Expected: formato sin cambios, flake8 limpio, pytest en verde (los <code>synapse</code> se saltan sin <code>.env.synapse</code>; con él, se corren en la Task 8).</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git commit -am "feat(dq): validate_table con verificación de partición por definición de la vista"</code></li>
+</ul>
+<h4 id="task-7b-el-arranque-en-frío-de-serverless-42109-es-transitorio">Task 7b: El arranque en frío de serverless (42109) es transitorio<a class="headerlink" href="#task-7b-el-arranque-en-frío-de-serverless-42109-es-transitorio" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/synapse.py:31</code> (<code>TRANSIENT_CODES</code>)
+- Test: <code>tests/test_synapse.py</code> (junto a los tests de reintento existentes, con <code>fake_odbc</code> y <code>client</code>)</p>
+<p><strong>Interfaces:</strong>
+- Produces: <code>TRANSIENT_CODES</code> incluye <code>'42109'</code> (<code>The SQL pool is warming up. Please try again.</code>). Sin cambios de firma.</p>
+<ul>
+<li>[ ] <strong>Step 1: Test que falla</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_sql_pool_warming_up_is_retried</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""42109 (pool en frío) se reintenta como transitorio y la segunda conexión responde."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">fail_connect_once</span><span class="p">(</span><span class="n">FakeOperationalError</span><span class="p">(</span><span class="s1">'HY000'</span><span class="p">,</span> <span class="s1">'[HY000] ... The SQL pool is warming up. Please try again. (42109) (SQLDriverConnect)'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="s1">'sleep'</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'sleep'</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span><span class="p">)</span>
+</code></pre></div>
+<p>Si <code>FakePyodbc</code> no tiene un mecanismo para fallar la conexión una vez, añadirlo al fake del test (p. ej. una cola <code>connect_errors</code>), siguiendo cómo el test de reintentos actual simula el error transitorio.</p>
+<ul>
+<li>[ ] <strong>Step 2: Correr y ver fallar</strong> — Run: <code>.venv/bin/pytest tests/test_synapse.py -k warming -v</code> — Expected: FAIL (la excepción se propaga sin reintento).</li>
+<li>[ ] <strong>Step 3: Añadir <code>'42109'</code> a <code>TRANSIENT_CODES</code></strong> y una línea en el docstring de <code>_is_transient</code>.</li>
+<li>[ ] <strong>Step 4: Correr</strong> <code>.venv/bin/pytest tests/test_synapse.py -v</code> — Expected: PASS.</li>
+<li>[ ] <strong>Step 5: Commit</strong> — <code>git commit -am "fix(synapse): reintentar 42109 (pool en frío de serverless)"</code></li>
+</ul>
+<h4 id="task-8-pruebas-de-integración-con-la-trampa-y-variables-de-ejemplo">Task 8: Pruebas de integración con la trampa y variables de ejemplo<a class="headerlink" href="#task-8-pruebas-de-integración-con-la-trampa-y-variables-de-ejemplo" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>tests/test_synapse_integration.py:70-100</code> (reescribir <code>test_gx_native_sql_matches_pandas</code>) y añadir tests
+- Modify: <code>docs/synapse.env.example</code> (tres variables nuevas al final, descritas en genérico)</p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>validate_table</code>, <code>ParticionInvalida</code>, <code>ErrorMotorCalidad</code>, variables <code>SYNAPSE_TEST_PARTITION_TABLE</code>, <code>SYNAPSE_TEST_PARTITION_COLUMN</code>, <code>SYNAPSE_TEST_PARTITION_VALUE</code> (ya en <code>.env.synapse</code> de Felipe; la vista tiene dos fotos sanas y una carpeta con un Parquet dañado).
+- Produces: fixture <code>particion()</code> que devuelve <code>(tabla, columna, valor)</code> o <code>pytest.skip</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Escribir los tests</strong> (todos <code>-m synapse</code>; imprimir el SQL generado con <code>caplog</code> sobre <code>sqlalchemy.engine</code> como hoy):</li>
+<li><code>test_gx_query_sql_with_columns_is_rejected(client)</code>: <code>validate_query(..., modo='sql')</code> con la suite actual → <code>ValueError</code> match <code>validate_table</code>, y la misma en <code>pandas</code> → <code>success</code> True.</li>
+<li><code>test_validate_table_particion_sql_matches_pandas(client, caplog, particion)</code>: suite = conteo ≥1, <code>ExpectColumnToExist(column=columna)</code>, <code>ExpectColumnValuesToNotBeNull(column=columna)</code>, <code>ExpectColumnValuesToBeNull(column=columna)</code> (forzada, debe fallar) en <code>sql</code> y <code>pandas</code>; <code>failed == ['expect_column_values_to_be_null']</code> en ambos; el SQL impreso contiene <code>where &lt;columna&gt; = ?</code>, no contiene <code>distinct</code>, <code>#</code>, <code>top 1 1</code>, ni <code>year(</code>/<code>month(</code>/<code>day(</code>.</li>
+<li><code>test_validate_table_completa_falla_por_trampa(client, particion)</code>: <code>particion='completa'</code>, <code>modo='sql'</code> → <code>pytest.raises(ErrorMotorCalidad)</code> y <code>'parquet' in str(exc).lower()</code>.</li>
+<li><code>test_validate_table_sin_particion_se_niega(client, particion)</code>: → <code>ParticionInvalida</code> match <code>completa</code>.</li>
+<li><code>test_validate_table_columna_que_no_es_particion(client, particion)</code>: <code>particion={&lt;otra columna de la vista&gt;: 1}</code> (tomar la primera columna distinta de la partición con <code>SELECT TOP 0 *</code>) → <code>ParticionInvalida</code> match <code>filepath</code>.</li>
+<li>[ ] <strong>Step 2: Correr</strong> <code>.venv/bin/pytest -m synapse -v -s tests/test_synapse_integration.py</code> — Expected: todos PASS (si aparece <code>42109 ... warming up</code>, repetir; es un defecto conocido anotado aparte).</li>
+<li>[ ] <strong>Step 3: Añadir a <code>docs/synapse.env.example</code></strong> las tres variables con comentario genérico (vista de prueba con una partición dañada para demostrar la poda; columna; valor de una foto sana), y reemplazar el ejemplo de <code>SYNAPSE_TEST_GX_QUERY</code> por uno sin nombres del cliente (<code>SELECT id, nombre FROM esquema.vista WHERE fecha = '2026-01-31'</code>).</li>
+<li>[ ] <strong>Step 4: Commit</strong> — <code>git add tests/test_synapse_integration.py docs/synapse.env.example &amp;&amp; git commit -m "test(synapse): integración de validate_table con trampa de poda"</code></li>
+</ul>
+<h4 id="task-9-documentación-notebooks-checklist-y-changelog">Task 9: Documentación, notebooks, checklist y CHANGELOG<a class="headerlink" href="#task-9-documentación-notebooks-checklist-y-changelog" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>README.md:161-165</code> (bloque "Calidad sin traer los datos") y tabla de síntomas (+ fila <code>VIEW DEFINITION</code>), <code>:191</code> (fila del notebook 02)
+- Modify: <code>docs/02_great_expectations.ipynb</code> celdas 10, 11, 12; <code>docs/03_synapse.ipynb</code> celdas 12, 13 (con <code>NotebookEdit</code>; celda de configuración: leer <code>SYNAPSE_TEST_PARTITION_*</code>)
+- Modify: <code>docs/CHECKLIST_PRUEBAS.md:18-19, 25, 27-30, 58-61, 74, 78-81, 98, 117</code> y bloque 4
+- Modify: <code>docs/datalake.env.example:6</code> (comentar <code>AZURE_STORAGE_CONNECTION_STRING=</code>), <code>docs/PRUEBA_EN_FUNCTION.md</code> §3 (GRANT), <code>docs/MOTOR_DE_COMPUTO.md</code> (si menciona <code>validate_query</code> en sql con columnas)
+- Modify: <code>CHANGELOG.md</code> <code>[Unreleased]</code></p>
+<ul>
+<li>[ ] <strong>Step 1: README</strong> — <code>validate_table(synapse, name, 'esquema.vista', expectations, particion={'fecha': valor}, modo='sql')</code> como caso principal; bronze con partición, silver/gold sin; la regla "vista particionada sin <code>particion</code> → <code>ParticionInvalida</code>, <code>particion='completa'</code> para toda la vista"; <code>validate_query</code> para cruces en <code>pandas</code> (las filas viajan a la Function) y en <code>sql</code> solo expectativas de tabla; <code>ErrorMotorCalidad</code>; requisito <code>GRANT VIEW DEFINITION</code> (fila nueva en la tabla de síntomas con el mensaje de <code>ParticionInvalida</code>); restricción: la vista que se valida debe ser la que define el <code>OPENROWSET</code> (no se siguen vistas sobre vistas) y una sola columna de partición por llamada; nota de la cota de GX y por qué.</li>
+<li>[ ] <strong>Step 2: Notebook 02 §5</strong> — celda 10: texto nuevo (tabla con nombre + partición; cruces en pandas); celda 11: <code>validar_foto(ctx)</code> con <code>validate_table(ctx.synapse, 'foto', TABLA_PARTICION, EXPECTATIVAS_FOTO, particion={COL: VAL}, modo=params.modo, medir_costo=True)</code> donde <code>EXPECTATIVAS_FOTO = [conteo ≥ 1, NotBeNull(COL)]</code>; correr <code>sql</code> y <code>pandas</code> e imprimir <code>success | fallidas | MB</code>; celda 12: (a) fallo forzado <code>ExpectColumnValuesToBeNull(column=COL)</code> en <code>sql</code> → <code>fallidas: ['expect_column_values_to_be_null']</code>; (b) <code>validate_table</code> sin <code>particion</code> → imprime el <code>ParticionInvalida</code>; (c) <code>validate_query</code> del <code>QUERY_VENTAS</code> (VALUES) en <code>pandas</code> → <code>success: True</code>, y en <code>sql</code> → imprime el <code>ValueError</code>. Todo bajo <code>if HAY_SYNAPSE and TABLA_PARTICION</code>, con <code>SALTADO</code> si falta.</li>
+<li>[ ] <strong>Step 3: Notebook 03 §6</strong> — celda 12: texto nuevo; celda 13: <code>dq_tabla(ctx)</code> con <code>validate_table</code> y partición, en <code>sql</code> y <code>pandas</code>, más el ejemplo <code>validate_query</code> de <code>GX_QUERY</code> en <code>pandas</code>.</li>
+<li>[ ] <strong>Step 4: Ejecutar los dos notebooks</strong> desde <code>docs/</code> con <code>jupyter nbconvert --to notebook --execute --allow-errors --output-dir &lt;scratch&gt;</code> y comprobar en las salidas los textos esperados del Step 2 y 3. Luego dejar los <code>.ipynb</code> del repo sin salidas (<code>jupyter nbconvert --clear-output --inplace</code>).</li>
+<li>[ ] <strong>Step 5: CHECKLIST</strong> — bloque 0: variables <code>SYNAPSE_TEST_PARTITION_*</code> y <code>GRANT VIEW DEFINITION</code>; bloque 1: <code>make test</code> corre las pruebas de Synapse si hay <code>.env.synapse</code> (quitar "se saltan"), lista de tests nueva; bloque 2: ítems de 02 §5 y 03 §6 con <code>validate_table</code>; "Poda de particiones" pasa a describir la trampa (partición sana pasa, <code>completa</code> falla con error de Parquet); bloque 4: <code>GRANT VIEW DEFINITION</code> junto al <code>CREATE USER</code>, y la tarea de verificación con <code>validate_table(..., modo='sql')</code>.</li>
+<li>[ ] <strong>Step 6: <code>datalake.env.example</code></strong> — comentar la línea <code>AZURE_STORAGE_CONNECTION_STRING=</code> y explicar que vacía rompe la identidad. <code>PRUEBA_EN_FUNCTION.md</code> §3: añadir <code>GRANT VIEW DEFINITION TO [&lt;app&gt;];</code> al bloque SQL. <code>MOTOR_DE_COMPUTO.md</code>: alinear con <code>validate_table</code> (caso principal) y <code>validate_query</code> en pandas, y reemplazar el ejemplo de la línea 89 que nombra una tabla del cliente por <code>esquema.vista</code>.</li>
+<li>[ ] <strong>Step 7: CHANGELOG <code>[Unreleased]</code></strong> — Added: <code>validate_table</code> (+ partición, <code>ParticionInvalida</code>, <code>'completa'</code>), <code>ErrorMotorCalidad</code>, <code>TableAssetSynapse</code>, <code>separar_tabla</code>/<code>tipo_objeto</code>/<code>definicion_objeto</code>, parser <code>particiones.py</code>, variables de prueba nuevas. Changed: <code>validate_query</code> en <code>sql</code> rechaza expectativas de columna; <code>great-expectations</code> acotado a <code>&gt;=1.24,&lt;1.25</code> y por qué. Fixed: ejemplo de <code>.env</code> con la connection string comentada; <code>SynapseClient</code> reintenta 42109 (pool en frío).</li>
+<li>[ ] <strong>Step 8: Verificar</strong> <code>make test</code> en verde y <code>grep -rnEif .superpowers/sdd/nombres-cliente.txt README.md docs/*.md docs/*.ipynb docs/superpowers centraal_dataframework tests CHANGELOG.md</code> sin resultados (el patrón vive fuera del repo porque contiene nombres del cliente).</li>
+<li>[ ] <strong>Step 9: Commit</strong> — <code>git add README.md docs CHANGELOG.md &amp;&amp; git commit -m "docs: validate_table, trampa de poda, GRANT VIEW DEFINITION y cota de GX"</code></li>
+</ul>
+<h4 id="task-10-repetir-los-bloques-1-y-2-del-checklist-y-registrar">Task 10: Repetir los bloques 1 y 2 del checklist y registrar<a class="headerlink" href="#task-10-repetir-los-bloques-1-y-2-del-checklist-y-registrar" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>docs/superpowers/runs/2026-11-02-checklist-pruebas.md</code> (sección nueva "Corrida 3, con validate_table")</p>
+<ul>
+<li>[ ] <strong>Step 1:</strong> <code>make test</code> con <code>.venv</code> en el PATH — Expected: isort/black sin cambios, flake8 limpio, pytest todo en verde incluidas las <code>synapse</code> (repetir una vez si sale <code>42109</code>).</li>
+<li>[ ] <strong>Step 2:</strong> <code>pytest -m synapse -v -s tests/test_synapse_integration.py</code> — Expected: PASS; copiar al registro el SQL generado (saneado) y la evidencia de la trampa.</li>
+<li>[ ] <strong>Step 3:</strong> Ejecutar los notebooks 01, 02 y 03 headless y comprobar cada ítem del checklist (bloque 2) como en la corrida 2; anotar PASA/FALLA con evidencia saneada.</li>
+<li>[ ] <strong>Step 4:</strong> Añadir la sección al registro; <code>git add docs/superpowers/runs &amp;&amp; git commit -m "docs(runs): corrida 3 del checklist con validate_table"</code>.</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Tweet" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Facebook" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/centraal-api/centraal-dataframework" target="_blank" rel="noopener" title="Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:equipo@centraal.studio" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.tabs.sticky"], "search": "../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>

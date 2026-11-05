@@ -1,0 +1,1644 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://centraal-api.github.io/centraal-dataframework/superpowers/plans/2026-10-10-synapse-serverless/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.3.2">
+    
+    
+      
+        <title>2026 10 10 synapse serverless - centraal_dataframework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.30068a00.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#soporte-mínimo-de-synapse-serverless--implementation-plan" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../.." title="centraal_dataframework" class="md-header__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            centraal_dataframework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2026 10 10 synapse serverless
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="centraal_dataframework" class="md-nav__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    centraal_dataframework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#soporte-mínimo-de-synapse-serverless--implementation-plan" class="md-nav__link">
+    Soporte mínimo de Synapse serverless — Implementation Plan
+  </a>
+  
+    <nav class="md-nav" aria-label="Soporte mínimo de Synapse serverless — Implementation Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-constraints" class="md-nav__link">
+    Global Constraints
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-focus" class="md-nav__link">
+    Review Focus
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    File Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="File Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-1-synapseclient--configuración-conexión-y-lectura" class="md-nav__link">
+    Task 1: SynapseClient — configuración, conexión y lectura
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-2-plantillas-sql-con-parámetros-en-lista-blanca-y-archivos-con-go" class="md-nav__link">
+    Task 2: Plantillas SQL con parámetros en lista blanca y archivos con GO
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-3-reintentos-solo-ante-errores-transitorios" class="md-nav__link">
+    Task 3: Reintentos solo ante errores transitorios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-4-taskcontext-perezoso-con-ctxsynapse-y-ctxsynapse_for" class="md-nav__link">
+    Task 4: TaskContext perezoso con ctx.synapse y ctx.synapse_for
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-5-empaquetado-prueba-de-integración-y-documentación" class="md-nav__link">
+    Task 5: Empaquetado, prueba de integración y documentación
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fuera-de-alcance-planes-siguientes-spec-13" class="md-nav__link">
+    Fuera de alcance (planes siguientes, spec §13)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>2026 10 10 synapse serverless</h1>
+
+<h2 id="soporte-mínimo-de-synapse-serverless--implementation-plan">Soporte mínimo de Synapse serverless — Implementation Plan<a class="headerlink" href="#soporte-mínimo-de-synapse-serverless--implementation-plan" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Que una tarea del framework pueda enviar SQL y leer resultados de Synapse (serverless primero) con <code>ctx.synapse</code>, autenticada con identidad administrada.</p>
+<p><strong>Architecture:</strong> Un módulo nuevo <code>centraal_dataframework/synapse.py</code> con <code>SynapseClient</code>, un cliente delgado sobre <code>pyodbc</code> con token de Entra (<code>DefaultAzureCredential</code>). Abre una conexión por llamada en <code>autocommit</code>, reintenta solo errores transitorios y sustituye <code>{{param}}</code> con lista blanca. <code>TaskContext</code> crea <code>datalake</code> y <code>synapse</code> de forma perezosa, solo cuando la tarea los usa. Sin CETAS versionado, <code>paso_sql</code> ni GX sobre SQL: eso queda para planes posteriores (§13.c–f del spec).</p>
+<p><strong>Tech Stack:</strong> Python 3.10–3.14, <code>pyodbc</code> 5.x (extra opcional <code>[synapse]</code>) + <code>ODBC Driver 18 for SQL Server</code>, <code>azure-identity</code>, pydantic-settings, pytest.</p>
+<p><strong>Spec:</strong> <code>C:\Users\German\Centraal\cliente-summa\requerimientos\plataforma-digital-datos-company-in-a-box\27-arquitectura-bajo-nivel-ejecucion.md</code> — §2 (P3, P4), §8.1 (conexión), §5 (parámetros con lista blanca), §9.3 (reintentos), §10.1 (identidad), §13.b y §13.i (dependencias opcionales).</p>
+<h3 id="global-constraints">Global Constraints<a class="headerlink" href="#global-constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Precondición:</strong> 0.2.0 está sin commitear (spec §13.a). Antes de la Task 1, el usuario commitea 0.2.0. Si no lo hace, se <strong>omiten</strong> los pasos de commit: <code>settings.py</code>, <code>tasks.py</code>, <code>pyproject.toml</code> y <code>CHANGELOG.md</code> ya tienen cambios de 0.2.0 sin commitear y se mezclarían.</li>
+<li>Python <code>&gt;=3.10,&lt;3.15</code>. Usar <code>from __future__ import annotations</code>, sin <code>match</code>.</li>
+<li>Estilo: black <code>line-length = 120</code>, <code>skip-string-normalization</code> (comillas simples), isort, flake8 con <code>flake8-docstrings</code> en convención google. Toda función, clase y método público lleva docstring, también en los tests.</li>
+<li>Textos, docstrings y mensajes de error en español, como el resto del paquete.</li>
+<li>Cambio <strong>genérico</strong>: nada de este cliente. Sin nombres de workspace, bases ni tablas del proyecto en el código (spec §13).</li>
+<li><strong>Serverless primero:</strong> si solo hay <code>SYNAPSE_WORKSPACE</code>, el servidor es <code>&lt;workspace&gt;-ondemand.sql.azuresynapse.net</code>. Un pool dedicado solo se usa con <code>SYNAPSE_SERVER</code> explícito.</li>
+<li><code>pyodbc</code> es <strong>opcional</strong>: importar el paquete sin <code>pyodbc</code> no falla. El error solo aparece al usar Synapse, con un mensaje que dice qué instalar.</li>
+<li>Auth por defecto: identidad, con scope <code>https://database.windows.net/.default</code> y <code>attrs_before={1256: token}</code>. Sin secretos en el código.</li>
+<li>Por la Function viajan resultados, no se guardan: no loguear filas, solo duración y base.</li>
+<li>Límite de consulta en serverless: 30 min, así que <code>SYNAPSE_QUERY_TIMEOUT</code> vale 1800 por defecto.</li>
+</ul>
+<h3 id="review-focus">Review Focus<a class="headerlink" href="#review-focus" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Valores de parámetro maliciosos o raros</strong> en <code>render</code> (<code>'</code>, <code>;</code>, espacios, <code>--</code>, vacío, <code>/*</code>): deben dar <code>ValueError</code> antes de tocar Synapse. Test en la Task 2.</li>
+<li><strong>Login fallido o bloqueado</strong> (error 18456, R-042): <strong>no</strong> se reintenta, para no agravar el bloqueo. Test en la Task 3.</li>
+<li><strong>Error de SQL</strong> (sintaxis, objeto que ya existe en un CETAS): <code>ProgrammingError</code> no se reintenta y se propaga al primer intento. Test en la Task 3.</li>
+<li><strong>Tarea que solo usa Synapse, sin storage configurado</strong>: no debe fallar por <code>get_datalake</code>. Test en la Task 4.</li>
+<li><strong>Password de auth SQL con <code>;</code> o <code>}</code></strong>: no debe romper el connection string. Test en la Task 1.</li>
+</ol>
+<hr />
+<h3 id="file-structure">File Structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Acción</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>centraal_dataframework/synapse.py</code></td>
+<td>Crear</td>
+<td><code>SynapseClient</code>, <code>get_synapse</code>, <code>render</code>, conexión, reintentos</td>
+</tr>
+<tr>
+<td><code>centraal_dataframework/settings.py</code></td>
+<td>Modificar</td>
+<td>Variables <code>SYNAPSE_*</code></td>
+</tr>
+<tr>
+<td><code>centraal_dataframework/excepciones.py</code></td>
+<td>Modificar</td>
+<td><code>SynapseNoConfigurado</code></td>
+</tr>
+<tr>
+<td><code>centraal_dataframework/tasks.py</code></td>
+<td>Modificar</td>
+<td><code>TaskContext</code> perezoso + <code>synapse</code> + <code>synapse_for</code></td>
+</tr>
+<tr>
+<td><code>centraal_dataframework/__init__.py</code></td>
+<td>Modificar</td>
+<td>Exportar <code>SynapseClient</code></td>
+</tr>
+<tr>
+<td><code>pyproject.toml</code>, <code>poetry.lock</code></td>
+<td>Modificar</td>
+<td>Extra <code>[synapse]</code> con <code>pyodbc</code></td>
+</tr>
+<tr>
+<td><code>setup.cfg</code></td>
+<td>Modificar</td>
+<td>Marker <code>synapse</code> de pytest</td>
+</tr>
+<tr>
+<td><code>tests/test_synapse.py</code></td>
+<td>Crear</td>
+<td>Unitarias con un <code>pyodbc</code> falso</td>
+</tr>
+<tr>
+<td><code>tests/test_synapse_integration.py</code></td>
+<td>Crear</td>
+<td><code>SELECT 1</code> real; se salta sin configuración</td>
+</tr>
+<tr>
+<td><code>tests/test_tasks.py</code></td>
+<td>Modificar</td>
+<td>Pruebas de pereza de <code>TaskContext</code></td>
+</tr>
+<tr>
+<td><code>README.md</code>, <code>CHANGELOG.md</code></td>
+<td>Modificar</td>
+<td>Uso y entrada en <code>[Unreleased]</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="task-1-synapseclient--configuración-conexión-y-lectura">Task 1: <code>SynapseClient</code> — configuración, conexión y lectura<a class="headerlink" href="#task-1-synapseclient--configuración-conexión-y-lectura" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Create: <code>centraal_dataframework/synapse.py</code>
+- Modify: <code>centraal_dataframework/settings.py</code> (imports y campos, después de <code>notify_on_success</code>)
+- Modify: <code>centraal_dataframework/excepciones.py</code> (al final)
+- Test: <code>tests/test_synapse.py</code></p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>Settings</code>, <code>get_settings</code> (<code>centraal_dataframework/settings.py</code>).
+- Produces:
+  - <code>SynapseClient(server: str, database: Optional[str] = None, auth: str = 'identity', user: Optional[str] = None, password: Optional[str] = None, query_timeout: int = 1800, login_timeout: int = 30, max_attempts: int = 3, credential: Any = None)</code>
+  - <code>SynapseClient.from_settings(settings: Optional[Settings] = None) -&gt; SynapseClient</code>
+  - <code>SynapseClient.for_database(database: str) -&gt; SynapseClient</code>
+  - <code>SynapseClient.connection_string() -&gt; str</code>
+  - <code>SynapseClient.connect() -&gt; pyodbc.Connection</code>
+  - <code>SynapseClient.query(sql: str, *params) -&gt; List[Dict[str, Any]]</code>
+  - <code>SynapseClient.scalar(sql: str, *params) -&gt; Any</code>
+  - <code>SynapseClient.execute(sql: str, *params) -&gt; int</code> (rowcount, <code>-1</code> si el driver no lo informa)
+  - <code>SynapseClient.read_df(sql: str, *params) -&gt; pandas.DataFrame</code>
+  - <code>SynapseClient._run(sql: str, params: tuple, fetch: Callable[[cursor], Any]) -&gt; Any</code> (la Task 3 le agrega reintentos)
+  - <code>get_synapse(settings: Optional[Settings] = None) -&gt; SynapseClient</code>
+  - Módulo: <code>_import_pyodbc()</code>, <code>_sleep</code> (alias de <code>time.sleep</code>, se parchea en tests), <code>_token_struct(token: str) -&gt; bytes</code>
+  - <code>excepciones.SynapseNoConfigurado(Exception)</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests</strong></li>
+</ul>
+<p>Crear <code>tests/test_synapse.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Tests de SynapseClient con un pyodbc falso (sin red)."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework</span><span class="w"> </span><span class="kn">import</span> <span class="n">synapse</span> <span class="k">as</span> <span class="n">syn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.excepciones</span><span class="w"> </span><span class="kn">import</span> <span class="n">SynapseNoConfigurado</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.synapse</span><span class="w"> </span><span class="kn">import</span> <span class="n">SynapseClient</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Base de errores del pyodbc falso."""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeOperationalError</span><span class="p">(</span><span class="n">FakeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Error operacional (conexión, timeout)."""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeProgrammingError</span><span class="p">(</span><span class="n">FakeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Error de SQL."""</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeCursor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Cursor que consume el siguiente resultado programado."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Guarda la conexión dueña."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rows</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Registra la sentencia y aplica el siguiente resultado."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">executed</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">))</span>
+        <span class="n">outcome</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">outcomes</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outcome</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">outcome</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">outcome</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'cols'</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="p">[(</span><span class="n">c</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rows</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">outcome</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'rows'</span><span class="p">,</span> <span class="p">[])]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">=</span> <span class="n">outcome</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'rowcount'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rows</span><span class="p">)</span> <span class="k">if</span> <span class="n">cols</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetchall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Devuelve todas las filas."""</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rows</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">fetchone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Devuelve la primera fila o None."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rows</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rows</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeConnection</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Conexión falsa."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">conn_str</span><span class="p">,</span> <span class="n">autocommit</span><span class="p">,</span> <span class="n">attrs_before</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Guarda los argumentos de connect."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn_str</span> <span class="o">=</span> <span class="n">conn_str</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">autocommit</span> <span class="o">=</span> <span class="n">autocommit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrs_before</span> <span class="o">=</span> <span class="n">attrs_before</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Crea un cursor."""</span>
+        <span class="k">return</span> <span class="n">FakeCursor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Cierra la conexión."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakePyodbc</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Módulo pyodbc falso con resultados programables."""</span>
+
+    <span class="n">Error</span> <span class="o">=</span> <span class="n">FakeError</span>
+    <span class="n">OperationalError</span> <span class="o">=</span> <span class="n">FakeOperationalError</span>
+    <span class="n">ProgrammingError</span> <span class="o">=</span> <span class="n">FakeProgrammingError</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Inicia sin resultados."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn_str</span><span class="p">,</span> <span class="n">autocommit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">attrs_before</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Crea una conexión falsa."""</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">FakeConnection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn_str</span><span class="p">,</span> <span class="n">autocommit</span><span class="p">,</span> <span class="n">attrs_before</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">conn</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">FakeCredential</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Credencial que entrega un token fijo."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Inicia el registro de scopes."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scopes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scope</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Devuelve un token falso."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scopes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scope</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">token</span><span class="o">=</span><span class="s1">'tok'</span><span class="p">)</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fake_odbc</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reemplaza pyodbc y sleep."""</span>
+    <span class="n">fake</span> <span class="o">=</span> <span class="n">FakePyodbc</span><span class="p">()</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="n">syn</span><span class="p">,</span> <span class="s1">'_import_pyodbc'</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">fake</span><span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="n">syn</span><span class="p">,</span> <span class="s1">'_sleep'</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">fake</span><span class="o">.</span><span class="n">executed</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">'sleep'</span><span class="p">,</span> <span class="n">s</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">fake</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Cliente con credencial falsa."""</span>
+    <span class="k">return</span> <span class="n">SynapseClient</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">'ws-ondemand.sql.azuresynapse.net'</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="s1">'silver'</span><span class="p">,</span> <span class="n">credential</span><span class="o">=</span><span class="n">FakeCredential</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_from_settings_derives_serverless_endpoint</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Solo workspace: usa el endpoint -ondemand."""</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">SynapseClient</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">Settings</span><span class="p">(</span><span class="n">synapse_workspace</span><span class="o">=</span><span class="s1">'ws'</span><span class="p">,</span> <span class="n">synapse_database</span><span class="o">=</span><span class="s1">'bronze'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="s1">'ws-ondemand.sql.azuresynapse.net'</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">database</span> <span class="o">==</span> <span class="s1">'bronze'</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">auth</span> <span class="o">==</span> <span class="s1">'identity'</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">query_timeout</span> <span class="o">==</span> <span class="mi">1800</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_from_settings_server_overrides_workspace</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""SYNAPSE_SERVER explícito gana sobre el workspace."""</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">SynapseClient</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">Settings</span><span class="p">(</span><span class="n">synapse_workspace</span><span class="o">=</span><span class="s1">'ws'</span><span class="p">,</span> <span class="n">synapse_server</span><span class="o">=</span><span class="s1">'ws.sql.azuresynapse.net'</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">c</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="s1">'ws.sql.azuresynapse.net'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_from_settings_without_config_raises</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Sin workspace ni server: error claro."""</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">SynapseNoConfigurado</span><span class="p">):</span>
+        <span class="n">SynapseClient</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">Settings</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_sql_auth_requires_user_and_password</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Auth sql sin usuario o clave: error claro."""</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">SynapseNoConfigurado</span><span class="p">):</span>
+        <span class="n">SynapseClient</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">Settings</span><span class="p">(</span><span class="n">synapse_workspace</span><span class="o">=</span><span class="s1">'ws'</span><span class="p">,</span> <span class="n">synapse_auth</span><span class="o">=</span><span class="s1">'sql'</span><span class="p">,</span> <span class="n">synapse_user</span><span class="o">=</span><span class="s1">'u'</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_invalid_auth_rejected_by_settings</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Auth desconocida no pasa la validación."""</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="n">Settings</span><span class="p">(</span><span class="n">synapse_auth</span><span class="o">=</span><span class="s1">'kerberos'</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_connection_string_identity_has_no_credentials</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Con identidad no hay Uid/Pwd y va cifrado."""</span>
+    <span class="n">cs</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">connection_string</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="s1">'Driver={ODBC Driver 18 for SQL Server}'</span> <span class="ow">in</span> <span class="n">cs</span>
+    <span class="k">assert</span> <span class="s1">'Server=tcp:ws-ondemand.sql.azuresynapse.net,1433'</span> <span class="ow">in</span> <span class="n">cs</span>
+    <span class="k">assert</span> <span class="s1">'Database=silver'</span> <span class="ow">in</span> <span class="n">cs</span>
+    <span class="k">assert</span> <span class="s1">'Encrypt=yes'</span> <span class="ow">in</span> <span class="n">cs</span>
+    <span class="k">assert</span> <span class="s1">'Uid='</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cs</span> <span class="ow">and</span> <span class="s1">'Pwd='</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">cs</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_connection_string_escapes_password</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Password con ; y } no rompe el connection string."""</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">SynapseClient</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">'s'</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="s1">'sql'</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">'u'</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">'a;b}c'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="s1">'Pwd={a;b}}c};'</span> <span class="ow">in</span> <span class="n">c</span><span class="o">.</span><span class="n">connection_string</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_query_uses_token_autocommit_and_timeout</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""query devuelve dicts; conecta con token, autocommit y timeout."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'id'</span><span class="p">,</span> <span class="s1">'n'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">)]})</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'SELECT id, n FROM t WHERE x = ?'</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">rows</span> <span class="o">==</span> <span class="p">[{</span><span class="s1">'id'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'n'</span><span class="p">:</span> <span class="s1">'a'</span><span class="p">},</span> <span class="p">{</span><span class="s1">'id'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">'n'</span><span class="p">:</span> <span class="s1">'b'</span><span class="p">}]</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">conn</span><span class="o">.</span><span class="n">autocommit</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">conn</span><span class="o">.</span><span class="n">timeout</span> <span class="o">==</span> <span class="mi">1800</span>
+    <span class="k">assert</span> <span class="n">conn</span><span class="o">.</span><span class="n">closed</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="s1">'tok'</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">'utf-16-le'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">conn</span><span class="o">.</span><span class="n">attrs_before</span> <span class="o">==</span> <span class="p">{</span><span class="mi">1256</span><span class="p">:</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;I</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="si">}</span><span class="s1">s'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="n">raw</span><span class="p">)}</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">credential</span><span class="o">.</span><span class="n">scopes</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'https://database.windows.net/.default'</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="p">(</span><span class="s1">'SELECT id, n FROM t WHERE x = ?'</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_sql_auth_sends_no_token</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Con auth sql no se pasa token."""</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">SynapseClient</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="s1">'s'</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="s1">'sql'</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">'u'</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">'p'</span><span class="p">)</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'x'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,)]})</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">connections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">attrs_before</span> <span class="o">==</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_scalar_execute_and_empty_results</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""scalar, execute y consultas sin result set."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'c'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">42</span><span class="p">,)]},</span>
+        <span class="p">{</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'c'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[]},</span>
+        <span class="p">{</span><span class="s1">'rowcount'</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="p">{},</span>
+    <span class="p">]</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 42'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">42</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT c FROM vacia'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'CREATE VIEW v AS SELECT 1'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'DROP VIEW v'</span><span class="p">)</span> <span class="o">==</span> <span class="p">[]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_read_df</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""read_df arma un DataFrame con nombres de columna."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">'x'</span><span class="p">)]})</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">read_df</span><span class="p">(</span><span class="s1">'SELECT a, b FROM t'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'x'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_for_database_keeps_config</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""for_database cambia solo la base y comparte la credencial."""</span>
+    <span class="n">other</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">for_database</span><span class="p">(</span><span class="s1">'gold'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">other</span><span class="o">.</span><span class="n">database</span> <span class="o">==</span> <span class="s1">'gold'</span>
+    <span class="k">assert</span> <span class="n">other</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">server</span>
+    <span class="k">assert</span> <span class="n">other</span><span class="o">.</span><span class="n">credential</span> <span class="ow">is</span> <span class="n">client</span><span class="o">.</span><span class="n">credential</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">database</span> <span class="o">==</span> <span class="s1">'silver'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_missing_pyodbc_raises_clear_error</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Sin pyodbc instalado: error que dice qué instalar."""</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setitem</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">,</span> <span class="s1">'pyodbc'</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">SynapseNoConfigurado</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="sa">r</span><span class="s1">'\[synapse\]'</span><span class="p">):</span>
+        <span class="n">syn</span><span class="o">.</span><span class="n">_import_pyodbc</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_get_synapse_uses_settings</span><span class="p">(</span><span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""get_synapse lee las Settings del entorno."""</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setenv</span><span class="p">(</span><span class="s1">'SYNAPSE_WORKSPACE'</span><span class="p">,</span> <span class="s1">'ws'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">syn</span><span class="o">.</span><span class="n">get_synapse</span><span class="p">()</span><span class="o">.</span><span class="n">server</span> <span class="o">==</span> <span class="s1">'ws-ondemand.sql.azuresynapse.net'</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests to verify they fail</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v</code>
+Expected: falla la colección con <code>ModuleNotFoundError: No module named 'centraal_dataframework.synapse'</code> o <code>ImportError: cannot import name 'SynapseNoConfigurado'</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Add exception and settings</strong></li>
+</ul>
+<p>Al final de <code>centraal_dataframework/excepciones.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SynapseNoConfigurado</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Excepción cuando falta configuración o dependencias de Synapse."""</span>
+</code></pre></div>
+<p>En <code>centraal_dataframework/settings.py</code>, cambiar los imports:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">zoneinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZoneInfo</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Field</span><span class="p">,</span> <span class="n">SecretStr</span><span class="p">,</span> <span class="n">field_validator</span>
+</code></pre></div>
+<p>y agregar estos campos después de <code>notify_on_success</code>:</p>
+<div class="highlight"><pre><span></span><code>    <span class="n">synapse_workspace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_WORKSPACE'</span><span class="p">)</span>
+    <span class="n">synapse_server</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_SERVER'</span><span class="p">)</span>
+    <span class="n">synapse_database</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_DATABASE'</span><span class="p">)</span>
+    <span class="n">synapse_auth</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s1">'identity'</span><span class="p">,</span> <span class="s1">'sql'</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s1">'identity'</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_AUTH'</span><span class="p">)</span>
+    <span class="n">synapse_user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_USER'</span><span class="p">)</span>
+    <span class="n">synapse_password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SecretStr</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_PASSWORD'</span><span class="p">)</span>
+    <span class="n">synapse_query_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1800</span><span class="p">,</span> <span class="n">validation_alias</span><span class="o">=</span><span class="s1">'SYNAPSE_QUERY_TIMEOUT'</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 4: Create <code>centraal_dataframework/synapse.py</code></strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Cliente mínimo para Synapse SQL (serverless primero)."""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.excepciones</span><span class="w"> </span><span class="kn">import</span> <span class="n">SynapseNoConfigurado</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.settings</span><span class="w"> </span><span class="kn">import</span> <span class="n">Settings</span><span class="p">,</span> <span class="n">get_settings</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">DRIVER</span> <span class="o">=</span> <span class="s1">'ODBC Driver 18 for SQL Server'</span>
+<span class="n">TOKEN_SCOPE</span> <span class="o">=</span> <span class="s1">'https://database.windows.net/.default'</span>
+<span class="n">SQL_COPT_SS_ACCESS_TOKEN</span> <span class="o">=</span> <span class="mi">1256</span>
+<span class="n">_sleep</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">sleep</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_import_pyodbc</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Import diferido de pyodbc con mensaje claro si falta."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pyodbc</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SynapseNoConfigurado</span><span class="p">(</span>
+            <span class="s2">"Falta pyodbc: instale centraal-dataframework[synapse] y el 'ODBC Driver 18 for SQL Server'."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+    <span class="k">return</span> <span class="n">pyodbc</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_token_struct</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Empaqueta el token de Entra como lo espera el driver ODBC."""</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">'utf-16-le'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="sa">f</span><span class="s1">'&lt;I</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="si">}</span><span class="s1">s'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw</span><span class="p">),</span> <span class="n">raw</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_odbc_value</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Escapa un valor del connection string ODBC con llaves."""</span>
+    <span class="k">return</span> <span class="s1">'{'</span> <span class="o">+</span> <span class="n">value</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'}'</span><span class="p">,</span> <span class="s1">'}}'</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'}'</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fetch_rows</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Filas como diccionarios; lista vacía si no hay result set."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fetch_scalar</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Primer valor de la primera fila o None."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">row</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_fetch_table</span><span class="p">(</span><span class="n">cursor</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Columnas y filas crudas."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">],</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()]</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SynapseClient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Cliente delgado de Synapse SQL: envía SQL y devuelve resultados pequeños."""</span>
+
+    <span class="n">server</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">database</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">auth</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'identity'</span>
+    <span class="n">user</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">password</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">query_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1800</span>
+    <span class="n">login_timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
+    <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">credential</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_settings</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Settings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SynapseClient'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Crea el cliente desde Settings; serverless si solo hay workspace."""</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span> <span class="ow">or</span> <span class="n">get_settings</span><span class="p">()</span>
+        <span class="n">server</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">synapse_server</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">server</span> <span class="ow">and</span> <span class="n">settings</span><span class="o">.</span><span class="n">synapse_workspace</span><span class="p">:</span>
+            <span class="n">server</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_workspace</span><span class="si">}</span><span class="s2">-ondemand.sql.azuresynapse.net"</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">server</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SynapseNoConfigurado</span><span class="p">(</span><span class="s2">"Configure SYNAPSE_WORKSPACE (serverless) o SYNAPSE_SERVER."</span><span class="p">)</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">synapse_password</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">()</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">synapse_password</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">synapse_auth</span> <span class="o">==</span> <span class="s1">'sql'</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_user</span> <span class="ow">and</span> <span class="n">password</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">SynapseNoConfigurado</span><span class="p">(</span><span class="s2">"SYNAPSE_AUTH=sql requiere SYNAPSE_USER y SYNAPSE_PASSWORD."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">server</span><span class="o">=</span><span class="n">server</span><span class="p">,</span>
+            <span class="n">database</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_database</span><span class="p">,</span>
+            <span class="n">auth</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_auth</span><span class="p">,</span>
+            <span class="n">user</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_user</span><span class="p">,</span>
+            <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span>
+            <span class="n">query_timeout</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">synapse_query_timeout</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">for_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'SynapseClient'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Copia del cliente apuntando a otra base (comparte credencial)."""</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">database</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">connection_string</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Connection string ODBC (sin token)."""</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s1">'Driver=</span><span class="se">{{</span><span class="si">{</span><span class="n">DRIVER</span><span class="si">}</span><span class="se">}}</span><span class="s1">'</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">'Server=tcp:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="si">}</span><span class="s1">,1433'</span><span class="p">,</span>
+            <span class="s1">'Encrypt=yes'</span><span class="p">,</span>
+            <span class="s1">'TrustServerCertificate=no'</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">'Connection Timeout=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">login_timeout</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="p">:</span>
+            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Database=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">database</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth</span> <span class="o">==</span> <span class="s1">'sql'</span><span class="p">:</span>
+            <span class="n">parts</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">'Uid=</span><span class="si">{</span><span class="n">_odbc_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">,</span> <span class="sa">f</span><span class="s1">'Pwd=</span><span class="si">{</span><span class="n">_odbc_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s1">';'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">+</span> <span class="s1">';'</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_token</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Token de Entra; la credencial se crea una vez y cachea/renueva."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">credential</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">azure.identity</span><span class="w"> </span><span class="kn">import</span> <span class="n">DefaultAzureCredential</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">credential</span> <span class="o">=</span> <span class="n">DefaultAzureCredential</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">credential</span><span class="o">.</span><span class="n">get_token</span><span class="p">(</span><span class="n">TOKEN_SCOPE</span><span class="p">)</span><span class="o">.</span><span class="n">token</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Abre una conexión en autocommit (serverless no admite DDL en transacción)."""</span>
+        <span class="n">pyodbc</span> <span class="o">=</span> <span class="n">_import_pyodbc</span><span class="p">()</span>
+        <span class="n">attrs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auth</span> <span class="o">==</span> <span class="s1">'identity'</span><span class="p">:</span>
+            <span class="n">attrs</span><span class="p">[</span><span class="n">SQL_COPT_SS_ACCESS_TOKEN</span><span class="p">]</span> <span class="o">=</span> <span class="n">_token_struct</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_token</span><span class="p">())</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_string</span><span class="p">(),</span> <span class="n">autocommit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">attrs_before</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_timeout</span>
+        <span class="k">return</span> <span class="n">conn</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">fetch</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta una sentencia en una conexión nueva y aplica fetch."""</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">fetch</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Synapse [</span><span class="si">%s</span><span class="s2">] </span><span class="si">%.2f</span><span class="s2">s"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="ow">or</span> <span class="s1">'default'</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta un SELECT y devuelve filas como diccionarios."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">_fetch_rows</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">scalar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta y devuelve el primer valor."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">_fetch_scalar</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta DDL/DML/CETAS y devuelve rowcount (-1 si no aplica)."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">cursor</span><span class="p">:</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta un SELECT y devuelve un pandas.DataFrame (solo resultados pequeños)."""</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+        <span class="n">cols</span><span class="p">,</span> <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">_fetch_table</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">cols</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_synapse</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Settings</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseClient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Obtiene un SynapseClient desde Settings."""</span>
+    <span class="k">return</span> <span class="n">SynapseClient</span><span class="o">.</span><span class="n">from_settings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Run tests to verify they pass</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v</code>
+Expected: todos PASS.</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit</strong> (solo si se cumple la precondición)</li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>centraal_dataframework/synapse.py<span class="w"> </span>centraal_dataframework/settings.py<span class="w"> </span>centraal_dataframework/excepciones.py<span class="w"> </span>tests/test_synapse.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat: cliente SynapseClient para consultas a Synapse serverless"</span>
+</code></pre></div>
+<hr />
+<h4 id="task-2-plantillas-sql-con-parámetros-en-lista-blanca-y-archivos-con-go">Task 2: Plantillas SQL con parámetros en lista blanca y archivos con <code>GO</code><a class="headerlink" href="#task-2-plantillas-sql-con-parámetros-en-lista-blanca-y-archivos-con-go" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/synapse.py</code>
+- Test: <code>tests/test_synapse.py</code> (agregar al final)</p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>SynapseClient.execute</code> (Task 1).
+- Produces:
+  - <code>render(sql: str, **params: Any) -&gt; str</code> (función del módulo)
+  - <code>SynapseClient.execute_file(path: str | os.PathLike, **params: Any) -&gt; int</code> (suma de rowcounts no negativos)</p>
+<p>Por qué: Synapse serverless no acepta parámetros <code>?</code> en DDL (<code>CREATE VIEW</code>, CETAS; spec §5). Los valores se sustituyen en el texto <strong>solo</strong> si pasan la lista blanca. <code>CREATE VIEW</code> tiene que ser la única sentencia de su lote, por eso un archivo puede separar lotes con <code>GO</code>.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests</strong></li>
+</ul>
+<p>Cambiar el import del inicio de <code>tests/test_synapse.py</code> a
+<code>from centraal_dataframework.synapse import SynapseClient, render</code> y agregar al final:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_render_substitutes_params</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Sustituye {{x}} y {{ x }}."""</span>
+    <span class="n">sql</span> <span class="o">=</span> <span class="s2">"SELECT * FROM bronze.{{box}}.t WHERE fecha = '{{ lote }}'"</span>
+    <span class="k">assert</span> <span class="n">render</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="s1">'demo_1'</span><span class="p">,</span> <span class="n">lote</span><span class="o">=</span><span class="s1">'2026-10-09'</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"SELECT * FROM bronze.demo_1.t WHERE fecha = '2026-10-09'"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_render_accepts_timestamps_and_hex_ids</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Fechas con hora e ids hex pasan."""</span>
+    <span class="k">assert</span> <span class="n">render</span><span class="p">(</span><span class="s1">'{{a}}|{{b}}'</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="s1">'2026-10-09T08:00:00'</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s1">'9f1c2a'</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'2026-10-09T08:00:00|9f1c2a'</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span><span class="s1">'bad'</span><span class="p">,</span> <span class="p">[</span><span class="s2">"x'; DROP VIEW v; --"</span><span class="p">,</span> <span class="s1">'a b'</span><span class="p">,</span> <span class="s1">'a--b'</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="s1">'a/*'</span><span class="p">,</span> <span class="s1">'a;b'</span><span class="p">,</span> <span class="s2">"o'neil"</span><span class="p">,</span> <span class="s1">'-a'</span><span class="p">,</span> <span class="s1">'a-'</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_render_rejects_unsafe_values</span><span class="p">(</span><span class="n">bad</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Valores fuera de la lista blanca: ValueError."""</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+        <span class="n">render</span><span class="p">(</span><span class="s1">'SELECT {{v}}'</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">bad</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_render_missing_param</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Parámetro faltante: ValueError con el nombre."""</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s1">'lote'</span><span class="p">):</span>
+        <span class="n">render</span><span class="p">(</span><span class="s1">'SELECT {{lote}}'</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_execute_file_splits_go_batches</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""execute_file renderiza y ejecuta cada lote GO por separado."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s1">'v.sql'</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span>
+        <span class="s2">"CREATE OR ALTER VIEW {{box}}.v AS SELECT 1 AS x</span><span class="se">\n</span><span class="s2">GO</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="s2">"  go ;  </span><span class="se">\n</span><span class="s2">CREATE OR ALTER VIEW {{box}}.w AS SELECT 2 AS y</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+        <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">+=</span> <span class="p">[{</span><span class="s1">'rowcount'</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s1">'rowcount'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}]</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">execute_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="s1">'demo'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+    <span class="n">sqls</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">sqls</span> <span class="o">==</span> <span class="p">[</span><span class="s1">'CREATE OR ALTER VIEW demo.v AS SELECT 1 AS x'</span><span class="p">,</span> <span class="s1">'CREATE OR ALTER VIEW demo.w AS SELECT 2 AS y'</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_execute_file_does_not_split_go_inside_identifier</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">tmp_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Solo una línea que es exactamente GO separa lotes."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">tmp_path</span> <span class="o">/</span> <span class="s1">'q.sql'</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">'SELECT category FROM t -- GOod</span><span class="se">\n</span><span class="s1">'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">execute_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests to verify they fail</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v -k "render or execute_file"</code>
+Expected: FAIL con <code>ImportError: cannot import name 'render'</code>.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>En <code>synapse.py</code>, agregar <code>import os</code>, <code>import re</code> y <code>from pathlib import Path</code> a los imports. Agregar estas constantes después de <code>_sleep</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">_PARAM_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'\{\{\s*(\w+)\s*\}\}'</span><span class="p">)</span>
+<span class="c1"># Alfanumérico/_ separado por un solo '-', ':' o '.': fechas, timestamps, ids. Bloquea --, /*, comillas y espacios.</span>
+<span class="n">_SAFE_VALUE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'^[A-Za-z0-9_]+(?:[-:.][A-Za-z0-9_]+)*$'</span><span class="p">)</span>
+<span class="n">_GO_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'^\s*GO\s*;?\s*$'</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+</code></pre></div>
+<p>Agregar esta función antes de la clase:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Sustituye {{nombre}} validando cada valor contra una lista blanca."""</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">_PARAM_RE</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">sql</span><span class="p">))</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Faltan parámetros: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sub</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">Match</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_SAFE_VALUE_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Valor no permitido para </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">_PARAM_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">_sub</span><span class="p">,</span> <span class="n">sql</span><span class="p">)</span>
+</code></pre></div>
+<p>Agregar este método a <code>SynapseClient</code>, después de <code>execute</code>:</p>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">execute_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Renderiza un .sql y ejecuta cada lote separado por GO."""</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">_GO_RE</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">text</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">batch</span><span class="p">:</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">batch</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 4: Run tests to verify they pass</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v</code>
+Expected: todos PASS.</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>centraal_dataframework/synapse.py<span class="w"> </span>tests/test_synapse.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat: plantillas SQL con parametros en lista blanca y lotes GO"</span>
+</code></pre></div>
+<hr />
+<h4 id="task-3-reintentos-solo-ante-errores-transitorios">Task 3: Reintentos solo ante errores transitorios<a class="headerlink" href="#task-3-reintentos-solo-ante-errores-transitorios" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/synapse.py</code> (<code>_run</code> y constantes)
+- Test: <code>tests/test_synapse.py</code> (agregar al final)</p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>SynapseClient._run</code>, <code>_sleep</code>, <code>_import_pyodbc</code> (Task 1).
+- Produces: <code>_is_transient(exc: Exception) -&gt; bool</code>. <code>_run</code> hace hasta <code>max_attempts</code> intentos con espera <code>2 ** intento</code> s.</p>
+<p>Regla (spec §9.3): reintentar conexión, timeout y throttling. <strong>No</strong> reintentar errores de SQL ni login fallido o bloqueado (18456, R-042).</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">test_retries_transient_then_succeeds</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""08S01 se reintenta con espera exponencial."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="n">FakeOperationalError</span><span class="p">(</span><span class="s1">'08S01'</span><span class="p">,</span> <span class="s1">'Communication link failure'</span><span class="p">),</span>
+        <span class="n">FakeOperationalError</span><span class="p">(</span><span class="s1">'42000'</span><span class="p">,</span> <span class="s1">'[40613] Database is not currently available'</span><span class="p">),</span>
+        <span class="p">{</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'x'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,)]},</span>
+    <span class="p">]</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'sleep'</span><span class="p">]</span> <span class="o">==</span> <span class="p">[(</span><span class="s1">'sleep'</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s1">'sleep'</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">closed</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">connections</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_gives_up_after_max_attempts</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Tras max_attempts propaga el último error."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span> <span class="o">+=</span> <span class="p">[</span><span class="n">FakeOperationalError</span><span class="p">(</span><span class="s1">'HYT00'</span><span class="p">,</span> <span class="s1">'timeout'</span><span class="p">)]</span> <span class="o">*</span> <span class="mi">3</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">FakeOperationalError</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">fake_odbc</span><span class="o">.</span><span class="n">connections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_programming_error_not_retried</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Error de SQL (p.ej. CETAS ya existe) falla al primer intento."""</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">FakeProgrammingError</span><span class="p">(</span><span class="s1">'42S01'</span><span class="p">,</span> <span class="s1">'There is already an object named t'</span><span class="p">))</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">FakeProgrammingError</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">'CREATE EXTERNAL TABLE t AS SELECT 1 AS x'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">fake_odbc</span><span class="o">.</span><span class="n">connections</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_login_failure_not_retried</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Login fallido (18456) no se reintenta (R-042: no agravar el bloqueo)."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">boom</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">FakeError</span><span class="p">(</span><span class="s1">'28000'</span><span class="p">,</span> <span class="s2">"[18456] Login failed for user '&lt;token-identified principal&gt;'"</span><span class="p">)</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="s1">'connect'</span><span class="p">,</span> <span class="n">boom</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">FakeError</span><span class="p">):</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">executed</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'sleep'</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_connect_transient_error_is_retried</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="n">client</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Un error transitorio al conectar también se reintenta."""</span>
+    <span class="n">real_connect</span> <span class="o">=</span> <span class="n">fake_odbc</span><span class="o">.</span><span class="n">connect</span>
+    <span class="n">calls</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">flaky</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">):</span>
+        <span class="n">calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FakeOperationalError</span><span class="p">(</span><span class="s1">'08001'</span><span class="p">,</span> <span class="s1">'TCP Provider: timeout'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">real_connect</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">k</span><span class="p">)</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="n">fake_odbc</span><span class="p">,</span> <span class="s1">'connect'</span><span class="p">,</span> <span class="n">flaky</span><span class="p">)</span>
+    <span class="n">fake_odbc</span><span class="o">.</span><span class="n">outcomes</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">'cols'</span><span class="p">:</span> <span class="p">[</span><span class="s1">'x'</span><span class="p">],</span> <span class="s1">'rows'</span><span class="p">:</span> <span class="p">[(</span><span class="mi">7</span><span class="p">,)]})</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 7'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests to verify they fail</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v -k "retr or not_retried or attempts"</code>
+Expected: FAIL. El primer <code>FakeOperationalError</code> se propaga sin reintento.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>Agregar estas constantes en <code>synapse.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">TRANSIENT_SQLSTATES</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s1">'08S01'</span><span class="p">,</span> <span class="s1">'08001'</span><span class="p">,</span> <span class="s1">'HYT00'</span><span class="p">,</span> <span class="s1">'HYT01'</span><span class="p">,</span> <span class="s1">'40001'</span><span class="p">})</span>
+<span class="n">TRANSIENT_CODES</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'40613'</span><span class="p">,</span> <span class="s1">'40501'</span><span class="p">,</span> <span class="s1">'40197'</span><span class="p">,</span> <span class="s1">'10928'</span><span class="p">,</span> <span class="s1">'10929'</span><span class="p">,</span> <span class="s1">'49918'</span><span class="p">)</span>
+</code></pre></div>
+<p>Agregar esta función antes de la clase:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_is_transient</span><span class="p">(</span><span class="n">exc</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""True para conexión, timeout y throttling; False para SQL y login (18456)."""</span>
+    <span class="n">sqlstate</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">exc</span><span class="o">.</span><span class="n">args</span> <span class="k">else</span> <span class="s1">''</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">exc</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">'18456'</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">sqlstate</span> <span class="ow">in</span> <span class="n">TRANSIENT_SQLSTATES</span> <span class="ow">or</span> <span class="nb">any</span><span class="p">(</span><span class="n">code</span> <span class="ow">in</span> <span class="n">message</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">TRANSIENT_CODES</span><span class="p">)</span>
+</code></pre></div>
+<p>Reemplazar <code>_run</code> por:</p>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">fetch</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ejecuta en una conexión nueva; reintenta solo errores transitorios."""</span>
+        <span class="n">pyodbc</span> <span class="o">=</span> <span class="n">_import_pyodbc</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">)</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">fetch</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_is_transient</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+                    <span class="k">raise</span>
+                <span class="n">wait</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="n">attempt</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Synapse error transitorio (intento </span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">), espera </span><span class="si">%s</span><span class="s2">s: </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">attempt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_attempts</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">exc</span><span class="p">)</span>
+                <span class="n">_sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Synapse [</span><span class="si">%s</span><span class="s2">] </span><span class="si">%.2f</span><span class="s2">s"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="ow">or</span> <span class="s1">'default'</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">'unreachable'</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 4: Run tests to verify they pass</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse.py -v</code>
+Expected: todos PASS.</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>centraal_dataframework/synapse.py<span class="w"> </span>tests/test_synapse.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat: reintentos de Synapse solo ante errores transitorios"</span>
+</code></pre></div>
+<hr />
+<h4 id="task-4-taskcontext-perezoso-con-ctxsynapse-y-ctxsynapse_for">Task 4: <code>TaskContext</code> perezoso con <code>ctx.synapse</code> y <code>ctx.synapse_for</code><a class="headerlink" href="#task-4-taskcontext-perezoso-con-ctxsynapse-y-ctxsynapse_for" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>centraal_dataframework/tasks.py:5-29</code> (imports y <code>TaskContext</code>) y <code>:65-72</code> (construcción en <code>_wrap_task</code>)
+- Modify: <code>centraal_dataframework/__init__.py</code>
+- Test: <code>tests/test_tasks.py</code> (agregar al final)</p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>get_synapse() -&gt; SynapseClient</code>, <code>SynapseClient.for_database(db)</code> (Task 1); <code>get_datalake()</code> (<code>resources.py</code>).
+- Produces:
+  - <code>TaskContext(name, run_id, logger, params={}, gx=None, datalake_factory=get_datalake, synapse_factory=get_synapse)</code>
+  - <code>TaskContext.datalake</code> (propiedad perezosa, se crea una vez)
+  - <code>TaskContext.synapse -&gt; SynapseClient</code> (propiedad perezosa, se crea una vez)
+  - <code>TaskContext.synapse_for(database: str) -&gt; SynapseClient</code>
+  - <code>centraal_dataframework.SynapseClient</code> exportado.</p>
+<p>Nota de compatibilidad: <code>datalake</code> deja de ser argumento de construcción. En el repo nadie construye <code>TaskContext</code> a mano; solo <code>_wrap_task</code> (verificado con grep). Los tests existentes parchean <code>centraal_dataframework.tasks.get_datalake</code>. Por eso <code>_wrap_task</code> pasa <code>datalake_factory=get_datalake</code>, resuelto en el momento de la llamada, y esos tests siguen funcionando sin cambios.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing tests</strong></li>
+</ul>
+<p>Agregar al final de <code>tests/test_tasks.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">_FakeSynapse</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""SynapseClient falso."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Guarda la base."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">database</span> <span class="o">=</span> <span class="n">database</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">for_database</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Copia con otra base."""</span>
+        <span class="k">return</span> <span class="n">_FakeSynapse</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_context_is_lazy_when_resources_unused</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Si la tarea no usa datalake ni synapse, no se crean (tarea sin storage configurado)."""</span>
+    <span class="n">calls</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">no_storage</span><span class="p">():</span>
+        <span class="n">calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'dl'</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s1">'no debe crearse'</span><span class="p">)</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s1">'centraal_dataframework.tasks.get_datalake'</span><span class="p">,</span> <span class="n">no_storage</span><span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s1">'centraal_dataframework.tasks.get_synapse'</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'syn'</span><span class="p">))</span>
+
+    <span class="nd">@task</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'alpha'</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">alpha</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">TaskContext</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">'ok'</span>
+
+    <span class="k">assert</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_task</span><span class="p">(</span><span class="s1">'alpha'</span><span class="p">,</span> <span class="n">notify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'ok'</span>
+    <span class="k">assert</span> <span class="n">calls</span> <span class="o">==</span> <span class="p">[]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_context_synapse_created_once_and_synapse_for</span><span class="p">(</span><span class="n">runner</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""ctx.synapse se crea una vez; synapse_for cambia la base."""</span>
+    <span class="n">created</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">factory</span><span class="p">():</span>
+        <span class="n">created</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_FakeSynapse</span><span class="p">(</span><span class="s1">'default'</span><span class="p">)</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s1">'centraal_dataframework.tasks.get_synapse'</span><span class="p">,</span> <span class="n">factory</span><span class="p">)</span>
+
+    <span class="nd">@task</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'alpha'</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">alpha</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">TaskContext</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">ctx</span><span class="o">.</span><span class="n">synapse</span> <span class="ow">is</span> <span class="n">ctx</span><span class="o">.</span><span class="n">synapse</span>
+        <span class="k">return</span> <span class="n">ctx</span><span class="o">.</span><span class="n">synapse_for</span><span class="p">(</span><span class="s1">'silver'</span><span class="p">)</span><span class="o">.</span><span class="n">database</span>
+
+    <span class="k">assert</span> <span class="n">runner</span><span class="o">.</span><span class="n">run_task</span><span class="p">(</span><span class="s1">'alpha'</span><span class="p">,</span> <span class="n">notify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'silver'</span>
+    <span class="k">assert</span> <span class="n">created</span> <span class="o">==</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run tests to verify they fail</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_tasks.py -v</code>
+Expected: FAIL. <code>get_synapse</code> no existe en <code>tasks</code> (<code>AttributeError</code> en monkeypatch) y <code>get_datalake</code> se llama de forma ansiosa.</p>
+<ul>
+<li>[ ] <strong>Step 3: Implement</strong></li>
+</ul>
+<p>En <code>centraal_dataframework/tasks.py</code>, ajustar los imports:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.excepciones</span><span class="w"> </span><span class="kn">import</span> <span class="n">ErrorTareaCalidadDatos</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">DQResult</span><span class="p">,</span> <span class="n">GreatExpectationsToolKit</span><span class="p">,</span> <span class="n">get_context</span><span class="p">,</span> <span class="n">get_datalake</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.runner</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_runner</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.synapse</span><span class="w"> </span><span class="kn">import</span> <span class="n">SynapseClient</span><span class="p">,</span> <span class="n">get_synapse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">new_run_id</span>
+</code></pre></div>
+<p>Reemplazar la clase <code>TaskContext</code> por:</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TaskContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Contexto inyectado a cada tarea. datalake y synapse se crean al primer uso."""</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">gx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">GreatExpectationsToolKit</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">datalake_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">get_datalake</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">synapse_factory</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">SynapseClient</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="n">get_synapse</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_datalake</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">_synapse</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">SynapseClient</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">datalake</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Cliente Datalake (perezoso)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datalake</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datalake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datalake_factory</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datalake</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">synapse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseClient</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Cliente Synapse con la base por defecto (perezoso)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_synapse</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_synapse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse_factory</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_synapse</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">synapse_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SynapseClient</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Cliente Synapse para otra base (p.ej. bronze, silver, gold)."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synapse</span><span class="o">.</span><span class="n">for_database</span><span class="p">(</span><span class="n">database</span><span class="p">)</span>
+</code></pre></div>
+<p>En <code>_wrap_task</code>, reemplazar la construcción de <code>ctx</code> por:</p>
+<div class="highlight"><pre><span></span><code>        <span class="n">ctx</span> <span class="o">=</span> <span class="n">TaskContext</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">task_name</span><span class="p">,</span>
+            <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">,</span>
+            <span class="n">logger</span><span class="o">=</span><span class="n">adapter</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
+            <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">},</span>
+            <span class="n">gx</span><span class="o">=</span><span class="n">gx_toolkit</span><span class="p">,</span>
+            <span class="n">datalake_factory</span><span class="o">=</span><span class="n">get_datalake</span><span class="p">,</span>
+            <span class="n">synapse_factory</span><span class="o">=</span><span class="n">get_synapse</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p>En <code>centraal_dataframework/__init__.py</code>, agregar <code>from centraal_dataframework.synapse import SynapseClient</code> antes del import de <code>tasks</code> y <code>'SynapseClient',</code> a <code>__all__</code>.</p>
+<ul>
+<li>[ ] <strong>Step 4: Run tests to verify they pass</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest -v</code>
+Expected: toda la suite PASS, incluidos <code>tests/test_tasks.py</code> y <code>tests/test_runner.py</code>, que parchean <code>tasks.get_datalake</code>.</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>centraal_dataframework/tasks.py<span class="w"> </span>centraal_dataframework/__init__.py<span class="w"> </span>tests/test_tasks.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"feat: TaskContext perezoso con ctx.synapse y synapse_for"</span>
+</code></pre></div>
+<hr />
+<h4 id="task-5-empaquetado-prueba-de-integración-y-documentación">Task 5: Empaquetado, prueba de integración y documentación<a class="headerlink" href="#task-5-empaquetado-prueba-de-integración-y-documentación" title="Permanent link">&para;</a></h4>
+<p><strong>Files:</strong>
+- Modify: <code>pyproject.toml</code> (después de <code>croniter</code>, y una sección nueva antes de <code>[tool.poetry.group.test.dependencies]</code>)
+- Modify: <code>poetry.lock</code> (regenerado)
+- Modify: <code>setup.cfg</code> (sección nueva)
+- Create: <code>tests/test_synapse_integration.py</code>
+- Modify: <code>README.md</code>, <code>CHANGELOG.md</code> (<code>[Unreleased]</code>)</p>
+<p><strong>Interfaces:</strong>
+- Consumes: <code>get_synapse</code>, <code>SynapseClient.scalar/query/execute_file</code> (Tasks 1–3).
+- Produces: extra instalable <code>centraal-dataframework[synapse]</code> y marker <code>synapse</code> de pytest.</p>
+<ul>
+<li>[ ] <strong>Step 1: Write the integration test</strong></li>
+</ul>
+<p>Crear <code>tests/test_synapse_integration.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Integración contra un Synapse real. Se salta sin SYNAPSE_WORKSPACE/SYNAPSE_SERVER o sin pyodbc."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="n">pytestmark</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">synapse</span><span class="p">,</span>
+    <span class="n">pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span>
+        <span class="ow">not</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'SYNAPSE_WORKSPACE'</span><span class="p">)</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'SYNAPSE_SERVER'</span><span class="p">)),</span>
+        <span class="n">reason</span><span class="o">=</span><span class="s1">'Synapse no configurado'</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">]</span>
+
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""Cliente real desde el entorno."""</span>
+    <span class="n">pytest</span><span class="o">.</span><span class="n">importorskip</span><span class="p">(</span><span class="s1">'pyodbc'</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">centraal_dataframework.synapse</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_synapse</span>
+
+    <span class="k">return</span> <span class="n">get_synapse</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_select_1</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Conecta con identidad y ejecuta SELECT 1."""</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">'SELECT 1'</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_parameters_supported_on_serverless</span><span class="p">(</span><span class="n">client</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""[supuesto del spec] serverless acepta parámetros ? en un SELECT."""</span>
+    <span class="k">assert</span> <span class="n">client</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">'SELECT ? AS x'</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">)</span> <span class="o">==</span> <span class="p">[{</span><span class="s1">'x'</span><span class="p">:</span> <span class="s1">'a'</span><span class="p">}]</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Run it to verify it is skipped without configuration</strong></li>
+</ul>
+<p>Run: <code>poetry run pytest tests/test_synapse_integration.py -v</code>
+Expected: 2 SKIPPED (<code>Synapse no configurado</code>).</p>
+<ul>
+<li>[ ] <strong>Step 3: Register the marker and the optional dependency</strong></li>
+</ul>
+<p>En <code>setup.cfg</code>, agregar esta sección después de <code>[coverage:report]</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool:pytest]</span>
+<span class="na">markers</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="na">synapse</span><span class="o">:</span><span class="w"> </span><span class="s">integración contra Synapse real (requiere SYNAPSE_WORKSPACE o SYNAPSE_SERVER y pyodbc)</span>
+</code></pre></div>
+<p>En <code>pyproject.toml</code>, agregar esto dentro de <code>[tool.poetry.dependencies]</code>, después de <code>croniter</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">pyodbc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">"&gt;=5.1,&lt;6.0"</span><span class="p">,</span><span class="w"> </span><span class="n">optional</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>y esta sección nueva antes de <code>[tool.poetry.group.test.dependencies]</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">[tool.poetry.extras]</span>
+<span class="n">synapse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"pyodbc"</span><span class="p">]</span>
+</code></pre></div>
+<p>Run: <code>poetry --version</code>, después <code>poetry lock</code> en Poetry 2.x o <code>poetry lock --no-update</code> en Poetry 1.x.
+Expected: <code>poetry.lock</code> actualizado sin subir versiones de otras dependencias. Revisar con <code>git diff --stat poetry.lock</code>.</p>
+<ul>
+<li>[ ] <strong>Step 4: Document</strong></li>
+</ul>
+<p>En <code>README.md</code>, agregar esta sección después del ejemplo de tareas:</p>
+<div class="highlight"><pre><span></span><code><span class="gu">## Synapse (serverless primero)</span>
+
+Instalar con el extra y el driver ODBC del sistema (<span class="sb">`ODBC Driver 18 for SQL Server`</span>):
+
+<span class="sb">```bash</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"centraal-dataframework[synapse]"</span>
+<span class="sb">```</span>
+
+Variables de entorno:
+
+| Variable | Default | Uso |
+|---|---|---|
+| <span class="sb">`SYNAPSE_WORKSPACE`</span> | — | Nombre del workspace; usa <span class="sb">`&lt;workspace&gt;-ondemand.sql.azuresynapse.net`</span> (serverless) |
+| <span class="sb">`SYNAPSE_SERVER`</span> | — | Servidor explícito (p.ej. pool dedicado); tiene prioridad |
+| <span class="sb">`SYNAPSE_DATABASE`</span> | — | Base por defecto |
+| <span class="sb">`SYNAPSE_AUTH`</span> | <span class="sb">`identity`</span> | <span class="sb">`identity`</span> (Managed Identity / <span class="sb">`DefaultAzureCredential`</span>) o <span class="sb">`sql`</span> |
+| <span class="sb">`SYNAPSE_USER`</span> / <span class="sb">`SYNAPSE_PASSWORD`</span> | — | Solo con <span class="sb">`SYNAPSE_AUTH=sql`</span> (desarrollo local) |
+| <span class="sb">`SYNAPSE_QUERY_TIMEOUT`</span> | <span class="sb">`1800`</span> | Segundos por consulta |
+
+<span class="sb">```python</span>
+<span class="nd">@task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">contar</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">TaskContext</span><span class="p">):</span>
+    <span class="n">bronze</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">synapse_for</span><span class="p">(</span><span class="s1">'bronze'</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">bronze</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s2">"SELECT COUNT(*) FROM demo.ventas WHERE fecha = ?"</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">'lote'</span><span class="p">])</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"filas=</span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="nd">@task</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">crear_vista</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">TaskContext</span><span class="p">):</span>
+    <span class="c1"># DDL: sin parámetros ?, se usa {{param}} con lista blanca; lotes separados por GO</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">synapse_for</span><span class="p">(</span><span class="s1">'silver'</span><span class="p">)</span><span class="o">.</span><span class="n">execute_file</span><span class="p">(</span><span class="s1">'sql/vista.sql'</span><span class="p">,</span> <span class="n">box</span><span class="o">=</span><span class="s1">'demo'</span><span class="p">,</span> <span class="n">lote</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">'lote'</span><span class="p">])</span>
+<span class="sb">```</span>
+
+<span class="sb">`query`</span>, <span class="sb">`scalar`</span> y <span class="sb">`read_df`</span> traen resultados a la Function: úselos para conteos y metadata,
+no para mover datos. El procesamiento pesado va en SQL dentro de Synapse.
+</code></pre></div>
+<p>En <code>CHANGELOG.md</code>, bajo <code>## [Unreleased]</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="gu">### Added</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`SynapseClient`</span> (<span class="sb">`ctx.synapse`</span>, <span class="sb">`ctx.synapse_for(base)`</span>): consultas a Synapse SQL, serverless por defecto, con Managed Identity, reintentos ante errores transitorios y plantillas <span class="sb">`{{param}}`</span> con lista blanca. Extra opcional <span class="sb">`[synapse]`</span> (<span class="sb">`pyodbc`</span>).
+
+<span class="gu">### Changed</span>
+
+<span class="k">-</span><span class="w"> </span><span class="sb">`TaskContext.datalake`</span> se crea al primer uso; <span class="sb">`TaskContext`</span> ya no recibe <span class="sb">`datalake`</span> en el constructor.
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Full verification</strong></li>
+</ul>
+<p>Run:
+<div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-v
+poetry<span class="w"> </span>run<span class="w"> </span>flake8<span class="w"> </span>centraal_dataframework<span class="w"> </span>tests
+poetry<span class="w"> </span>run<span class="w"> </span>black<span class="w"> </span>--check<span class="w"> </span>centraal_dataframework<span class="w"> </span>tests
+poetry<span class="w"> </span>run<span class="w"> </span>isort<span class="w"> </span>--check-only<span class="w"> </span>centraal_dataframework<span class="w"> </span>tests
+</code></pre></div>
+Expected: pytest todo PASS, salvo los 2 SKIPPED de integración. flake8 sin errores. black e isort sin cambios; si reportan algo, correr <code>black</code> o <code>isort</code> sin <code>--check</code> y repetir.</p>
+<ul>
+<li>[ ] <strong>Step 6 (opcional, manual): integración real</strong></li>
+</ul>
+<p>Con <code>az login</code> y la IP permitida en el firewall del workspace:</p>
+<p><div class="highlight"><pre><span></span><code>poetry<span class="w"> </span>install<span class="w"> </span>--extras<span class="w"> </span>synapse
+<span class="nv">SYNAPSE_WORKSPACE</span><span class="o">=</span>&lt;workspace&gt;<span class="w"> </span><span class="nv">SYNAPSE_DATABASE</span><span class="o">=</span>master<span class="w"> </span>poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>-m<span class="w"> </span>synapse<span class="w"> </span>-v
+</code></pre></div>
+Expected: 2 PASS. Si <code>test_parameters_supported_on_serverless</code> falla, anotarlo: los <code>?</code> no sirven en serverless y el README debe recomendar <code>render</code> también para <code>SELECT</code>.</p>
+<ul>
+<li>[ ] <strong>Step 7: Commit</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>pyproject.toml<span class="w"> </span>poetry.lock<span class="w"> </span>setup.cfg<span class="w"> </span>tests/test_synapse_integration.py<span class="w"> </span>README.md<span class="w"> </span>CHANGELOG.md
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"build: extra synapse con pyodbc, prueba de integracion y documentacion"</span>
+</code></pre></div>
+<hr />
+<h3 id="fuera-de-alcance-planes-siguientes-spec-13">Fuera de alcance (planes siguientes, spec §13)<a class="headerlink" href="#fuera-de-alcance-planes-siguientes-spec-13" title="Permanent link">&para;</a></h3>
+<p><code>paso_sql</code> declarativo (c), GX sobre SQL y esquema <code>&lt;box&gt;_calidad</code> (d), CETAS versionado y vistas puntero (e), encadenamiento por cola y lote (f), triggers (g) y jobs (h). El cliente de este plan es la base sobre la que se construyen.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Tweet" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Facebook" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/centraal-api/centraal-dataframework" target="_blank" rel="noopener" title="Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:equipo@centraal.studio" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.tabs.sticky"], "search": "../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>

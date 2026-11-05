@@ -1,0 +1,770 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://centraal-api.github.io/centraal-dataframework/CHECKLIST_PRUEBAS/">
+      
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.3.2">
+    
+    
+      
+        <title>CHECKLIST PRUEBAS - centraal_dataframework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.30068a00.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#checklist-de-pruebas-antes-de-publicar" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href=".." title="centraal_dataframework" class="md-header__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            centraal_dataframework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CHECKLIST PRUEBAS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="centraal_dataframework" class="md-nav__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    centraal_dataframework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-pruebas-antes-de-publicar" class="md-nav__link">
+    Checklist de pruebas antes de publicar
+  </a>
+  
+    <nav class="md-nav" aria-label="Checklist de pruebas antes de publicar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estado-al-2026-11-04" class="md-nav__link">
+    Estado al 2026-11-04
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0-preparación-una-vez-por-máquina" class="md-nav__link">
+    0. Preparación (una vez por máquina)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1-pruebas-automáticas-local" class="md-nav__link">
+    1. Pruebas automáticas (local)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-notebooks-todas-las-celdas-de-arriba-abajo-reiniciando-el-kernel-antes-de-cada-uno" class="md-nav__link">
+    2. Notebooks (todas las celdas, de arriba abajo, reiniciando el kernel antes de cada uno)
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Notebooks (todas las celdas, de arriba abajo, reiniciando el kernel antes de cada uno)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#01_datalakeipynb-requiere-env--corridas-2-y-3" class="md-nav__link">
+    01_datalake.ipynb (requiere .env) — corridas 2 y 3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#02_great_expectationsipynb-sin-variables-corre-de-la-sección-1-a-la-3--corrida-3" class="md-nav__link">
+    02_great_expectations.ipynb (sin variables corre de la sección 1 a la 3) — corrida 3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#03_synapseipynb-requiere-envsynapse--corrida-3" class="md-nav__link">
+    03_synapse.ipynb (requiere .env.synapse) — corrida 3
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poda-de-particiones-con-la-trampa--corrida-3" class="md-nav__link">
+    Poda de particiones (con la trampa) — corrida 3
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-imagen-de-functions-y-build-local-con-docker" class="md-nav__link">
+    3. Imagen de Functions y build (local, con Docker)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-publicar" class="md-nav__link">
+    4. Publicar
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-verificación-en-una-function-de-azure-forma-soportada" class="md-nav__link">
+    5. Verificación en una Function de Azure (forma soportada)
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Verificación en una Function de Azure (forma soportada)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#infraestructura" class="md-nav__link">
+    Infraestructura
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#despliegue" class="md-nav__link">
+    Despliegue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificación" class="md-nav__link">
+    Verificación
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alertas-y-costos" class="md-nav__link">
+    Alertas y costos
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>CHECKLIST PRUEBAS</h1>
+
+<h2 id="checklist-de-pruebas-antes-de-publicar">Checklist de pruebas antes de publicar<a class="headerlink" href="#checklist-de-pruebas-antes-de-publicar" title="Permanent link">&para;</a></h2>
+<p>Va en orden: local, notebooks, imagen de Functions y build, publicación en PyPI y verificación en una Function de
+Azure con la forma soportada (<a href="../DESPLIEGUE_FUNCTION/">DESPLIEGUE_FUNCTION.md</a>). Si un bloque falla, no siga al
+siguiente. Más detalle en <a href="../CAPACIDAD/">CAPACIDAD.md</a>.</p>
+<p>Cada ítem marcado cita la corrida que lo prueba; la evidencia está en
+<a href="../superpowers/runs/2026-11-02-checklist-pruebas/">docs/superpowers/runs/2026-11-02-checklist-pruebas.md</a>.</p>
+<h3 id="estado-al-2026-11-04">Estado al 2026-11-04<a class="headerlink" href="#estado-al-2026-11-04" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Bloque</th>
+<th>Estado</th>
+<th>Corrida</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0. Preparación</td>
+<td>Completo</td>
+<td>1 y 2</td>
+</tr>
+<tr>
+<td>1. Pruebas automáticas</td>
+<td>Completo</td>
+<td>3</td>
+</tr>
+<tr>
+<td>2. Notebooks y poda</td>
+<td>Completo (03 §4 saltado: opcional, sin esquema DDL)</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3. Imagen de Functions y build</td>
+<td>Completo</td>
+<td>4 y ensayo de release</td>
+</tr>
+<tr>
+<td>4. Publicar 0.3.0 en PyPI</td>
+<td>En curso</td>
+<td>—</td>
+</tr>
+<tr>
+<td>5. Verificación en la Function (forma soportada)</td>
+<td>Pendiente: se ejecuta en el repo del cliente con <a href="../superpowers/plans/2026-11-04-despliegue-function-cliente/">el plan</a></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>La forma en contenedor (plan Dedicado) se verificó en la corrida 5 sobre <code>f317ddc</code>. Ya no está soportada: queda como
+referencia en <a href="../DESPLIEGUE_CONTENEDOR/">DESPLIEGUE_CONTENEDOR.md</a>.</p>
+<h3 id="0-preparación-una-vez-por-máquina">0. Preparación (una vez por máquina)<a class="headerlink" href="#0-preparación-una-vez-por-máquina" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Instalar la librería con el extra: <code>pip install -e ".[synapse]"</code>, más <code>jupyter</code> y <code>python-dotenv</code>. — corrida 1.</li>
+<li>[x] Driver ODBC: <code>python -c "import pyodbc; print(pyodbc.drivers())"</code> incluye <code>ODBC Driver 18 for SQL Server</code>. — corrida 2.</li>
+<li>[x] <code>az login</code> (con <code>--tenant</code> si aplica), con un usuario que tenga acceso al lago y a Synapse. — corrida 1.</li>
+<li>[x] <code>.env</code> en la raíz, copiado de <a href="../datalake.env.example">datalake.env.example</a>, con: — corrida 2.</li>
+<li><code>AZURE_STORAGE_CONNECTION_STRING</code> (con AccountKey) o <code>STORAGE_ACCOUNT_NAME</code>;</li>
+<li><code>DATALAKE_TEST_PATH=contenedor/carpeta</code>, donde se pueda escribir y borrar.</li>
+<li>[x] <code>.env.synapse</code> en la raíz, copiado de <a href="../synapse.env.example">synapse.env.example</a>, con: — corridas 1 y 3.</li>
+<li><code>SYNAPSE_WORKSPACE</code> y <code>SYNAPSE_DATABASE</code>;</li>
+<li><code>SYNAPSE_TEST_TABLE</code>: una vista de bronze;</li>
+<li><code>SYNAPSE_TEST_GX_QUERY</code>: un SELECT de esa vista con 2 o 3 columnas y <code>WHERE fecha = '&lt;foto&gt;'</code>;</li>
+<li><code>SYNAPSE_TEST_GX_COLUMN</code>: una columna de esa consulta;</li>
+<li><code>SYNAPSE_TEST_PARTITION_TABLE</code>, <code>SYNAPSE_TEST_PARTITION_COLUMN</code>, <code>SYNAPSE_TEST_PARTITION_VALUE</code>: la vista de
+    prueba con la trampa (dos fotos sanas y una carpeta con un <code>.parquet</code> dañado, en el contenedor de pruebas, con su
+    propio <code>OPENROWSET ... WITH (...)</code> en un esquema de prueba), su columna de partición y una foto sana;</li>
+<li>opcionales: <code>SYNAPSE_TEST_OTHER_DB</code> y <code>SYNAPSE_TEST_DDL_SCHEMA</code>.</li>
+<li>[x] Su IP en el firewall del workspace y su usuario en cada base: <code>CREATE USER [...] FROM EXTERNAL PROVIDER</code> + <code>db_datareader</code> + <code>GRANT VIEW DEFINITION</code>. — corrida 1 (hecho por un admin de Entra).</li>
+</ul>
+<h3 id="1-pruebas-automáticas-local">1. Pruebas automáticas (local)<a class="headerlink" href="#1-pruebas-automáticas-local" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>make test</code>: isort, black, flake8 y pytest en verde. Con <code>.env.synapse</code> lleno, las pruebas de Synapse también corren aquí; sin él se saltan. — corrida 3 (<code>250 passed, 1 skipped</code>).</li>
+<li>[x] <code>pytest -m synapse -v -s</code> contra el workspace real: — corrida 3 (<code>9 passed</code>).</li>
+<li>[x] pasan <code>test_select_1</code>, <code>test_parameters_supported_on_serverless</code>, <code>test_read_test_table</code> y <code>test_for_database</code>;</li>
+<li>[x] pasa <code>test_gx_query_sql_with_columns_is_rejected</code>: <code>validate_query</code> en sql con columnas da <code>ValueError</code>, y en pandas pasa;</li>
+<li>[x] pasa <code>test_validate_table_particion_sql_matches_pandas</code>, y en la salida aparece <code>--- SQL generado por GX ---</code>;</li>
+<li>[x] ese SQL lleva <code>WHERE &lt;columna&gt; = ?</code>, sin <code>DISTINCT</code>, sin <code>TOP 1 1</code>, sin funciones sobre la columna ni tablas temporales (<code>#</code>);</li>
+<li>[x] pasan <code>test_validate_table_completa_falla_por_trampa</code> (error de Parquet como <code>ErrorMotorCalidad</code>), <code>test_validate_table_sin_particion_se_niega</code> y <code>test_validate_table_columna_que_no_es_particion</code>;</li>
+<li>[x] anotar los <code>MB procesados</code> de <code>sql</code> y de <code>pandas</code> (cada consulta cuenta 10 MB como mínimo). — sql 60 MB (seis consultas), pandas 25 MB.</li>
+</ul>
+<h3 id="2-notebooks-todas-las-celdas-de-arriba-abajo-reiniciando-el-kernel-antes-de-cada-uno">2. Notebooks (todas las celdas, de arriba abajo, reiniciando el kernel antes de cada uno)<a class="headerlink" href="#2-notebooks-todas-las-celdas-de-arriba-abajo-reiniciando-el-kernel-antes-de-cada-uno" title="Permanent link">&para;</a></h3>
+<h4 id="01_datalakeipynb-requiere-env--corridas-2-y-3"><a href="../01_datalake.ipynb">01_datalake.ipynb</a> (requiere <code>.env</code>) — corridas 2 y 3<a class="headerlink" href="#01_datalakeipynb-requiere-env--corridas-2-y-3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Configuración: imprime <code>carpeta de trabajo: .../cdf_notebook_xxxx</code>.</li>
+<li>[x] 1. Cliente: imprime el nombre de la cuenta.</li>
+<li>[x] 2. Escribir y leer:</li>
+<li>el CSV y el Parquet se leen de vuelta;</li>
+<li>la lista de archivos se lee como un solo DataFrame;</li>
+<li>se genera el link SAS (o dice <code>SALTADO</code> si no hay AccountKey).</li>
+<li>[x] 3. Tareas:</li>
+<li><code>resumir_ventas</code> devuelve <code>2</code>;</li>
+<li>la tarea sin declarar el recurso imprime el error <code>RecursoNoDeclarado</code>.</li>
+<li>[x] 4. Conexión con nombre: imprime lo que falta configurar para <code>datalake:curado</code>, o <code>configuración completa</code>.</li>
+<li>[x] 5. Runner: <code>check_resources()</code> imprime <code>{}</code>, o solo la tarea que usa <code>datalake:curado</code> si esa conexión no está configurada (como en el punto 4), y <code>run_task</code> termina sin error.</li>
+<li>[x] Limpieza: imprime <code>borrada:</code> y la carpeta ya no está en el lago.</li>
+</ul>
+<h4 id="02_great_expectationsipynb-sin-variables-corre-de-la-sección-1-a-la-3--corrida-3"><a href="../02_great_expectations.ipynb">02_great_expectations.ipynb</a> (sin variables corre de la sección 1 a la 3) — corrida 3<a class="headerlink" href="#02_great_expectationsipynb-sin-variables-corre-de-la-sección-1-a-la-3--corrida-3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Configuración: dice si hay storage, datalake y Synapse.</li>
+<li>[x] 1. En memoria: <code>success: True | fallidas: []</code>, más la URL del reporte.</li>
+<li>[x] 2. Fallo de calidad:</li>
+<li>la llamada directa da <code>success: False | fallidas: ['expect_column_values_to_be_between']</code>;</li>
+<li>por el runner sale <code>error de calidad: [...]</code>.</li>
+<li>[x] 3. Silencio: no lanza error y muestra el aviso de vencimiento.</li>
+<li>[x] 4. Datalake: <code>datalake -&gt; success: True</code>, y la carpeta temporal se borra.</li>
+<li>[x] 5. Synapse (requiere <code>SYNAPSE_TEST_PARTITION_*</code>):</li>
+<li>[x] <code>validate_table</code> de la foto sana: <code>sql -&gt; success: True</code> y <code>pandas -&gt; success: True</code>, con el mismo resultado y los MB procesados;</li>
+<li>[x] el caso forzado da <code>sql -&gt; success: False | fallidas: ['expect_column_values_to_be_null']</code>, o sea que la expectativa se evaluó en Synapse;</li>
+<li>[x] sin <code>particion</code> imprime el <code>ParticionInvalida</code> que pide declararla o <code>'completa'</code>;</li>
+<li>[x] <code>validate_query</code> del cruce en línea: <code>pandas -&gt; success: True</code>, y en <code>sql</code> imprime el <code>ValueError</code> que remite a <code>validate_table</code>.</li>
+</ul>
+<h4 id="03_synapseipynb-requiere-envsynapse--corrida-3"><a href="../03_synapse.ipynb">03_synapse.ipynb</a> (requiere <code>.env.synapse</code>) — corrida 3<a class="headerlink" href="#03_synapseipynb-requiere-envsynapse--corrida-3" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[x] Configuración: el driver configurado aparece en <code>pyodbc.drivers()</code>.</li>
+<li>[x] 1. Cliente: <code>engine_edition = 11</code> (serverless), con el usuario y la base esperados.</li>
+<li>[x] 2. Leer:</li>
+<li>la consulta con parámetros devuelve una fila;</li>
+<li><code>render</code> rechaza el valor inseguro;</li>
+<li>salen el conteo y las columnas de <code>SYNAPSE_TEST_TABLE</code>.</li>
+<li>[x] 3. Tareas: <code>contar_tabla</code> devuelve el mismo conteo.</li>
+<li>[ ] 4. Transformar (con <code>SYNAPSE_TEST_DDL_SCHEMA</code>): crea la vista, la cuenta y la borra. — SALTADO en las corridas 2 y 3: opcional, la prueba fue de solo lectura. No bloquea la publicación.</li>
+<li>[x] 5. Varias bases (con <code>SYNAPSE_TEST_OTHER_DB</code>): devuelve los nombres de las dos bases.</li>
+<li>[x] 6. Calidad: <code>validate_table</code> con partición en <code>sql</code> y <code>pandas</code> da el mismo resultado, se imprimen los MB procesados, y el cruce por <code>validate_query</code> en pandas pasa.</li>
+<li>[x] 7. Runner: imprime <code>recursos configurados</code> y el conteo.</li>
+<li>[x] 8. pandas/polars: muestra 10 filas.</li>
+</ul>
+<h4 id="poda-de-particiones-con-la-trampa--corrida-3">Poda de particiones (con la trampa) — corrida 3<a class="headerlink" href="#poda-de-particiones-con-la-trampa--corrida-3" title="Permanent link">&para;</a></h4>
+<p>Los MB no sirven para medirla: cada consulta cobra 10 MB como mínimo y serverless lee solo las columnas que usa. Se usa la vista de <code>SYNAPSE_TEST_PARTITION_TABLE</code>, que tiene dos fotos sanas y una carpeta con un <code>.parquet</code> dañado.</p>
+<ul>
+<li>[x] <code>validate_table</code> de la foto sana en <code>sql</code> pasa: ni el registro del asset ni la suite tocaron la carpeta dañada.</li>
+<li>[x] <code>particion='completa'</code> falla con <code>ErrorMotorCalidad</code> y el error de Parquet: la trampa funciona.</li>
+</ul>
+<p>Si la foto sana falla con el error de Parquet, Synapse no está podando: revise que la columna salga de <code>filepath(n)</code> con el nombre de la carpeta, y el SQL generado, antes de seguir.</p>
+<h3 id="3-imagen-de-functions-y-build-local-con-docker">3. Imagen de Functions y build (local, con Docker)<a class="headerlink" href="#3-imagen-de-functions-y-build-local-con-docker" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] <code>docker run --rm mcr.microsoft.com/azure-functions/python:4-python3.12 odbcinst -q -d</code> lista <code>[ODBC Driver 18 for SQL Server]</code>. — corrida 4 (msodbcsql18 18.7.1.1).</li>
+<li>[x] Ensayo del workflow de release en un entorno limpio, con los mismos pasos de <code>release.yml</code>: — ensayo de release (2026-11-05, Python 3.12 en Windows, sin Docker).</li>
+<li>[x] <code>pip install poetry</code>, <code>poetry install --with doc</code> y <code>poetry run mkdocs build</code> terminan sin error. El ensayo encontró que <code>mkdocs build</code> fallaba con las versiones de <code>poetry.lock</code> (<code>mkdocs-autorefs</code> 1.4 con <code>mkdocstrings</code> 0.24); arreglado declarando <code>autorefs</code> en <code>mkdocs.yml</code>. En Windows con 3.12, <code>regex</code> 2022.10.31 del lock no trae wheel y pide compilador; el workflow usa Linux con 3.11, donde sí la trae;</li>
+<li>[x] <code>poetry build</code> deja la wheel y el sdist con la versión a publicar;</li>
+<li>[x] la wheel se instala en limpio con el extra (<code>pip install "&lt;wheel&gt;[synapse]"</code>) en Python 3.12, <code>import centraal_dataframework.blueprints</code> funciona y <code>centraal-dataframework init</code> genera <code>requirements.txt</code> con <code>==&lt;versión&gt;</code>.</li>
+</ul>
+<h3 id="4-publicar">4. Publicar<a class="headerlink" href="#4-publicar" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[x] Bloques 0 a 3 marcados.</li>
+<li>[x] Versión en <code>pyproject.toml</code>, <code>centraal_dataframework/__init__.py</code> y <code>.bumpversion.cfg</code>, y <code>[Unreleased]</code> movido en el CHANGELOG.</li>
+<li>[ ] Merge a main y push del tag <code>v&lt;versión&gt;</code>; <code>release.yml</code> publica en PyPI.</li>
+<li>[ ] La versión aparece en PyPI y se instala: <code>pip install "centraal-dataframework[synapse]==&lt;versión&gt;"</code>.</li>
+</ul>
+<h3 id="5-verificación-en-una-function-de-azure-forma-soportada">5. Verificación en una Function de Azure (forma soportada)<a class="headerlink" href="#5-verificación-en-una-function-de-azure-forma-soportada" title="Permanent link">&para;</a></h3>
+<p>Despliegue de código en plan Premium con la versión publicada, generado con <code>init</code>
+(<a href="../DESPLIEGUE_FUNCTION/">DESPLIEGUE_FUNCTION.md</a>). Se ejecuta con el
+<a href="../superpowers/plans/2026-11-04-despliegue-function-cliente/">plan del repo del cliente</a>. Los ítems con <em>(B)</em> ya se
+vieron en la forma en contenedor (corrida 5); en la forma soportada se repiten.</p>
+<h4 id="infraestructura">Infraestructura<a class="headerlink" href="#infraestructura" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] <code>infra/main.bicep</code> con <code>instancias=1</code>, <code>pythonVersion=3.12</code> y <code>synapseWorkspace=&lt;ws&gt;</code>; en el plan, <em>Scale out</em> con mínimo 1, máximo 1 y ninguna pre-calentada (<code>az functionapp show ... --query siteConfig.preWarmedInstanceCount</code>).</li>
+<li>[ ] Application Insights conectado y <code>YAML_CONFIGURACION</code> con ruta absoluta, tal como los deja el bicep.</li>
+<li>[ ] Identidad de la app en Synapse serverless, sin privilegios de administrador: <code>CREATE USER [&lt;identidad&gt;] FROM EXTERNAL PROVIDER</code>, <code>db_datareader</code>, <code>GRANT VIEW DEFINITION</code> y, si las vistas leen el lago con <code>OPENROWSET</code> sobre una fuente con credencial, <code>GRANT ADMINISTER DATABASE BULK OPERATIONS</code> y <code>GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[&lt;credencial&gt;]</code>. <em>(B: corrida 5.)</em></li>
+<li>[ ] Red: las IP de salida de la Function en el firewall del workspace, o VNet con NAT Gateway. <em>(B: corrida 5, con VNet.)</em></li>
+</ul>
+<h4 id="despliegue">Despliegue<a class="headerlink" href="#despliegue" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] <code>requirements.txt</code> con <code>centraal-dataframework[synapse]==&lt;versión&gt;</code>; <code>func azure functionapp publish &lt;app&gt;</code> termina y el log del build remoto muestra que instaló esa versión desde PyPI.</li>
+</ul>
+<h4 id="verificación">Verificación<a class="headerlink" href="#verificación" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] <code>GET /api/diag?code=&lt;key&gt;</code> responde 200 con <code>version</code> <code>&lt;versión&gt;</code>, <code>python</code> 3.12.x, el driver 18 en <code>odbc_drivers</code> y <code>problemas: {}</code>. <em>(B: corrida 5.)</em></li>
+<li>[ ] <code>POST /api/queue_task?code=&lt;key&gt;</code> con <code>{"task_name": "&lt;tarea&gt;", "params": {...}}</code>: en Application Insights aparecen el inicio, el fin y <code>tarea_capacidad</code> con <code>espera_cola_min</code>; con <code>HISTORY_ENABLED=true</code>, <code>GET /api/status/&lt;run_id&gt;</code> muestra <code>success</code> y <code>GET /api/status?task=&lt;tarea&gt;</code> lista la corrida. <em>(B: corrida 5.)</em></li>
+<li>[ ] Una tarea con <code>validate_table(..., particion={...}, modo='sql')</code> termina bien y el log muestra <code>GX &lt;nombre&gt; [sql] tabla=... particion=... success=True data_processed_mb=...</code>. <em>(B: corrida 5, 40 MB.)</em></li>
+<li>[ ] Un fallo de calidad forzado notifica en el primer intento y no se reintenta: una sola ejecución de <code>execute_tasks_inqueue</code>, sin cola <code>*-poison</code>, historial <code>failed</code>. <em>(B: corrida 5.)</em></li>
+<li>[ ] Una partición sin datos falla por calidad (<code>expect_table_row_count_to_be_between</code>), no por motor, y no se reintenta. <em>(B: corrida 5.)</em></li>
+<li>[ ] Parámetros inválidos lanzados como <code>ParametrosInvalidos</code>: una sola ejecución, aviso en el primer intento, historial <code>failed</code> con el motivo, sin reintentos ni cola <code>*-poison</code>. Un <code>ValueError</code> común se sigue reintentando. (Arreglo <code>1f6824a</code>, posterior a la corrida 5.)</li>
+<li>[ ] Una tarea que falla y luego termina bien con el mismo <code>run_id</code> deja la fila del historial en <code>success</code> sin el <code>error</code> del intento anterior. (Arreglo <code>9e337f0</code>, posterior a la corrida 5.)</li>
+<li>[ ] En serie: encolar <code>{"task_name": ["a", "b", "c"]}</code>. Las tareas corren una tras otra y en orden (<code>requests</code> sin solapar). <em>(B: corrida 5.)</em></li>
+<li>[ ] El timer <code>monitor_capacidad</code> deja <code>capacidad {...}</code> cada 30 min, con <code>memoria_limite_mb</code> cerca de 3500 en EP1. <strong>No bloqueante:</strong> si sigue en <code>null</code>, queda como mejora futura. (En B salió <code>null</code>; arreglo <code>cce8a1b</code>.)</li>
+</ul>
+<h4 id="alertas-y-costos">Alertas y costos<a class="headerlink" href="#alertas-y-costos" title="Permanent link">&para;</a></h4>
+<ul>
+<li>[ ] Prueba de disponibilidad de Application Insights sobre <code>/api/diag</code>, con alerta si falla. <em>(B: corrida 5.)</em></li>
+<li>[ ] Alerta sobre las trazas que contienen <code>CAPACIDAD:</code> (regla de consulta programada sobre <code>traces | where message startswith "CAPACIDAD:"</code>, cada 30 min, umbral mayor que 0). <em>(B: corrida 5.)</em></li>
+<li>[ ] <code>sp_set_data_processed_limit</code> configurado en el workspace.</li>
+<li>[ ] Un día de operación normal sin advertencias <code>CAPACIDAD:</code>, o con advertencias explicadas.</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Tweet" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Facebook" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/centraal-api/centraal-dataframework" target="_blank" rel="noopener" title="Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:equipo@centraal.studio" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.indexes", "navigation.instant", "navigation.tabs.sticky"], "search": "../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>

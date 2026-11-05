@@ -1,0 +1,830 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://centraal-api.github.io/centraal-dataframework/superpowers/specs/2026-11-02-validate-table-synapse-design/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.3.2">
+    
+    
+      
+        <title>2026 11 02 validate table synapse design - centraal_dataframework</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.30068a00.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.85d0ee34.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="preference" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#validación-gx-por-tabla-en-synapse-serverless-con-poda-de-particiones--diseño" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../.." title="centraal_dataframework" class="md-header__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            centraal_dataframework
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              2026 11 02 validate table synapse design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="centraal_dataframework" class="md-nav__button md-logo" aria-label="centraal_dataframework" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    centraal_dataframework
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/centraal-api/centraal-dataframework" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    centraal-api/centraal-dataframework
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../index.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Usage
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Modules
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../changelog.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#validación-gx-por-tabla-en-synapse-serverless-con-poda-de-particiones--diseño" class="md-nav__link">
+    Validación GX por tabla en Synapse serverless, con poda de particiones — Diseño
+  </a>
+  
+    <nav class="md-nav" aria-label="Validación GX por tabla en Synapse serverless, con poda de particiones — Diseño">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intención-y-por-qué" class="md-nav__link">
+    Intención y por qué
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metas" class="md-nav__link">
+    Metas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-metas" class="md-nav__link">
+    No metas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-metas-sería-un-fracaso-aunque-funcione" class="md-nav__link">
+    Anti-metas (sería un fracaso aunque funcione)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restricciones" class="md-nav__link">
+    Restricciones
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-tomadas-y-por-quién" class="md-nav__link">
+    Decisiones tomadas (y por quién)
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisiones tomadas (y por quién)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-validate_table" class="md-nav__link">
+    API: validate_table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verificación-de-la-partición-modo-sql-y-pandas-por-igual" class="md-nav__link">
+    Verificación de la partición (modo sql y pandas por igual)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cómo-aplica-gx-el-filtro" class="md-nav__link">
+    Cómo aplica GX el filtro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modo-pandas-de-validate_table" class="md-nav__link">
+    Modo pandas de validate_table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validate_query-en-modo-sql" class="md-nav__link">
+    validate_query en modo sql
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sin-fallback-de-motor" class="md-nav__link">
+    Sin fallback de motor
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruebas" class="md-nav__link">
+    Pruebas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#documentación-y-ejemplos" class="md-nav__link">
+    Documentación y ejemplos
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-queda-al-constructor" class="md-nav__link">
+    Lo que queda al constructor
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>2026 11 02 validate table synapse design</h1>
+
+<h2 id="validación-gx-por-tabla-en-synapse-serverless-con-poda-de-particiones--diseño">Validación GX por tabla en Synapse serverless, con poda de particiones — Diseño<a class="headerlink" href="#validación-gx-por-tabla-en-synapse-serverless-con-poda-de-particiones--diseño" title="Permanent link">&para;</a></h2>
+<p>Fecha: 2026-11-02. Estado: aprobado por Felipe el 2026-11-02 (con los ajustes anotados en el texto).</p>
+<h3 id="intención-y-por-qué">Intención y por qué<a class="headerlink" href="#intención-y-por-qué" title="Permanent link">&para;</a></h3>
+<p>La plataforma valida calidad de datos con Great Expectations (GX) usando Synapse serverless como motor:
+GX traduce la suite a SQL y Synapse devuelve agregados, sin traer filas a la Function. Las tablas de bronze
+son vistas sobre carpetas del lago con la partición en la ruta (<code>.../fecha=*/*.parquet</code>), y la columna de
+partición se expone en la vista con <code>filepath(n)</code>.</p>
+<p>Hoy la librería solo ofrece <code>validate_query</code> (consulta suelta). En modo <code>sql</code> contra Synapse, GX no puede
+resolver las columnas de una consulta suelta en el dialecto de SQL Server (<code>column_reflection_fallback</code> hace
+<code>selectable.name</code> sobre un <code>TextClause</code>), así que toda expectativa de columna falla con un falso fallo de
+calidad. Probado el 2026-11-02 con GX 1.24.0 y 1.24.1: con un table asset (tabla o vista con nombre) GX
+obtiene las columnas del catálogo y el modo <code>sql</code> funciona, con el mismo resultado que pandas. Registro:
+<code>docs/superpowers/runs/2026-11-02-checklist-pruebas.md</code>, sección "Prueba de hipótesis".</p>
+<p>El caso de uso a garantizar: <strong>usar GX como motor sobre Synapse para validar la foto de un día de una vista
+de bronze leyendo solo la carpeta de esa partición</strong>, y la tabla completa en silver y gold.</p>
+<h3 id="metas">Metas<a class="headerlink" href="#metas" title="Permanent link">&para;</a></h3>
+<ol>
+<li><code>validate_table</code>: validar una tabla o vista con nombre en modo <code>sql</code> (GX sobre Synapse) o <code>pandas</code>,
+   con una partición declarada por la tarea (bronze) o sin ella (silver, gold).</li>
+<li>La partición declarada se verifica contra Synapse antes de validar. Si no es una partición real de la
+   vista, o no se puede comprobar, falla con un error claro. Nunca se valida leyendo de más por descuido.</li>
+<li>El filtro de partición que GX emite permite que Synapse salte carpetas. Se demuestra midiendo MB
+   procesados en una prueba de integración.</li>
+<li><code>validate_query</code> en modo <code>sql</code> con expectativas de columna falla con un error claro que remite a
+   <code>validate_table</code> o a <code>modo='pandas'</code>, en vez de entregar un falso fallo de calidad.</li>
+<li>El motor es explícito: GX corre sobre Synapse (<code>sql</code>) o sobre pandas, según lo que pida la tarea. Si el
+   modo pedido no puede ejecutarse, se lanza error; <strong>nunca</strong> se cambia de motor por cuenta de la librería.</li>
+</ol>
+<h3 id="no-metas">No metas<a class="headerlink" href="#no-metas" title="Permanent link">&para;</a></h3>
+<ul>
+<li>El conteo contra el manifiesto de la ingesta. Eso es otra tarea de la plataforma.</li>
+<li>Arreglar GX para consultas sueltas en SQL Server, ni reportar el bug upstream dentro de este cambio.</li>
+<li>Particiones por más de una columna, o por rangos de fechas. Una columna, un valor por llamada.</li>
+<li>Pools dedicados de Synapse.</li>
+</ul>
+<h3 id="anti-metas-sería-un-fracaso-aunque-funcione">Anti-metas (sería un fracaso aunque funcione)<a class="headerlink" href="#anti-metas-sería-un-fracaso-aunque-funcione" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Que una validación "pase" sin haber evaluado las expectativas (fallo en vacío) o falle por una causa
+  técnica reportada como fallo de calidad.</li>
+<li>Que una validación de bronze escanee toda la vista sin que la tarea lo haya pedido.</li>
+<li>Que un fallo en modo <code>sql</code> termine corriendo en pandas sin que nadie lo pida.</li>
+<li>Nombres de workspace, bases, esquemas o tablas del cliente en el código o en los tests.</li>
+</ul>
+<h3 id="restricciones">Restricciones<a class="headerlink" href="#restricciones" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Python 3.10 a 3.14, estilo y convenciones del repo (black 120, comillas simples, docstrings google en
+  español). Textos y errores en español.</li>
+<li>GX 1.x fluent API (versión del <code>poetry.lock</code>: 1.24.0), SQLAlchemy 2.x, pyodbc, Synapse serverless.</li>
+<li>Sin tablas temporales (<code>#</code>) en el SQL que se ejecute en serverless.</li>
+<li>Sin secretos en logs. Por el log viajan métricas, no filas.</li>
+<li>El cambio es genérico: sin nombres del cliente. Los datos de prueba vienen de <code>.env.synapse</code>.</li>
+</ul>
+<h3 id="decisiones-tomadas-y-por-quién">Decisiones tomadas (y por quién)<a class="headerlink" href="#decisiones-tomadas-y-por-quién" title="Permanent link">&para;</a></h3>
+<h4 id="api-validate_table">API: <code>validate_table</code><a class="headerlink" href="#api-validate_table" title="Permanent link">&para;</a></h4>
+<p>Nuevo método de <code>GreatExpectationsToolKit</code>, junto a <code>validate_query</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">ctx</span><span class="o">.</span><span class="n">gx</span><span class="o">.</span><span class="n">validate_table</span><span class="p">(</span>
+    <span class="n">ctx</span><span class="o">.</span><span class="n">synapse</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">tabla</span><span class="p">,</span>                 <span class="c1"># tabla: 'esquema.tabla' o 'base.esquema.tabla'</span>
+    <span class="n">expectations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">suite_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">particion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                           <span class="c1"># {'fecha': '2026-09-24'}: una columna, un valor</span>
+    <span class="n">modo</span><span class="o">=</span><span class="s1">'sql'</span><span class="p">,</span>                               <span class="c1"># 'sql' | 'pandas'; sin fallback</span>
+    <span class="n">result_format</span><span class="o">=</span><span class="n">DEFAULT_RESULT_FORMAT</span><span class="p">,</span> <span class="n">medir_costo</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">public</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DQResult</span>
+</code></pre></div>
+<ul>
+<li>(Felipe) En bronze la tarea valida la foto de un día: pasa <code>particion={'&lt;columna&gt;': valor}</code> y la
+  validación lee solo esa partición. Cada tarea nombra su columna; no hay convención fija.</li>
+<li>(Felipe) En silver y gold se valida la tabla candidata completa: sin <code>particion</code>.</li>
+<li>(Felipe) El valor de la partición pasa por la misma lista blanca que <code>render</code> (<code>_SAFE_VALUE_RE</code>).</li>
+<li>(Mi decisión) <code>tabla</code> se separa en esquema y nombre; GX recibe <code>table_name</code> y <code>schema_name</code> por
+  separado. Si viene con base (<code>base.esquema.tabla</code>) debe coincidir con la base del cliente; si no,
+  <code>ValueError</code> (el datasource está atado a una base).</li>
+<li>(Mi decisión) <code>DQResult</code> no cambia de forma. <code>modo</code> sigue siendo <code>'sql'</code> o <code>'pandas'</code>.</li>
+</ul>
+<h4 id="verificación-de-la-partición-modo-sql-y-pandas-por-igual">Verificación de la partición (modo <code>sql</code> y <code>pandas</code> por igual)<a class="headerlink" href="#verificación-de-la-partición-modo-sql-y-pandas-por-igual" title="Permanent link">&para;</a></h4>
+<ul>
+<li>(Felipe) La librería no cree la partición a ciegas: si en Synapse esa columna no es una partición, o
+  el filtro no se puede aplicar, falla.</li>
+<li>(Mi decisión, cómo) Antes de validar, se lee la definición del objeto con
+  <code>SELECT OBJECT_DEFINITION(OBJECT_ID(?))</code> y se comprueba que la columna declarada esté definida a partir
+  de <code>filepath(n)</code> (con o sin <code>CAST(... AS tipo)</code>), por ejemplo <code>CAST(r.filepath(1) AS date) AS [fecha]</code>,
+  y que el comodín <code>n</code>-ésimo de la ruta <code>BULK</code> sea una carpeta <code>&lt;columna&gt;=*</code>. Se tolera espacio y
+  mayúsculas; el nombre de la columna se compara sin corchetes y sin distinguir mayúsculas.</li>
+<li>Falla con una excepción nueva <code>ParticionInvalida(Exception)</code> en <code>excepciones.py</code> cuando:</li>
+<li>la definición no se puede leer (objeto inexistente, sin permiso <code>VIEW DEFINITION</code>, o no es una vista);</li>
+<li>la columna no aparece en la definición;</li>
+<li>la columna no sale de <code>filepath(n)</code>, o el comodín <code>n</code> de la ruta no corresponde a <code>&lt;columna&gt;=*</code>.
+  El mensaje dice cuál de las tres causas y qué se esperaba. Cuando la definición no se puede leer, el
+  mensaje dice explícitamente que la identidad necesita <code>GRANT VIEW DEFINITION</code> sobre la vista (o la base)
+  además de <code>db_datareader</code>.</li>
+<li>(Felipe) Requisito operativo: <code>OBJECT_DEFINITION</code> exige <code>VIEW DEFINITION</code> (o ser dueño, <code>ALTER</code> o
+  <code>CONTROL</code>); <code>db_datareader</code> no lo da. La identidad que valida (la Function, o quien corra las pruebas)
+  necesita <code>GRANT VIEW DEFINITION</code> en las bases con vistas particionadas. Va al README, a la guía de la
+  Function y al bloque 4 del checklist junto al <code>CREATE USER</code> + <code>db_datareader</code>. Si se puede probar con una
+  identidad sin privilegios, se prueba; si no, queda como riesgo por verificar en el bloque 4.</li>
+<li>(Mi decisión) Si la tarea <strong>no</strong> declara <code>particion</code> pero la vista sí está particionada por <code>filepath</code>
+  (la definición tiene al menos una columna derivada de <code>filepath(n)</code> cuyo comodín es <code>&lt;col&gt;=*</code>), la
+  librería se niega con <code>ParticionInvalida</code>, para evitar un escaneo completo por descuido. Para validar
+  una vista particionada entera a propósito, la tarea pasa <code>particion='completa'</code> (cadena literal). En
+  silver y gold las tablas no tienen <code>filepath</code>, así que la llamada sin <code>particion</code> pasa directo.
+  Felipe aprobó la regla de negarse; la forma de pedir la tabla entera es mi elección.</li>
+<li>(Mi decisión) Un objeto que no sea vista (tabla externa) se trata como no particionado: se valida entero
+  si no hay <code>particion</code>, y con <code>particion</code> falla porque no hay definición con <code>filepath</code>. Para distinguir
+  "no es vista" de "sin permiso" se consulta <code>sys.objects</code> (visible con <code>db_datareader</code>): si el objeto
+  existe y es vista pero <code>OBJECT_DEFINITION</code> devuelve NULL, el error dice que falta <code>VIEW DEFINITION</code>.</li>
+<li>(Mi decisión, tras la revisión) Si la vista es una vista y su definición no se puede leer, se rechaza
+  <strong>también cuando no se declara <code>particion</code></strong>: sin definición no se puede saber si está particionada, y
+  la regla es no escanear por descuido. El error pide el <code>GRANT VIEW DEFINITION</code>. Las tablas externas
+  (no vistas) se validan enteras sin leer definición.</li>
+<li>(Mi decisión, tras la revisión) Si la definición tiene más de una columna derivada de <code>filepath(n)</code>
+  (particiones anidadas, por ejemplo <code>anio=*/mes=*/dia=*</code>) y la tarea declara solo una, se rechaza con
+  <code>ParticionInvalida</code> nombrando todas las columnas de partición encontradas. Hoy ninguna vista de bronze
+  está así; cuando haga falta, se amplía <code>particion</code> a varias columnas en otro cambio.</li>
+<li>(Mi decisión, tras la revisión) La comprobación se hace sobre la definición del objeto que se valida,
+  sin seguir dependencias: una vista definida sobre otra vista no tiene <code>OPENROWSET</code> propio y se trataría
+  como no particionada. Se documenta la restricción: la vista que se valida debe ser la que define el
+  <code>OPENROWSET</code>. Hoy todas las vistas de bronze son directas.</li>
+</ul>
+<h4 id="cómo-aplica-gx-el-filtro">Cómo aplica GX el filtro<a class="headerlink" href="#cómo-aplica-gx-el-filtro" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Table asset (<code>add_table_asset(name, table_name, schema_name)</code>) sobre el datasource SQL que ya usa la
+  librería (<code>add_or_update_sql</code> con <code>sqlalchemy_url()</code> y <code>sqlalchemy_kwargs()</code>).</li>
+<li>Con <code>particion</code>: <code>asset.add_batch_definition(nombre, partitioner=PartitionerColumnValue(column_name=col),
+  validate_partitioner=False)</code>, y el checkpoint recibe <code>batch_parameters={col: valor}</code>. GX emite
+  <code>WHERE &lt;col&gt; = ?</code> con el valor como parámetro enlazado, sin funciones sobre la columna. Se usa
+  <code>validate_partitioner=False</code> porque la validación interna de GX solo admite particionadores por fecha
+  (<code>extract(year/month/day)</code>), que son justo los que podrían impedir la poda.</li>
+<li>Sin <code>particion</code> (o <code>'completa'</code>): <code>add_batch_definition_whole_table</code>.</li>
+<li>(Medido el 2026-11-02, spike <code>.superpowers/sdd/CHECKLIST_PRUEBAS/spike_poda.py</code>, vista de bronze de
+  23 MB en Parquet con una sola foto):</li>
+<li>Con particionador, GX <strong>siempre</strong> ejecuta antes <code>SELECT distinct(&lt;col&gt;) FROM &lt;vista&gt; ORDER BY &lt;col&gt;</code>
+    (<code>TableAsset._fully_specified_batch_requests</code> → <code>param_defaults</code>), aunque reciba el valor; el valor
+    solo filtra esa lista. <code>validate_partitioner=False</code> no lo evita. Sobre la columna derivada de
+    <code>filepath</code> esa consulta tardó lo mismo que un conteo de solo metadatos y costó el mínimo del contador.</li>
+<li>Un valor que no está en esa lista no valida en vacío: GX lanza <code>NoAvailableBatchesError</code>. Eso es
+    deseable (una foto inexistente es un error, no un éxito) y hay que traducirlo a un error claro.</li>
+<li>El contador <code>sys.dm_external_data_processed</code> suma un mínimo de 10 MB <strong>por consulta</strong>: una validación
+    GX de dos expectativas registró 40 MB (cuatro consultas). Con vistas de decenas de MB la poda no se
+    puede demostrar por MB; hace falta una vista de cientos de MB con dos o más fotos.</li>
+<li>Literal y parámetro enlazado devolvieron lo mismo con tiempos equivalentes; la poda con parámetro no
+    quedó demostrada ni refutada por MB.</li>
+<li>Si la prueba de integración de poda, cuando se pueda ejecutar, muestra que Synapse no poda con el
+    filtro de GX, se detiene la implementación y se vuelve al diseño: no se acepta un fallback a consulta
+    suelta ni a pandas.</li>
+</ul>
+<h4 id="modo-pandas-de-validate_table">Modo <code>pandas</code> de <code>validate_table</code><a class="headerlink" href="#modo-pandas-de-validate_table" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Trae con <code>read_df</code> el <code>SELECT</code> de la tabla con el filtro <code>WHERE &lt;col&gt; = &lt;valor&gt;</code> renderizado con
+  <code>render</code> (literal validado), o sin filtro, y valida con <code>_run_suite_on_df</code>. Documentar que las filas
+  viajan a la Function y que es para tablas pequeñas.</li>
+<li>(Mi decisión) Se traen todas las columnas; la suite puede nombrar cualquiera. Quien quiera recortar
+  columnas usa <code>validate_query</code> en pandas.</li>
+</ul>
+<h4 id="validate_query-en-modo-sql"><code>validate_query</code> en modo <code>sql</code><a class="headerlink" href="#validate_query-en-modo-sql" title="Permanent link">&para;</a></h4>
+<ul>
+<li>(Felipe) Con expectativas de columna, falla con error claro que remita a <code>validate_table</code> o a
+  <code>modo='pandas'</code>. (Mi decisión) El error se lanza antes de conectarse, revisando la suite: una
+  expectativa es "de columna" si su configuración tiene <code>column</code>, <code>column_list</code>, <code>column_A</code>/<code>column_B</code> o
+  <code>column_set</code>. Excepción: <code>ValueError</code> con el mensaje. Con solo expectativas de tabla (conteo de filas)
+  el modo <code>sql</code> sigue funcionando como hoy.</li>
+<li>Documentar en docstring, README y notebook que con pandas las filas de la consulta viajan a la Function.</li>
+</ul>
+<h4 id="sin-fallback-de-motor">Sin fallback de motor<a class="headerlink" href="#sin-fallback-de-motor" title="Permanent link">&para;</a></h4>
+<ul>
+<li>(Felipe) GX corre sobre Synapse o sobre pandas, según <code>modo</code>. Cualquier error técnico del modo pedido
+  (conexión, GX, partición) se propaga como excepción; no se reintenta en el otro modo ni se devuelve
+  <code>DQResult(success=False)</code> por causas técnicas.</li>
+<li>(Mi decisión) Si el checkpoint de GX devuelve expectativas con <code>exception_info.raised_exception</code>
+  (error técnico de una métrica, como el de las columnas), <code>validate_table</code> y <code>validate_query</code> lanzan
+  <code>ErrorEnTarea</code>-compatible: una excepción nueva <code>ErrorMotorCalidad(Exception)</code> con el mensaje de GX, en
+  vez de marcar la expectativa como fallida. Así un problema del motor nunca se confunde con un fallo de
+  calidad ni dispara una alarma de datos.</li>
+</ul>
+<h4 id="pruebas">Pruebas<a class="headerlink" href="#pruebas" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Unitarias (SQLite, como las existentes en <code>tests/test_resources_gx.py</code>): API de <code>validate_table</code>,
+  separación de <code>tabla</code>, lista blanca del valor, error de <code>validate_query</code> sql con columnas, error cuando
+  el modo pedido falla (sin fallback), <code>ErrorMotorCalidad</code> ante <code>raised_exception</code>, y la verificación de
+  la definición con definiciones de vista sintéticas (función pura que recibe el texto de la definición).</li>
+<li>(Medido el 2026-11-02 con la trampa, spikes <code>spike_trampa*.py</code> en <code>.superpowers/sdd/CHECKLIST_PRUEBAS/</code>):</li>
+<li><code>WHERE fecha = '&lt;valor&gt;'</code> y <code>WHERE fecha = ?</code> podan igual: los dos cuentan la foto sana sin tocar la
+    carpeta con el Parquet dañado. Con <code>CAST(? AS date)</code> también.</li>
+<li><code>SELECT DISTINCT fecha FROM &lt;vista&gt;</code> <strong>sí abre todos los archivos</strong> y falla con el dañado. El
+    <code>DISTINCT</code> previo de GX no se resuelve desde las carpetas: rompe el aislamiento entre fotos (una
+    partición dañada o a medio escribir tumba la validación de otra sana). Por eso <strong>no se acepta</strong> el
+    <code>DISTINCT</code> de GX; se anula (decisión abajo, aprobada por Felipe tras esta evidencia; antes lo había
+    aceptado con la evidencia del contador de MB).</li>
+<li><code>add_table_asset</code> de GX ejecuta <code>SELECT TOP 1 1 FROM &lt;vista&gt;</code> sin filtro al registrar el asset
+    (<code>test_connection</code>), y también tocó el archivo dañado. Tampoco se acepta.</li>
+<li>Con un <code>TableAsset</code> propio que (1) comprueba existencia por catálogo (<code>OBJECT_ID</code>) en vez de leer
+    datos y (2) no llama a <code>param_defaults</code> cuando el lote ya viene especificado, la validación de la foto
+    sana en modo <code>sql</code> pasa (conteo, columna existe, sin nulos) y la forzada falla; sin <code>DISTINCT</code> ni
+    <code>TOP 1</code>; el SQL lleva <code>WHERE fecha = ?</code>, sin funciones ni <code>#</code>. La tabla completa (<code>'completa'</code>) falla
+    con el error del Parquet en cada métrica (<code>exception_info.raised_exception</code>), que la librería debe
+    convertir en <code>ErrorMotorCalidad</code>.</li>
+<li>(Aprobado por Felipe) La librería define <code>TableAssetSynapse(TableAsset)</code> en
+  <code>resources.py</code> (o módulo propio) con <code>test_connection</code> por catálogo y <code>_fully_specified_batch_requests</code>
+  que devuelve el lote tal cual cuando <code>options</code> trae todos los <code>param_names</code> del particionador; se
+  registra con <code>datasource._add_asset(asset)</code>. Dependencia de API privada de GX (<code>_add_asset</code>,
+  <code>_fully_specified_batch_requests</code>, <code>_NoMatchDiagnostics</code>, <code>_effective_schema_name</code>), mitigada con
+  pruebas unitarias en SQLite que fallan si GX deja de emitir lo esperado (ningún <code>DISTINCT</code>, ningún
+  <code>TOP 1</code>, el <code>WHERE &lt;col&gt; = ?</code> presente) y un test de humo que importa esos nombres.</li>
+<li>(Felipe) <strong>GX acotado en <code>pyproject.toml</code> a la línea probada: <code>great-expectations = "&gt;=1.24,&lt;1.25"</code>.</strong>
+  Por qué: <code>TableAssetSynapse</code> sobreescribe nombres privados de GX; una versión nueva puede cambiarlos sin
+  aviso y el síntoma sería silencioso (volver a lanzar el <code>DISTINCT</code> o el <code>TOP 1</code> sobre toda la vista) o
+  un fallo de import. Con la cota, actualizar GX es una decisión explícita: se sube la cota, corren las
+  pruebas de humo y las de integración con la trampa, y solo entonces se publica. Va al CHANGELOG como
+  cambio de dependencia y al README en la sección de Synapse.</li>
+<li>(Felipe) Integración real con <code>-m synapse</code> en <code>tests/test_synapse_integration.py</code>, porque SQLite no
+  tiene el defecto:</li>
+<li><code>validate_table</code> sql con partición: conteo, <code>expect_column_to_exist</code>, <code>not_null</code> y un caso forzado
+     (<code>between</code> con máximo imposible) que debe fallar; mismo resultado que pandas.</li>
+<li>Poda, con una trampa en vez de MB (Felipe): el contador cobra un mínimo de 10 MB por consulta y
+     Synapse lee solo las columnas que usa, así que los MB no distinguen. La vista de prueba (en el
+     contenedor de pruebas, con su propio <code>OPENROWSET</code> igual a las de bronze, en un esquema de prueba)
+     tiene tres carpetas: dos fotos reales (<code>fecha=A</code> y <code>fecha=B</code>) y una tercera (<code>fecha=C</code>) con un
+     <code>.parquet</code> dañado. Validar la partición <code>B</code> en modo <code>sql</code> debe pasar: demuestra que ni el <code>DISTINCT</code>
+     previo de GX ni las consultas de la suite tocaron la carpeta dañada. Con <code>particion='completa'</code> la
+     misma validación debe fallar con <code>ErrorMotorCalidad</code> (error de lectura del Parquet), lo que
+     demuestra que la trampa funciona. Se imprime el SQL generado: agregados, <code>WHERE &lt;col&gt; = ?</code>, sin
+     funciones sobre la columna y sin <code>#</code>.</li>
+<li><code>validate_table</code> sin <code>particion</code> sobre la vista particionada → <code>ParticionInvalida</code>;
+     con una columna que no es partición → <code>ParticionInvalida</code>.</li>
+<li><code>validate_query</code> sql con expectativa de columna → <code>ValueError</code> antes de conectar.</li>
+<li>Variables nuevas en <code>.env.synapse</code> y <code>docs/synapse.env.example</code>:
+  <code>SYNAPSE_TEST_PARTITION_TABLE</code> (la vista de prueba con la trampa, <code>esquema.vista</code>),
+  <code>SYNAPSE_TEST_PARTITION_COLUMN</code> y <code>SYNAPSE_TEST_PARTITION_VALUE</code> (la foto sana <code>B</code>). Si faltan, las
+  pruebas de partición se saltan. La ruta, la tabla y la vista viven solo en <code>.env.synapse</code>, nunca en el
+  repo. Lo que se cree o borre en Azure o Synapse lo ejecuta Felipe con comandos que la sesión le entrega.</li>
+</ul>
+<h4 id="documentación-y-ejemplos">Documentación y ejemplos<a class="headerlink" href="#documentación-y-ejemplos" title="Permanent link">&para;</a></h4>
+<ul>
+<li>README: <code>validate_table</code> como caso principal, <code>validate_query</code> para cruces (pandas) y la regla de
+  partición.</li>
+<li><code>docs/02_great_expectations.ipynb</code> §5 y <code>docs/03_synapse.ipynb</code> §6: pasar a <code>validate_table</code> con
+  partición en sql y pandas, conservar un ejemplo de <code>validate_query</code> en pandas, y mostrar el error de
+  <code>validate_query</code> sql con columnas.</li>
+<li><code>docs/CHECKLIST_PRUEBAS.md</code>: ítems de bloque 1 y 2 alineados con lo anterior; la poda se mide con las
+  variables nuevas y un valor inexistente; corregir "las pruebas de Synapse se saltan" en <code>make test</code>.</li>
+<li><code>docs/synapse.env.example</code>, <code>docs/datalake.env.example</code> (comentar la connection string vacía) y
+  CHANGELOG <code>[Unreleased]</code>.</li>
+</ul>
+<h3 id="lo-que-queda-al-constructor">Lo que queda al constructor<a class="headerlink" href="#lo-que-queda-al-constructor" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Nombres internos, organización de helpers (por ejemplo <code>synapse.py</code> para leer la definición y
+  <code>resources.py</code> para el toolkit), y cómo se parsea la definición (regex es suficiente).</li>
+<li>Si conviene cachear la definición de la vista por llamada o por tarea.</li>
+<li>Cómo aislar <code>_query_batch_definition</code> y el nuevo <code>_table_batch_definition</code> sin duplicar código.</li>
+<li>El texto exacto de los errores, siempre en español y diciendo qué hacer.</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Tweet" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/waynerv/cookiecutter-pypackage" target="_blank" rel="noopener" title="Facebook" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://github.com/centraal-api/centraal-dataframework" target="_blank" rel="noopener" title="Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="mailto:equipo@centraal.studio" target="_blank" rel="noopener" title="" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m20 8-8 5-8-5V6l8 5 8-5m0-2H4c-1.11 0-2 .89-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.tabs.sticky"], "search": "../../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      
+    
+  </body>
+</html>
