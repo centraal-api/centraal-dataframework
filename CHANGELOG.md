@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-05
+
+Sin cambios en el código de la librería: el paquete instala lo mismo que 0.3.0.
+
+### Fixed
+
+- Documentación: `mkdocs.yml` usa `pymdownx.slugs.slugify` con `case: lower` en vez de `uslugify`, que se eliminó en pymdown-extensions 12 y rompía el build de docs (entorno `build` de tox en Python 3.10).
+
 ## [0.3.0] - 2026-11-04
 
 Primera versión publicada en PyPI desde 0.1.3: incluye también los cambios de 0.2.0, que no se publicó.
