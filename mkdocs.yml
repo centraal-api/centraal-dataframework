@@ -43,7 +43,10 @@ markdown_extensions:
   - toc:
       baselevel: 2
       permalink: true
-      slugify: !!python/name:pymdownx.slugs.uslugify
+      # uslugify se eliminó en pymdown-extensions 12; este es su reemplazo (existe desde la 8).
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - meta
 plugins:
   - include-markdown

@@ -15,7 +15,7 @@ Cada ítem marcado cita la corrida que lo prueba; la evidencia está en
 | 1. Pruebas automáticas | Completo | 3 |
 | 2. Notebooks y poda | Completo (03 §4 saltado: opcional, sin esquema DDL) | 3 |
 | 3. Imagen de Functions y build | Completo | 4 y ensayo de release |
-| 4. Publicar 0.3.0 en PyPI | En curso | — |
+| 4. Publicar 0.3.0 en PyPI | Completo | 2026-11-05 |
 | 5. Verificación en la Function (forma soportada) | Pendiente: se ejecuta en el repo del cliente con [el plan](superpowers/plans/2026-11-04-despliegue-function-cliente.md) | — |
 
 La forma en contenedor (plan Dedicado) se verificó en la corrida 5 sobre `f317ddc`. Ya no está soportada: queda como
@@ -119,8 +119,9 @@ Si la foto sana falla con el error de Parquet, Synapse no está podando: revise 
 
 - [x] Bloques 0 a 3 marcados.
 - [x] Versión en `pyproject.toml`, `centraal_dataframework/__init__.py` y `.bumpversion.cfg`, y `[Unreleased]` movido en el CHANGELOG.
-- [ ] Merge a main y push del tag `v<versión>`; `release.yml` publica en PyPI.
-- [ ] La versión aparece en PyPI y se instala: `pip install "centraal-dataframework[synapse]==<versión>"`.
+- [x] Merge a main y push del tag `v<versión>`; `release.yml` publica en PyPI. — `v0.3.0`, workflow de release en verde.
+- [x] La versión aparece en PyPI y se instala: `pip install "centraal-dataframework[synapse]==<versión>"`. — 0.3.0, instalada en un entorno limpio con Python 3.12.
+- [ ] El workflow `dev.yml` (tox) pasa en main. El entorno `build` instala las versiones más nuevas de mkdocs, sin el lock: con `pymdown-extensions` 12 falló por `uslugify`, que se eliminó; arreglado en `mkdocs.yml` con `pymdownx.slugs.slugify`.
 
 ## 5. Verificación en una Function de Azure (forma soportada)
 
