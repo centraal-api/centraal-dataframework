@@ -1,164 +1,328 @@
 # centraal-dataframework
 
-`centraal-dataframework` es una libreria de python que implementa practicas para usar de manera eficiente [azure function](https://azure.microsoft.com/en-us/products/functions#:~:text=Azure%20Functions%20is%20an%20event,highest%20level%20of%20hardware%20abstraction.) para ejecutar procesos de transformación y calidad de datos. Los procesos de transformación se ejecutan usando la libreria [pandas](https://pandas.pydata.org/) y las reglas de calidad con [great expectations](https://github.com/great-expectations/great_expectations).
+Librería Python para ejecutar transformaciones (pandas) y calidad de datos
+([Great Expectations](https://greatexpectations.io/) 1.x) sobre
+[Azure Functions](https://azure.microsoft.com/products/functions), con
+programación por YAML, colas, alertas y CLI local.
 
+> Versión actual: **0.2.0** (API con `TaskContext`). Guía:
+> [Migración 0.1 → 0.2](docs/MIGRATION_0.1_to_0.2.md).
 
-## Comienza a usar el framework
+## Instalación
 
-Usa como referencia el [notebook](docs/usage_example.ipynb). Algunos pasos basicos:
-
-1. Instala la libreria:
-
-    `pip install centraal-dataframework`
-
-2. Asegurar la creación de las siguientes variables de ambiente. En el ambiente desarollo local, es recomendado usar un archivo `.env` y la libreria [python-dotenv](https://pypi.org/project/python-dotenv/). Ya con la function app desplegada estas variables deben estar configuradas en los [Application settings](https://learn.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal).
-
-    - AZURE_STORAGE_CONNECTION_STRING: string de conexión al datalake
-    - CONTENEDOR_VALIDACIONES: donde se contienen las validaciones que van ser realizadas por great expectations.
-
-3. Crea tus tareas, usando el decorador necesario, `task_dq` o `task`. Usar como referencia el [notebook en la documentación](docs/usage_example.ipynb)
+```bash
+pip install centraal-dataframework
 ```
-4. Cree el archivo de configuración `yaml`, por defecto este archivo se buscara en el directorio de trabajo bajo el nombre `centraal_dataframework.yaml`
 
-```yml
-#---contenido de config.yaml---
-url_logicapp_email: https://prod-33.eastus.logic.azure.com:443/workflows/xxxxx
-emails_notificar: 
-    - nombre.appelido@centraal.studio
-    - nombre.appelido@correo.com
-    ...
-tareas:
-    # deben tener el nombre de la función definida.
-    nombre_funcion:
-        dias: '*'
-        horas: 8,12,20
-    segundo_nombre_funcion:
-        dias:  0
-        horas: 8,12,20
-```
-> Nota: tener en cuenta que '*' puede ser usada en dias y horas, para indicar que la tarea debe ser ejecutada cada hora/dia.  Algunos ejemplos para entender como trabaja:
+Requiere **Python 3.10–3.14** y `azure-datalake-utils>=0.6.0`.
 
-- `dias: '*'` y `horas: '*'` - > ejecutar todos los dias, cada hora.
-- `dias: '*'` y `horas: '12'` - >  ejecutar todos los dias **solo** a las 12.
-- `dias: '*'` y `horas: 1,8,12,15` - > ejecutar todos los dias **solo** a las 1, 8 a las 12 y a las 15:00 (3 pm).
-- `dias 0,3,6` y `horas: '*'` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6) cada hora.
-- `dias: 1,4` y `horas: 20` - > ejectutar **solo** los Lunes (0), Jueves(3) y Domingo(6)  a las 20:00.
+Ese rango coincide con el runtime 4.x de Azure Functions, donde
+[3.10, 3.11, 3.12, 3.13 y 3.14 están en GA](https://learn.microsoft.com/en-us/azure/azure-functions/functions-versions?pivots=programming-language-python).
 
+En el plan **Linux Consumption**, 3.12 es la última versión: 3.13 y 3.14 no se agregan ahí. Para esas versiones hay que usar Flex Consumption, Premium o Dedicated.
 
-5. Crear la function app, adiciona el framework y tareas:
+**Despliegue soportado: código en plan Premium (Elastic Premium, Linux) con Python 3.11 o 3.12, y la librería
+desde PyPI con versión fija** (`centraal-dataframework[synapse]==<versión>` en `requirements.txt`).
+`centraal-dataframework init` genera el proyecto y `infra/main.bicep` para ese plan. Guía paso a paso, incluido el
+driver ODBC: [docs/DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md). Desplegar como contenedor propio no está
+soportado ([referencia](docs/DESPLIEGUE_CONTENEDOR.md)).
+- La imagen de Functions trae el *ODBC Driver 18* desde Python 3.11; 3.10 trae el 17.
+- No hay límite de 10 min por ejecución.
+- La Function entra a Synapse con identidad administrada.
+- Arranca con una instancia siempre encendida, sin escalado elástico ni pre-calentada, y ejecuta las
+  tareas en serie. El timer `monitor_capacidad` avisa con `CAPACIDAD:` si hace falta otra instancia
+  o una más grande.
+- Regla: **N instancias = N tareas independientes a la vez.** Ver [docs/CAPACIDAD.md](docs/CAPACIDAD.md).
+
+En Flex Consumption no se pueden instalar paquetes del sistema si el driver faltara. Después de cada
+despliegue, revise `GET /api/diag`: responde 503 si una tarea perdió su driver o su configuración.
+
+## Variables de entorno
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `AZURE_STORAGE_CONNECTION_STRING` | — | Connection string del storage/datalake |
+| `STORAGE_ACCOUNT_NAME` | — | Alternativa con Managed Identity. El historial también acepta la conexión por identidad del host (`AzureWebJobsStorage__accountName`) |
+| `STORAGE_CONNECTION_SETTING` | `AzureWebJobsStorage` | App setting del binding de cola |
+| `QUEUE_NAME` | `tareas` | Nombre de la cola |
+| `YAML_CONFIGURACION` | `centraal_dataframework.yaml` | Ruta al YAML |
+| `LOGICAPP_EMAIL_URL` | — | URL HTTP de Logic App (no va en el YAML) |
+| `TIMEZONE` | `America/Bogota` | Zona horaria de programación |
+| `CONTENEDOR_VALIDACIONES` | `calidad-datos` | Contenedor docs/stores GX |
+| `DOCS_PUBLIC_BASE_URL` | — | Base URL pública de data docs |
+| `SOBREESCRIBIR_TAREA` | `true` | Permite re-registrar tareas |
+| `TAREA_DEBE_CONFIGURACION` | `true` | Exige tarea en YAML al ejecutar |
+| `MAX_RETRIES` | `5` | Alinear con `maxDequeueCount` |
+| `CAPACIDAD_COLA_MAX` / `CAPACIDAD_ESPERA_MAX_MIN` / `CAPACIDAD_MEMORIA_PCT` | `5` / `60` / `80` | Umbrales del monitor de capacidad ([docs/CAPACIDAD.md](docs/CAPACIDAD.md)) |
+| `HISTORY_ENABLED` | `false` | Historial en Table Storage |
+| `TEAMS_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` | — | Notificadores extra |
+| `SAS_*` | — | Expiración/IP de SAS para reportes |
+
+## Tareas (API 0.2)
 
 ```python
-"""---contenido de function_app.py --- """
-import azure.functions as func 
-from centraal_dataframework.blueprints import framework
-# se deben importar los modulos custom
-from other.module.logica_pandas import *
-from other.module.logica_calidad import *
-# si tiene otro modulo tambien importarlo
-# form otro.modulo import logica
-# ...
-app = func.FunctionApp()
-#Adicionar el framework
-app.register_functions(framework) 
+from centraal_dataframework import TaskContext, task
+import great_expectations as gx
+
+@task(uses=['datalake'])
+def transformar(ctx: TaskContext):
+    df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
+    ctx.logger.info("filas=%s params=%s", len(df), ctx.params)
+
+@task(uses=['datalake', 'gx'])
+def validar(ctx: TaskContext):
+    df = ctx.datalake.read_csv("ruta/archivo.csv", sep="|")
+    result = ctx.gx.validate(
+        df,
+        "ventas",
+        [gx.expectations.ExpectColumnValuesToNotBeNull(column="id")],
+    )
+    return result  # DQResult; si falla, el runner lo trata como error de calidad y notifica
 ```
 
-6. Desplega la azure function. -> proximamente documentación y herramientas para facilitar este proceso.
+### Recursos del contexto
+
+Cada plataforma es un recurso distinto del contexto y cada tarea **declara** cuáles usa con `uses`:
+
+| Declaración | Acceso |
+|---|---|
+| `'datalake'` | `ctx.datalake` |
+| `'synapse'` | `ctx.synapse`, `ctx.synapse_for('silver')` |
+| `'gx'` | `ctx.gx` |
+| `'synapse:gold'` | `ctx.resource('synapse', 'gold')`: conexión con nombre |
+
+- Usar un recurso no declarado lanza `RecursoNoDeclarado`.
+- Declarar una plataforma no registrada falla al importar las tareas (`RecursoDesconocido`).
+- Si un recurso declarado no tiene configuración, la tarea no se ejecuta (`RecursoNoConfigurado`).
+  `python -m centraal_dataframework check-resources -m mi_paquete.tareas` revisa todas las tareas sin
+  ejecutarlas y termina con código 1 si falta algo.
+- Declarar no conecta: el cliente se crea al primer uso.
+- Si la tarea devuelve un `DQResult` fallido, el runner lo convierte en `ErrorTareaCalidadDatos` y
+  notifica. Llamada directa (`validar()` en un notebook), la tarea devuelve el `DQResult` sin lanzar.
+- En la Function, un fallo de calidad se notifica en el primer intento y **no se reintenta** (los datos
+  no cambian entre intentos), y sus dependientes no se ejecutan. Los demás errores se reintentan hasta
+  `MAX_RETRIES` y notifican solo en el último intento.
+- Un error de **parámetros** también es definitivo si la tarea lo declara con `ParametrosInvalidos`: el
+  runner lo registra como `failed`, avisa una vez (con la regla de `notify_dq`) y la cola **no lo reintenta**
+  ni lo manda a `*-poison`. Un `ValueError` común sí se reintenta, porque la librería no sabe de dónde sale.
+
+  ```python
+  from centraal_dataframework import ParametrosInvalidos
+
+  @task(uses=['synapse'])
+  def validar_foto(ctx: TaskContext):
+      lote = str(ctx.params.get('lote', ''))
+      if not LOTE_ISO.match(lote):
+          raise ParametrosInvalidos('validar_foto', f"lote {lote!r} no es una fecha ISO")
+  ```
+
+**Conexiones con nombre.** `'datalake:curado'` usa solo las variables con sufijo `__CURADO`
+(`AZURE_STORAGE_CONNECTION_STRING__CURADO`, `STORAGE_ACCOUNT_NAME__CURADO`). `'synapse:gold'` usa
+`SYNAPSE_WORKSPACE__GOLD`, `SYNAPSE_DATABASE__GOLD`, etc. Los datos de conexión (cuenta, connection string,
+workspace, servidor, base, usuario y clave) **no** se heredan de la conexión por defecto, para no apuntar
+en silencio a otro lago o workspace. El resto (`SYNAPSE_QUERY_TIMEOUT`, `CONTENEDOR_VALIDACIONES`, `SAS_*`, …)
+se hereda y se puede sobrescribir con el mismo sufijo.
+
+**Plataformas propias.** `datalake`, `synapse` y `gx` se registran con la misma API pública:
+
+```python
+from centraal_dataframework import register_resource
+
+register_resource('mi_api', lambda settings, ctx: MiApi(...), check=lambda settings: [])
+```
+
+`factory(settings, ctx)` recibe las Settings de la conexión (por defecto o con nombre);
+`check(settings)` devuelve los problemas de configuración sin conectarse. Registre la plataforma antes
+de importar las tareas que la declaran.
+
+## Synapse (serverless primero)
+
+La tarea envía SQL a Synapse y recibe resultados pequeños (conteos, metadata). El procesamiento
+pesado ocurre dentro de Synapse; los datos no viajan a la Function.
+
+Instalar con el extra y el driver del sistema *ODBC Driver 18 for SQL Server*:
+
+```bash
+pip install "centraal-dataframework[synapse]"
+```
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `SYNAPSE_WORKSPACE` | — | Workspace; usa `<workspace>-ondemand.sql.azuresynapse.net` (serverless) |
+| `SYNAPSE_SERVER` | — | Servidor explícito (p.ej. pool dedicado); tiene prioridad |
+| `SYNAPSE_DATABASE` | — | Base por defecto |
+| `SYNAPSE_AUTH` | `identity` | `identity` (Managed Identity / `DefaultAzureCredential`) o `sql` |
+| `SYNAPSE_USER` / `SYNAPSE_PASSWORD` | — | Solo con `SYNAPSE_AUTH=sql` (desarrollo local) |
+| `SYNAPSE_QUERY_TIMEOUT` | `1800` | Segundos por consulta (límite de serverless: 30 min) |
+| `SYNAPSE_ODBC_DRIVER` | `ODBC Driver 18 for SQL Server` | Driver ODBC instalado; `check-resources` avisa si no está |
+
+```python
+@task(uses=['synapse'])
+def contar(ctx: TaskContext):
+    bronze = ctx.synapse_for('bronze')  # otra base, misma conexión/credencial
+    n = bronze.scalar("SELECT COUNT(*) FROM demo.ventas WHERE fecha = ?", ctx.params['lote'])
+    ctx.logger.info("filas=%s", n)
+
+@task(uses=['synapse'])
+def crear_vista(ctx: TaskContext):
+    # DDL: sin parámetros ?, se usa {{param}} con lista blanca; lotes separados por GO
+    ctx.synapse_for('silver').execute_file('sql/vista.sql', esquema='demo', lote=ctx.params['lote'])
+```
+
+API de `SynapseClient`: `query` (lista de dicts), `scalar`, `execute` (DDL/CETAS), `read_df`
+(DataFrame pequeño), `execute_file(path, **params)` y `for_database(base)`. Los valores de
+`{{param}}` solo admiten letras, números y `_` separados por un `-`, `:` o `.` (fechas, ids).
+Reintenta errores transitorios de conexión y throttling; no reintenta errores de SQL ni de login.
+
+**Calidad sin traer los datos (caso principal):** `ctx.gx.validate_table(ctx.synapse, name, 'esquema.vista',
+expectations, particion={'fecha': valor}, modo='sql')` ejecuta la suite de GX en serverless sobre una tabla o
+vista con nombre. En bronze la vista acumula fotos particionadas por carpeta y la tarea valida la de un día con
+`particion`; en silver y gold la tabla candidata ya es un solo lote y se llama sin `particion`. La partición
+declarada se verifica contra la definición de la vista (la columna debe salir de `filepath(n)` sobre la carpeta
+`<columna>=*`); si no lo es, o la vista está particionada y no se declaró, se lanza `ParticionInvalida`
+(`particion='completa'` valida toda la vista a propósito). La vista que se valida debe ser la que define el
+`OPENROWSET` (no se siguen vistas sobre vistas) y se admite una sola columna de partición. Con `modo='pandas'`
+la misma suite valida `SELECT *` de la tabla (filtrado por la partición) traído con `read_df`: las filas viajan a
+la Function, solo para tablas pequeñas. El motor es explícito: si el modo pedido no puede ejecutarse se lanza
+un error, nunca se cambia de motor. Un error técnico de GX (columna inexistente, archivo dañado) es
+`ErrorMotorCalidad`, no un fallo de calidad.
+
+**Cruces:** `ctx.gx.validate_query(ctx.synapse, name, query, expectations, params=..., modo='pandas')` valida
+el resultado de un SELECT. En `modo='sql'` solo admite expectativas de tabla (conteo de filas): GX no resuelve
+las columnas de una consulta suelta en SQL Server, así que con expectativas de columna lanza `ValueError`
+que remite a `validate_table` o a pandas. Un cruce que necesite modo sql se publica como vista con nombre.
+
+Declare `uses=['synapse', 'gx']`. La identidad que valida necesita `GRANT VIEW DEFINITION` en las bases con
+vistas particionadas (además de `db_datareader`), porque la verificación lee `OBJECT_DEFINITION`.
+`great-expectations` está acotado a `>=1.24,<1.25`: `validate_table` usa un `TableAsset` propio que depende de
+nombres privados de GX; subir la cota es una decisión explícita que pasa por `tests/test_gx_synapse.py` y por
+`pytest -m synapse`. Recomendaciones de costo en [docs/MOTOR_DE_COMPUTO.md](docs/MOTOR_DE_COMPUTO.md); para
+desplegar en una Function, [docs/DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md).
+
+**Prueba de integración:** copie [docs/synapse.env.example](docs/synapse.env.example) a
+`.env.synapse` en la raíz, complete las variables del ambiente y ejecute el notebook
+[docs/03_synapse.ipynb](docs/03_synapse.ipynb) o `pytest -m synapse -v`.
+
+| Síntoma | Causa probable | Qué hacer |
+|---|---|---|
+| `Falta pyodbc` | No se instaló el extra | `pip install -e ".[synapse]"` |
+| `IM002` / `Data source name not found` | Falta el driver de `SYNAPSE_ODBC_DRIVER` | Instalar el driver del sistema o ajustar `SYNAPSE_ODBC_DRIVER` al instalado (`pyodbc.drivers()`); en Azure, ver [DESPLIEGUE_FUNCTION.md](docs/DESPLIEGUE_FUNCTION.md#2-el-driver-odbc) |
+| `DefaultAzureCredential failed to retrieve a token` | No hay sesión de Azure CLI | `az login [--tenant <tenant-id>]` |
+| `Client with IP address '...' is not allowed` (40615) | IP fuera del firewall del workspace | `az synapse workspace firewall-rule create ...` |
+| `Login failed for user '<token-identified principal>'` (18456) | Sin usuario en esa base, o tenant distinto | `CREATE USER [...] FROM EXTERNAL PROVIDER` en la base; no reintentar en ráfaga |
+| `Cannot find the CREDENTIAL` / `... is not accessible` | Sin permiso sobre la credencial del lago | `GRANT REFERENCES ON DATABASE SCOPED CREDENTIAL::[...]` |
+| `ParticionInvalida: ... GRANT VIEW DEFINITION` | La identidad lee datos pero no la definición de la vista | `GRANT VIEW DEFINITION TO [...]` en esa base |
+| `EngineEdition` distinto de 11 | No es el endpoint serverless | Usar `SYNAPSE_WORKSPACE` sin `SYNAPSE_SERVER` |
+
+## Notebooks
+
+Checklist completo de pruebas antes de publicar (local, notebooks, build y Function Premium): [docs/CHECKLIST_PRUEBAS.md](docs/CHECKLIST_PRUEBAS.md).
+
+Uno por plataforma, en [docs/](docs/). Variables locales: [docs/datalake.env.example](docs/datalake.env.example)
+→ `.env` y [docs/synapse.env.example](docs/synapse.env.example) → `.env.synapse` (ambos ignorados por git).
+
+| Notebook | Contenido |
+|---|---|
+| [01_datalake.ipynb](docs/01_datalake.ipynb) | Leer/escribir CSV y Parquet, link SAS, tareas con `uses=['datalake']`, conexión con nombre, runner |
+| [02_great_expectations.ipynb](docs/02_great_expectations.ipynb) | La misma suite con tres orígenes: DataFrame en memoria, archivo del datalake y Synapse (`validate_table` con partición en `modo='sql'`, donde el cómputo es de Synapse, y `modo='pandas'`; `validate_query` para cruces). Además, fallo de calidad y `silenciar_dq`. Las secciones 1 a 3 corren sin storage |
+| [03_synapse.ipynb](docs/03_synapse.ipynb) | Lecturas, `?` vs `render`, `execute_file`, varias bases, métricas en SQL + GX, runner, pandas/polars |
+
+Limpie las salidas antes de commitear (*Clear All Outputs*): muestran datos del ambiente.
+
+## YAML de configuración
+
+```yaml
+emails_notificar:
+  - equipo@example.com
+tareas:
+  transformar:
+    dias: '*'
+    horas: 8,12,20
+  validar:
+    dias: '*'
+    horas: '*'
+    depends_on: [transformar]
+    params:
+      fecha: "2024-01-01"
+    # cron: "0 8 * * 1-5"   # opcional, reemplaza dias/horas
+    # enabled: false
+    # silenciar_dq:          # opcional, ver "Silenciar una alarma de calidad"
+    #   hasta: 2026-11-15
+    #   motivo: "Proveedor X envía fechas nulas, ticket #123"
+```
+
+Notas de programación (`dias` = weekday ISO-like: 0=lunes … 6=domingo):
+
+- `dias: '*'` y `horas: '*'` → cada hora, todos los días
+- `dias: '*'` y `horas: '12'` → todos los días a las 12
+- `dias: 0,3,6` y `horas: '*'` → lunes, jueves y domingo cada hora
+
+### Silenciar una alarma de calidad
+
+Cuando un fallo de calidad ya es conocido (p.ej. un proveedor envía datos malos mientras se corrige),
+`silenciar_dq` lo apaga **por un tiempo**. `hasta` (fecha, incluida, en la zona horaria de la tarea) y
+`motivo` son obligatorios.
+
+Mientras está vigente, si la validación falla:
+
+- no se lanza error, no se notifica y no se reintenta: la tarea termina como exitosa;
+- las tareas que dependen de ella (`depends_on`) se ejecutan;
+- solo queda en el log: `DQ silenciada hasta 2026-11-15 (motivo): N expectativas fallaron en validar`.
+
+Al vencer, la alarma vuelve sola. `validate-config` avisa los silencios vencidos y los que vencen en los
+próximos 7 días. No hay forma de silenciar una validación de manera permanente: si no debe detener nada,
+no debería ser una validación de calidad.
+
+## Function App
+
+```python
+import azure.functions as func
+from centraal_dataframework.blueprints import framework
+from mi_paquete import tareas  # noqa: F401
+
+app = func.FunctionApp()
+app.register_functions(framework)
+```
+
+Scaffold:
+
+```bash
+python -m centraal_dataframework init ./mi-proyecto
+```
+
+## CLI local
+
+```bash
+python -m centraal_dataframework validate-config -c centraal_dataframework.yaml
+python -m centraal_dataframework list -m mi_paquete.tareas
+python -m centraal_dataframework run transformar -m mi_paquete.tareas --params '{"fecha":"2024-01-01"}'
+python -m centraal_dataframework next-runs transformar -n 5
+```
 
 ## Arquitectura
 
-La arquitectura general de la libreria esta basada en los siguientes servicios:
-
-![Arquitectura](docs/arq.jpg)
-
-
-El diseño inical del API de la libreria se comopone de los siguientes objetos:
-
-1. config.yml
-2. runner
-3. task
-    1. log
-    2. alerta
-4. dq-task: es un tipo de `task` especifica para reportar tareas de calidad de datos (`dq`).
-
 ```mermaid
----
-title: Diseño inicial del API de la libreria
----
-  graph TD;
-      config[config.yml]:::cdf--usa-->runner:::cdf;
-      m[Llamado manual]:::manual-->httptf[Http Trigger function]:::az;
-      httptf --> runner;
-      runner --encola tarea --> qtf(Queue Trigger Function):::az ;
-      qtf --> task:::cdf
-      task --usa--> log:::cdf --usa-->alerta:::cdf
-      task --> dqt[dq-task]:::cdf
-      dqt --> log
-      classDef manual stroke:#f66,stroke-width:2px,stroke-dasharray: 5 5
-      classDef az stroke:#2D9BF0,stroke-width:2px
-      classDef cdf stroke:#FAC710
-      
+graph TD
+    settingsMod[Settings] --> runnerMod[Runner]
+    configYaml[YAML pydantic] --> runnerMod
+    timerFn[TimerTrigger] --> runnerMod
+    httpFn[HttpTrigger] --> queueMsg[Cola JSON]
+    runnerMod --> queueMsg
+    queueMsg --> queueFn[QueueTrigger]
+    queueFn --> runnerMod
+    runnerMod --> taskCtx[TaskContext]
+    taskCtx --> userTask[Tarea]
+    runnerMod --> notifier[Notifier]
 ```
 
-# PyPI Release Checklist
+## Seguridad
 
-> NOTA: basado en [check list del template original](https://waynerv.github.io/cookiecutter-pypackage/pypi_release_checklist/).
+No versionar `centraal_dataframework.yaml` real ni `local.settings.json`.
+Ver [docs/SECURITY_ROTATION.md](docs/SECURITY_ROTATION.md).
 
-## Before Your First Release
+## Desarrollo
 
-You better visit PyPI to make sure your package name is unused.
-
-## For Every Release
-
-0.  Make some pull requests, merge all changes from feature branch to master/main.
-
-1.  Update CHANGELOG.md manually. Make sure it follows the [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) standard.
-    Be noticed that GitHub workflow will read changelog and extract release notes automatically.
-
-2.  Commit the changelog changes:
-
-    > ``` bash
-    > git add CHANGELOG.md
-    > git commit -m "Changelog for upcoming release 0.1.1."
-    > ```
-
-3.  Update version number and automatically create a commit, tag(can also be patch or major).
-
-    > ``` bash
-    > poetry run bump2version minor
-    > ```
-
-4.  Run the tests locally for insurance:
-
-    > ``` bash
-    > poetry run tox
-    > ```
-
-5.  Push these commits to master/main:
-
-    > ``` bash
-    > git push
-    > ```
-
-    Before proceeding to the next step, please check workflows triggered by this push have passed.
-
-6.  Push the tags(created by bump2version) to master/main, creating the new release on both GitHub and PyPI:
-
-    > ``` bash
-    > git push --tags
-    > ```
-
-    Only tag name started with 'v'(lower case) will leverage GitHub release workflow.
-
-7.  Check the PyPI listing page to make sure that the README, release
-    notes, and roadmap display properly. If tox test passed, this should be ok, since
-    we have already run twine check during tox test.
-
-## About This Checklist
-
-This checklist is adapted from <https://cookiecutter-pypackage.readthedocs.io/en/latest/pypi_release_checklist.html>.
-
-It assumes that you are using all features of Cookiecutter PyPackage.
-
-
-
-
+```bash
+poetry install --with test,dev
+poetry run pytest --cov=centraal_dataframework --cov-branch tests
+```

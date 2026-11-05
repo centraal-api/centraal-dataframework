@@ -1,0 +1,257 @@
+# Corrida del checklist de pruebas — 2026-11-02
+
+Plan: [CHECKLIST_PRUEBAS.md](../../CHECKLIST_PRUEBAS.md). Alcance: bloques 0 a 2. Los bloques 3 y 4 quedan fuera de esta corrida por decisión de Felipe.
+
+Destino: workspace serverless de desarrollo del cliente (datos del destino fuera del repo). En Azure solo lectura.
+
+Convención: cada ítem lleva `PASA`, `FALLA`, `SALTADO` o `PENDIENTE`, con la evidencia (salida real) resumida. Nada se marca sin evidencia.
+
+## 0. Preparación
+
+- PASA — Librería instalada con el extra: `.venv` (Python 3.13.5) con `pip install -e ".[synapse]"` más jupyter, python-dotenv y herramientas de `make test`. Evidencia: cdf 0.2.0, pyodbc 5.3.0, sqlalchemy 2.1.6, gx 1.24.1.
+- PENDIENTE — Driver ODBC 18: `pyodbc.drivers()` devolvió `[]`. Requiere sudo (instalación a cargo de Felipe).
+- PASA — `az login`: usuario con acceso al workspace, `az synapse workspace show` devuelve el workspace, estado `Succeeded`, endpoint `<workspace>-ondemand.sql.azuresynapse.net`.
+- PASA — `.env` existe con: AZURE_STORAGE_CONNECTION_STRING, STORAGE_ACCOUNT_NAME, DATALAKE_TEST_PATH, CONTENEDOR_VALIDACIONES (valores no leídos).
+- PASA — `.env.synapse` existe con: SYNAPSE_WORKSPACE, SYNAPSE_DATABASE, SYNAPSE_AUTH, SYNAPSE_QUERY_TIMEOUT, SYNAPSE_ODBC_DRIVER, SYNAPSE_TEST_TABLE, SYNAPSE_TEST_OTHER_DB, SYNAPSE_TEST_DDL_SCHEMA, SYNAPSE_TEST_GX_QUERY, SYNAPSE_TEST_GX_COLUMN (valores no leídos).
+- SALTADO — IP en firewall y `CREATE USER`: ya hecho por Felipe (admin de Entra del workspace), según su indicación del 2026-11-02.
+
+## 1. Pruebas automáticas (local)
+
+- PARCIAL — `make test` (corrida 1, sin driver ODBC): isort y black sin cambios (39 archivos), flake8 limpio, pytest `5 failed, 189 passed`. Los 5 fallos son los de `test_synapse_integration.py` por `Can't open lib 'ODBC Driver 18 for SQL Server'`. Se repite cuando esté el driver.
+  - HALLAZGO del checklist: dice que en `make test` las pruebas de Synapse se saltan, pero el skip solo aplica si no hay `SYNAPSE_WORKSPACE`. Con `.env.synapse` lleno corren contra el workspace real. Opciones: `addopts = -m "not synapse"` en `setup.cfg`, o corregir el texto del checklist.
+
+## 2. Notebooks
+
+Ejecutados headless con `jupyter nbconvert --execute` desde `docs/`, salida en `.superpowers/sdd/CHECKLIST_PRUEBAS/` (no versionada). Las salidas se leen con credenciales redactadas.
+
+### 01_datalake.ipynb
+
+Corrida 1 (FALLA):
+- PASA — Configuración: `carpeta de trabajo: pruebas/cdf/cdf_notebook_5ebc2e13`.
+- FALLA — 1. Cliente: `ValueError: unable to connect to account for Connection string is either blank or malformed`. Causa: `.env` tiene `AZURE_STORAGE_CONNECTION_STRING=` vacía (como en `datalake.env.example`); el notebook la carga con `override=True` y adlfs trata la cadena vacía como una conexión real en vez de usar `STORAGE_ACCOUNT_NAME` + identidad. Arrastra 2, 3 (resumir_ventas), 5 (run_task) y Limpieza.
+  - HALLAZGO: el ejemplo debería dejar esa línea comentada, o el notebook/framework ignorar variables vacías (`get_datalake` ya lo hace; adlfs no).
+- PASA — 3. `RecursoNoDeclarado`: imprime "La tarea 'usa_synapse_sin_declarar' usa 'synapse' sin declararlo…".
+- PASA — 4. Conexión con nombre: imprime `datalake:curado: Configure AZURE_STORAGE_CONNECTION_STRING__CURADO o STORAGE_ACCOUNT_NAME__CURADO.`
+- NOTA — 5. `check_resources()` devolvió `{'publicar_curado': [...]}` y no `{}`: es lo esperable cuando `datalake:curado` no está configurado (ver §4). El checklist es inconsistente en ese punto.
+- Pendiente repetir cuando se corrija `.env`.
+
+### Bloque 1, corrida 2 (con driver ODBC 18)
+
+Entorno final: great-expectations 1.24.0, sqlalchemy 2.0.55, pyodbc 5.3.0 (las versiones de `poetry.lock`).
+
+- PASA — isort y black sin cambios, flake8 limpio.
+- FALLA — `make test`: `3 failed, 191 passed`. Dos fallos (`test_select_1`, `test_parameters_supported_on_serverless`) por `42109 The SQL pool is warming up. Please try again`: arranque en frío del serverless. Pasaron al repetir la suite.
+  - HALLAZGO (código): `SynapseClient` no trata 42109 como transitorio (`TRANSIENT_CODES` en `synapse.py`), así que la primera consulta tras un rato inactivo falla sin reintento. En la Function esto se ve como una tarea fallida en el primer intento del día.
+- `pytest -m synapse -v -s`: `1 failed, 4 passed`.
+  - PASA — `test_select_1`, `test_parameters_supported_on_serverless`, `test_read_test_table`, `test_for_database`.
+  - FALLA — `test_gx_native_sql_matches_pandas`: modo sql `success=False`, fallidas `expect_column_to_exist` y `expect_column_values_to_not_be_null`. El modo pandas sí pasa.
+  - PASA — el SQL generado aparece bajo `--- SQL generado por GX ---`; solo lleva `SELECT count(*) ... FROM (<consulta con WHERE fecha = ...>) AS anon_1`, sin `SELECT *` ni `#`.
+  - MB procesados anotados: sql=10.0, pandas=10.0 (granularidad mínima del DMV).
+  - CAUSA (reproducida con `.superpowers/sdd/CHECKLIST_PRUEBAS/repro_gx_sql.py`): GX calcula `table.columns` con `get_sqlalchemy_column_metadata`; para un query asset el selectable es un `TextClause`, la introspección devuelve vacío y el `column_reflection_fallback` de SQL Server hace `selectable.name` → `AttributeError: 'TextClause' object has no attribute 'name'` → la métrica recibe `None` → `'NoneType' object is not iterable`. Ocurre igual con GX 1.24.1 + SQLAlchemy 2.1.6 y con GX 1.24.0 + SQLAlchemy 2.0.55. Solo las expectativas de tabla (conteo de filas) funcionan en modo sql contra Synapse. Las pruebas unitarias no lo detectan porque usan SQLite, cuyo fallback es distinto.
+
+Corrida 2 (tras comentar `AZURE_STORAGE_CONNECTION_STRING` en `.env`): PASA.
+- PASA — Configuración: `carpeta de trabajo: pruebas/cdf/cdf_notebook_1bfa1c41`.
+- PASA — 1. Cliente: imprime el nombre de la cuenta (la cuenta configurada), autenticado con identidad (AzureCliCredential).
+- PASA — 2. Escribir y leer: el CSV (3 filas) y el Parquet (solo `canal`, `valor`) se leen de vuelta; la lista de dos archivos diarios se lee como un solo DataFrame de 3 filas; link SAS: `SALTADO: el link SAS requiere AZURE_STORAGE_CONNECTION_STRING con AccountKey` (esperado sin AccountKey).
+- PASA — 3. Tareas: `resumir_ventas` devuelve `2`; la tarea sin declarar imprime el error `RecursoNoDeclarado`.
+- PASA — 4. Conexión con nombre: imprime lo que falta para `datalake:curado`.
+- PASA (con nota) — 5. Runner: `check_resources()` imprime `{'publicar_curado': [...datalake:curado...]}` (no `{}`, porque `datalake:curado` no está configurado; ver nota de la corrida 1); `run_task('resumir_ventas')` termina sin error y devuelve `2`.
+- PASA — Limpieza: imprime `borrada: pruebas/cdf/cdf_notebook_1bfa1c41`; `az storage blob list` con ese prefijo devuelve 0 blobs.
+
+### 02_great_expectations.ipynb
+
+- PASA — Configuración: `storage: sí`, `datalake (sección 4): pruebas/cdf`, `synapse (sección 5): sí`.
+- PASA — 1. En memoria: `success: True | fallidas: []` y la URL del reporte (local, `file:///tmp/...`; ver nota).
+- PASA — 2. Fallo de calidad: directa `success: False | fallidas: ['expect_column_values_to_be_between']`; por el runner `error de calidad: ['expect_column_values_to_be_between']`.
+- PASA — 3. Silencio: no lanza error (`success: False` sin excepción, con el WARNING de DQ silenciada) y muestra el aviso `el silencio de DQ vence el 2099-12-31`.
+- PASA — 4. Datalake: `datalake -> success: True | fallidas: []`; `az storage blob list` con prefijo `cdf/cdf_gx_notebook_` devuelve 0 blobs.
+- FALLA — 5. Synapse:
+  - `sql -> success: False | fallidas: ['expect_column_values_to_not_be_null', 'expect_column_values_to_be_in_set', 'expect_column_values_to_be_between'] | MB procesados: 0.0`; `pandas -> success: True | fallidas: [] | MB procesados: 0.0`. No dan el mismo resultado. Misma causa que el bloque 1 (`table.columns` sobre TextClause en SQL Server).
+  - El caso con `-5.0` da `sql -> success: False` pero con las tres expectativas de columna fallidas, no solo `between`: el fallo no demuestra que la expectativa se evaluó en Synapse, sino que ninguna de columna se evalúa.
+  - La tabla real da `success: False | fallidas: ['expect_column_values_to_not_be_null'] | MB procesados: 10.0`.
+  - NOTA — con solo `STORAGE_ACCOUNT_NAME` (identidad) los reportes de GX quedan locales (`file:///tmp/...`): `get_context` solo configura stores Azure con connection string. El notebook dice `storage: sí` igual. Es coherente con el código, pero el texto puede confundir.
+
+### 03_synapse.ipynb
+
+- PASA — Configuración: sin errores; `SYNAPSE_ODBC_DRIVER` está en `pyodbc.drivers()`.
+- PASA — 1. Cliente: `engine_edition: 11`, usuario de Felipe, base `bronze`.
+- PASA — 2. Leer: la consulta con parámetros devuelve `[{'texto': 'a', 'numero': 7}]`; `render` rechaza `'x; DROP VIEW v'`; el conteo y las columnas de `SYNAPSE_TEST_TABLE`.
+- PASA — 3. Tareas: `contar_tabla` devuelve el mismo conteo.
+- SALTADO — 4. Transformar: `SYNAPSE_TEST_DDL_SCHEMA` vacío (prueba de solo lectura por decisión de Felipe).
+- PASA — 5. Varias bases: `('bronze', 'silver')`.
+- FALLA — 6. Calidad: `sql: success=False failed=['expect_column_values_to_not_be_null'] MB procesados=10.0`; `pandas: success=True failed=[] MB procesados=10.0`. Misma causa que el bloque 1.
+- PASA — 7. Runner: `recursos configurados` y el conteo.
+- PASA — 8. pandas/polars: muestra 10 filas con pandas; `polars no está instalado (opcional)`.
+
+### Poda de particiones (con la vista real)
+
+- INCONCLUSO — `SELECT COUNT_BIG(*)` sobre la consulta de `SYNAPSE_TEST_GX_QUERY` con y sin el `WHERE fecha = '<foto>'`, dos rondas, sin otras consultas en paralelo (script `.superpowers/sdd/CHECKLIST_PRUEBAS/poda_particiones.py`):
+
+  | consulta | filas | MB procesados |
+  |---|---|---|
+  | con filtro | N | 10,0 |
+  | sin filtro | N | 10,0 |
+
+  La vista tiene una sola foto (`COUNT(DISTINCT fecha) = 1`, 2026-09-24), así que el filtro no descarta nada y los MB tienen que salir iguales. No se puede concluir si Synapse poda carpetas. Además `sys.dm_external_data_processed` avanza de a 10 MB, mínimo por consulta. Para esta prueba hace falta una vista con dos o más fotos y una lectura claramente mayor a 10 MB.
+
+## Resumen de la corrida
+
+| Bloque | Resultado |
+|---|---|
+| 0. Preparación | Completo |
+| 1. Pruebas automáticas | FALLA: `test_gx_native_sql_matches_pandas` (GX modo sql) y arranque en frío 42109 sin reintento |
+| 2. Notebooks 01 y 02 §1-4 | PASA |
+| 2. Notebook 02 §5 y 03 §6 | FALLA por la misma causa de GX modo sql |
+| 2. Notebook 03 §4 | SALTADO (sin esquema DDL) |
+| 2. Poda de particiones | INCONCLUSO (vista con una sola foto) |
+| 3, 4, 5 | Fuera de alcance de esta corrida |
+
+Según la regla del checklist ("si un bloque falla, no siga"), no se puede pasar al bloque 3 hasta resolver el modo sql de GX.
+
+## Prueba de hipótesis: table asset en modo sql
+
+Hipótesis: el defecto del modo sql aparece solo cuando GX debe averiguar las columnas de una consulta suelta (`add_query_asset`); con una tabla o vista con nombre (`add_table_asset` + `add_batch_definition_whole_table`) GX las obtiene del catálogo y el modo sql funciona.
+
+Prueba (diagnóstico, sin tocar la librería; script y salidas en `.superpowers/sdd/`, ignorado por git): misma fuente SQL de la librería, table asset sobre la vista de `SYNAPSE_TEST_TABLE` con esquema y nombre separados, suite de la prueba de integración (conteo de filas, `expect_column_to_exist` y `expect_column_values_to_not_be_null` sobre la columna `id`) más un caso que debe fallar (`expect_column_values_to_be_between` con `max_value=-1`). Misma suite en modo pandas para comparar. Entorno: versiones del `poetry.lock`.
+
+Resultado: **la hipótesis se confirma.**
+
+| Expectativa | sql (table asset) | pandas |
+|---|---|---|
+| expect_table_row_count_to_be_between | PASA | PASA |
+| expect_column_to_exist | PASA | PASA |
+| expect_column_values_to_not_be_null | PASA, 0 nulos | PASA, 0 nulos |
+| expect_column_values_to_be_between (forzada) | FALLA, 100 % fuera de rango | FALLA, 100 % fuera de rango |
+
+- Las expectativas de columna pasan en modo sql y el caso forzado falla con el conteo completo de filas fuera de rango: la expectativa se evaluó en Synapse, no en vacío.
+- Los dos modos dan exactamente las mismas fallidas.
+- Causa: con table asset GX resuelve `table.columns` con el inspector de SQLAlchemy (consulta a `sys.columns` por el nombre del objeto) y nunca entra al `column_reflection_fallback` que rompe con la consulta suelta.
+- SQL generado: solo agregados y catálogo. Sin tablas temporales (`#`). Observaciones:
+  - GX envuelve la fuente como `SELECT * FROM <esquema>.<vista> WHERE 1 = 1` en una subconsulta; por encima proyecta solo las columnas que usa (`count(*)`, `sum(CASE WHEN ...)`). El `SELECT *` literal está, aunque el motor puede podar columnas al optimizar; conviene medir MB con una vista ancha antes de darlo por inocuo.
+  - Con `result_format` SUMMARY, GX además ejecuta un `SELECT TOP 20 <columna> AS unexpected_values ...` por expectativa de columna para traer ejemplos. Son lecturas extra sobre la misma vista.
+  - Un table asset "whole table" no lleva el filtro de partición (`WHERE fecha = ...`). Para podar carpetas habría que usar un batch definition con partición de GX sobre la columna de fecha, o seguir validando por consulta cuando se necesite el filtro.
+
+Implicación para el brainstorming: agregar a la librería la validación por tabla o vista (caso principal) y decidir cómo tratar los cruces, por ejemplo publicándolos como vista con nombre; y revisar cómo aplicar el filtro de partición en el table asset.
+
+## Corrida 3, con `validate_table` (bloques 1 y 2)
+
+Código: rama `feature/version_020` tras el plan `docs/superpowers/plans/2026-11-02-validate-table-synapse.md`. Entorno: `.venv` con las versiones del `poetry.lock` (great-expectations 1.24.0, SQLAlchemy 2.0.55, pyodbc 5.3.0, driver ODBC 18).
+
+### Bloque 1
+
+- PASA — `make test`: isort y black sin cambios (44 archivos), flake8 limpio, pytest `250 passed, 1 skipped` incluidas las pruebas de Synapse (el skip es el caso sql de `validate_query` con columnas, cubierto por `validate_table`).
+- PASA — `pytest -m synapse -v -s`: `9 passed`.
+  - `test_select_1`, `test_parameters_supported_on_serverless`, `test_read_test_table`, `test_for_database`.
+  - `test_gx_query_sql_with_columns_is_rejected`: `ValueError` en sql, `success=True` en pandas.
+  - `test_validate_table_particion_sql_matches_pandas`: en sql pasan conteo, columna existe y sin nulos; la forzada (`expect_column_values_to_be_null`) falla; pandas da las mismas fallidas. SQL generado (saneado):
+
+    ```sql
+    SELECT count(*) AS [table.row_count] FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1
+    SELECT TOP 20 fecha AS unexpected_values FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1 WHERE fecha IS NULL
+    SELECT sum(CASE WHEN (fecha IS NULL) THEN ? ELSE ? END) ..., sum(CASE WHEN (fecha IS NOT NULL) THEN ? ELSE ? END) ...
+      FROM (SELECT * FROM <vista> WHERE fecha = ?) AS anon_1
+    ```
+
+    Sin `DISTINCT`, sin `TOP 1 1`, sin funciones sobre la columna ni `#`. MB procesados anotados: sql=60,0 (seis consultas, mínimo 10 MB cada una), pandas=25,0.
+  - `test_validate_table_completa_falla_por_trampa`: `ErrorMotorCalidad` con el error de Parquet de la carpeta dañada.
+  - `test_validate_table_sin_particion_se_niega` y `test_validate_table_columna_que_no_es_particion`: `ParticionInvalida`.
+- PASA — El reintento del 42109 (pool en frío) tiene prueba unitaria; en esta corrida no apareció el error.
+
+### Bloque 2
+
+- PASA — 01_datalake: mismos resultados que la corrida 2 (cliente, lectura y escritura, `resumir_ventas` → 2, `RecursoNoDeclarado`, conexión con nombre, runner, `borrada:`).
+- PASA — 02_great_expectations: §1 a §4 como en la corrida 2. §5: `validate_table` de la foto sana `sql -> success: True` y `pandas -> success: True`; el forzado `sql forzado -> success: False | fallidas: ['expect_column_values_to_be_null']`; sin partición imprime el `ParticionInvalida` que pide declararla o `'completa'`; el cruce en línea `cruce pandas -> success: True` y en sql imprime el `ValueError` que remite a `validate_table`.
+- PASA — 03_synapse: §1 a §5, §7 y §8 como en la corrida 2 (§4 saltado, sin esquema DDL). §6: `validate_table` con partición `sql: success=True` y `pandas: success=True` con los MB procesados, y `cruce pandas: success=True`.
+- PASA — Poda de particiones, con la trampa: la foto sana pasa en sql y `particion='completa'` falla con el error de Parquet (prueba de integración y spikes). Ningún `.ipynb` del repo lleva salidas.
+
+### Pendiente fuera de esta corrida
+
+- Bloques 4 y 5 del checklist. El bloque 4 no se corre en la suscripción usada para las pruebas; dónde se valida la Function está por decidir. En él queda por verificar con la identidad de la Function el `GRANT VIEW DEFINITION` (las pruebas locales corren con un admin de Entra). El bloque 5 es decisión de release.
+- Limpieza de la vista y las carpetas de la trampa: hecha por Felipe antes del push de la rama.
+
+## Corrida 4, bloque 3 (imagen de Functions y wheel)
+
+Ejecutada el 2026-11-02 sobre `f89a4b1`, en el mismo WSL (Ubuntu 24.04, systemd activo). Alcance: solo el bloque 3.
+
+### Preparación de la máquina
+
+- Docker no estaba instalado ni en el WSL ni en Windows. Se eligió Docker Engine dentro del WSL (repositorio oficial de Docker, paquetes `docker-ce`, `docker-ce-cli`, `containerd.io`, `docker-buildx-plugin`, `docker-compose-plugin`) en lugar de Docker Desktop: el checklist solo necesita `docker run` desde esta shell, la distro ya corre systemd y no se instala nada en Windows. Instalación ejecutada por Felipe con sudo; quedó Docker 29.9.2 cliente y servidor, servicio `docker` activo y habilitado, usuario en el grupo `docker`.
+- Poetry 2.5.1 ya estaba instalado (pipx). Nada más se instaló.
+
+### Resultados
+
+- PASA — `docker run --rm mcr.microsoft.com/azure-functions/python:4-python3.12 odbcinst -q -d` imprime `[ODBC Driver 18 for SQL Server]`. Detalle de la imagen (digest `sha256:98d384b6…`): `msodbcsql18 18.7.1.1-1`, `unixodbc 2.3.11`, Python 3.12.16, driver en `/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.7.so.1.1`.
+- PASA — `poetry version 0.3.0.dev0 && poetry build`: `dist/centraal_dataframework-0.3.0.dev0-py3-none-any.whl` (57,8 KB) y el sdist `.tar.gz`. La metadata de la wheel lleva `Version: 0.3.0.dev0`, `Provides-Extra: synapse`, `great-expectations (>=1.24,<1.25)` y `pyodbc` bajo el extra. Poetry emite avisos de deprecación de `[tool.poetry.extras]`, `[tool.poetry.scripts]` y clasificadores de licencia; no afectan el build.
+- PASA — `git checkout -- pyproject.toml`: `version = "0.2.0"` de vuelta y árbol limpio. `dist/` está en `.gitignore`; la wheel no se versiona.
+
+### Observación para el bloque 4
+
+`poetry version` solo cambia `pyproject.toml`. `__version__` en `centraal_dataframework/__init__.py` sigue en `0.2.0` dentro de la wheel, y `/api/diag` reporta ese valor. Con la wheel tal como se construye en el bloque 3, el ítem del bloque 4 que espera `version` `0.3.0.dev0` no cuadra: o el bloque 3 cambia también `__version__` en `__init__.py` antes de `poetry build` y restaura los dos archivos con `git checkout` (bump2version no está instalado y su configuración no contempla sufijos `dev`), o el ítem del bloque 4 espera `0.2.0`. Queda para decidir antes de correr el bloque 4.
+
+## Corrida 5, bloque 4 (la librería en una Function real, plan Dedicado)
+
+Ejecutada el 2026-11-04 sobre `f317ddc`, en el ambiente de desarrollo de un cliente. El bloque 4 del checklist está
+escrito para una Function Premium con despliegue de código; aquí se corrió sobre una Function **en contenedor**
+(imagen oficial `azure-functions/python:4-python3.12`), en un plan App Service Linux **B1**, con identidad asignada por el
+usuario, storage del host por identidad (sin llave compartida) e integración con VNet. Los ítems de EP1 se adaptan a eso.
+Los nombres de recursos, bases, esquemas y tablas del cliente no se registran aquí.
+
+### Lo que encontró la corrida (y se arregló antes de seguir)
+
+- **FALLA → arreglado en `f317ddc`.** El host arrancaba con **cero funciones**: `Worker failed to index functions`, sin
+  detalle en Application Insights. Reproducido en local con la misma imagen: `process_indexed_function` del worker lanza
+  `FunctionLoadError: queue_task: binding msg has invalid non-type annotation azure.functions._abc.Out[typing.Union[str,
+  typing.List[str]]]`. El worker exige un tipo concreto en la anotación de un binding y, al rechazar uno, descarta todas
+  las funciones de la app. `queue_task` pasa a `func.Out[List[str]]` y encola siempre una lista.
+- **FALLA → documentado.** `YAML_CONFIGURACION` con ruta relativa no se encuentra: el worker no arranca en la carpeta de
+  la app (su directorio de trabajo es `/`). En la app hay que dar la ruta absoluta (`/home/site/wwwroot/...`).
+- **FALLA → documentado en el checklist y en `PRUEBA_EN_FUNCTION.md`.** Con `db_datareader` + `VIEW DEFINITION`, la
+  primera `validate_table` en modo `sql` falló con el error 4834 de SQL Server (*You do not have permission to use the
+  bulk load statement*). Las vistas de la capa leen el lago con `OPENROWSET` sobre una fuente externa con credencial, y
+  en el pool serverless eso exige además `ADMINISTER DATABASE BULK OPERATIONS` y `REFERENCES` sobre la credencial. Las
+  pruebas locales nunca lo vieron porque corren con un administrador. Es el riesgo que el ítem de identidad del bloque 4
+  dejaba "por verificar".
+
+### Resultados
+
+- PASA — `GET /api/diag`: 200 con `version` `0.2.0` (instalada desde el commit, no desde una wheel `.dev0`), Python 3.12.16,
+  `ODBC Driver 18 for SQL Server`, `problemas: {}`.
+- PASA — `POST /api/queue_task` con una tarea `validate_table(..., particion={...}, modo='sql')` sobre una vista
+  particionada de la primera capa: `GX … [sql] … particion=<columna> success=True data_processed_mb=40.0` (cuatro consultas
+  al mínimo de 10 MB). La misma llamada probó la salida por la IP fija de la VNet (única regla del firewall), el driver,
+  la identidad y la poda.
+- PASA — Historial por identidad administrada (`HISTORY_ENABLED=true`, sin cadena de conexión): `GET /api/status/<run_id>`
+  → `success` con inicio y fin; `GET /api/status?task=<tarea>` lista la corrida. Observación: la fila conserva el campo
+  `error` de intentos anteriores fallidos aunque el estado final sea `success`.
+- PASA — Fallo de calidad forzado (`expect_column_values_to_be_null` sobre la columna de partición): `success=False`,
+  "no se reintenta", una sola ejecución de `execute_tasks_inqueue`, sin cola `*-poison`; historial `failed`. 30 MB.
+- PASA — Partición sin datos: `success=False` por `expect_table_row_count_to_be_between`, sin `ErrorMotorCalidad`,
+  sin reintento. 20 MB.
+- PASA — Parámetros inválidos (fecha que no es ISO, identificador con `; drop`): la tarea falla con `ValueError` antes
+  de abrir Synapse (ninguna traza `GX`), y la cola la reintenta hasta `maxDequeueCount` como cualquier error de tarea.
+  Queda la pregunta de si un `ValueError` de parámetros debería reintentarse.
+- PASA — En serie: tres tareas encoladas juntas corren una tras otra y en orden (`requests` no solapados). Con tareas
+  de menos de 0,1 s, `espera_cola_min` no alcanza a crecer entre ellas: el criterio observable es el orden y la no
+  concurrencia.
+- Monitor de capacidad y alertas: la prueba de disponibilidad sobre `/api/diag` pasa desde tres ubicaciones; el resto se
+  completa al cierre de la corrida (ver el checkpoint del proyecto).
+
+## Ensayo de release 0.3.0 (bloque 3)
+
+Ejecutado el 2026-11-05 sobre el árbol de trabajo de `feature/version_020` con la versión en 0.3.0, sin Docker: Python
+3.12 en Windows, entornos nuevos en una carpeta temporal. Alcance: los pasos de `release.yml` y la instalación de la
+wheel como la haría el build remoto de una Function.
+
+- FALLA → arreglado. `poetry run mkdocs build` con las versiones de `poetry.lock` (`mkdocstrings` 0.24.3,
+  `mkdocs-autorefs` 1.4.4): `AttributeError: 'dict' object has no attribute 'link_titles'` en el `on_config` de
+  autorefs. `mkdocs.yml` no declaraba `autorefs`, así que mkdocstrings lo instanciaba por su cuenta, y autorefs ≥ 1.3
+  ya no lo admite. Con eso el workflow se habría caído en "build documentation", antes de publicar en PyPI. Se declara
+  `autorefs` en `plugins` y el build termina (solo advertencias por páginas del `nav` que no existen).
+- NOTA. `poetry install --with doc` en Windows con 3.12 pide compilar `regex` 2022.10.31 (fijado por mkdocs-material
+  9.3.2). Es del entorno del ensayo: en PyPI esa versión tiene wheel `cp311-manylinux_2_17_x86_64`, que es la del
+  workflow. Para el ensayo se instaló un `regex` reciente.
+- PASA. `poetry build`: `centraal_dataframework-0.3.0-py3-none-any.whl` y el sdist; metadata `Version: 0.3.0`,
+  `Requires-Python: >=3.10,<3.15`, `Provides-Extra: synapse`.
+- PASA. La wheel con `[synapse]` se instala en un entorno limpio; importan `centraal_dataframework.blueprints` y
+  `gx_synapse` (great-expectations 1.24.1); `centraal-dataframework init` genera `requirements.txt` con
+  `centraal-dataframework==0.3.0` y el bicep con `YAML_CONFIGURACION` y Application Insights.

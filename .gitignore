@@ -121,12 +121,21 @@ celerybeat.pid
 
 # Environments
 .env
+.env.synapse
 .venv
+.venv*/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Azure Functions / configuración real (no versionar secretos)
+local.settings.json
+centraal_dataframework.yaml
+!docs/centraal_dataframework.yaml
+!docs/centraal_dataframework.yaml.example
+!**/templates/**/centraal_dataframework.yaml.example
 
 # Spyder project settings
 .spyderproject
@@ -158,3 +167,4 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+docs/*_resultado.ipynb

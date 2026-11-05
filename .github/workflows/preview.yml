@@ -1,31 +1,23 @@
-# This is a basic workflow to help you get started with Actions
-
 name: stage & preview workflow
 
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master, main ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [master, main]
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   publish_dev_build:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        python-versions: [ 3.8, '3.9']
+        python-versions: ['3.11']
     environment: release-test
     permissions:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-versions }}
 
@@ -35,8 +27,7 @@ jobs:
           pip install poetry tox tox-gh-actions
 
       - name: test with tox
-        run:
-          tox
+        run: tox
 
       - name: Build wheels and source tarball
         run: |
