@@ -2,7 +2,7 @@
 
 __author__ = """centraal.studio"""
 __email__ = 'equipo@centraal.studio'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 from centraal_dataframework.excepciones import (
     ErrorEnTarea,

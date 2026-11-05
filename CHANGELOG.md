@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-04
+
+Primera versión publicada en PyPI desde 0.1.3: incluye también los cambios de 0.2.0, que no se publicó.
+
 ### Added
 
 - `ctx.gx.validate_table(synapse, name, 'esquema.vista', expectations, particion={'columna': valor}, modo='sql'|'pandas')`: el caso principal de calidad en Synapse. Valida una tabla o vista con nombre; en bronze, solo la partición declarada. La partición se verifica contra la definición de la vista (`OBJECT_DEFINITION`: la columna debe salir de `filepath(n)` sobre la carpeta `<columna>=*`); una vista particionada sin `particion` se rechaza, y `particion='completa'` la valida entera a propósito. Excepción nueva `ParticionInvalida`.
@@ -19,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SynapseClient.sqlalchemy_url()`, `sqlalchemy_kwargs()` (token de Entra en `attrs_before`) y `data_processed_mb()`.
 - Variable `SYNAPSE_ODBC_DRIVER` (por defecto `ODBC Driver 18 for SQL Server`). `check-resources` y el runner avisan si el driver configurado no está instalado.
 - El extra `[synapse]` instala `sqlalchemy>=2.0`.
-- Guía `docs/PRUEBA_EN_FUNCTION.md`: probar una versión sin publicar en una Azure Function.
+- Guía `docs/DESPLIEGUE_FUNCTION.md`: el despliegue soportado paso a paso, con qué hacer con el driver ODBC en Azure y en local. `docs/DESPLIEGUE_CONTENEDOR.md` documenta, como referencia no soportada, la Function en contenedor sobre plan Dedicado.
 - Endpoint `GET /api/diag`: versión, Python, drivers ODBC y problemas de configuración por tarea. Responde 503 si hay problemas, para usarlo en una prueba de disponibilidad.
 
 - Monitor de capacidad: timer `monitor_capacidad` cada 30 min que mide la cola de tareas (mensajes y espera del más viejo) y la memoria pico del worker frente a la de la instancia. Deja la traza `capacidad` y, sobre los umbrales `CAPACIDAD_COLA_MAX`, `CAPACIDAD_ESPERA_MAX_MIN` y `CAPACIDAD_MEMORIA_PCT`, advertencias `CAPACIDAD:` que recomiendan otra instancia o una más grande. Cada ejecución de la cola deja `tarea_capacidad` con su espera y la memoria pico. Guía en `docs/CAPACIDAD.md`.
@@ -32,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - El historial limpia `error` y `url` cuando una tarea que falló en intentos anteriores termina bien con el mismo `run_id`; antes la fila quedaba `success` con el texto del error viejo. Si el resultado trae `url` (los data docs de una validación), esa es la que queda.
 - `memoria_limite_mb` ya no queda en `null` en App Service Linux: sin límite de cgroup usa `MemTotal` de `/proc/meminfo`, la memoria de la VM (la de la instancia cuando la app está sola en el plan).
+- `docs/datalake.env.example` dejaba `AZURE_STORAGE_CONNECTION_STRING=` vacía y descomentada, lo que rompía la autenticación por identidad (adlfs la tomaba como una conexión real). Ahora va comentada.
+- `SynapseClient` reintenta el error 42109 (`The SQL pool is warming up`) como transitorio: antes la primera consulta tras un rato inactivo fallaba sin reintento.
+- La plantilla de `init` deja `YAML_CONFIGURACION` con ruta absoluta (`/home/site/wwwroot/centraal_dataframework.yaml`). Con la ruta relativa por defecto el worker de Functions no encontraba el YAML, porque no arranca en la carpeta de la app.
 - `POST /api/queue_task` deja siempre una lista de mensajes en la cola, aunque sea una sola tarea, y la anotación del binding de salida es `func.Out[List[str]]`. Con `Out[Union[str, List[str]]]` el worker de Functions rechazaba el binding (`binding msg has invalid non-type annotation`) y no indexaba ninguna función de la app: el host arrancaba sin rutas ni disparadores.
 
 ### Changed
@@ -40,11 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `great-expectations` acotado a `>=1.24,<1.25`: `TableAssetSynapse` depende de nombres privados de GX; subir la cota es una decisión explícita que pasa por `tests/test_gx_synapse.py` y `pytest -m synapse`.
 - La identidad que valida necesita `GRANT VIEW DEFINITION` en las bases con vistas particionadas.
 - La plantilla de `init` despliega en plan Premium (Elastic Premium, Linux) con Python 3.11/3.12, identidad administrada, build remoto y variables `SYNAPSE_*`. Usa una instancia siempre encendida, sin escalado elástico ni pre-calentada (`instancias=1`, que es mínimo y máximo a la vez). En `host.json`: `functionTimeout` de 1 h y la cola de a un mensaje por instancia (`batchSize=1`, `newBatchThreshold=0`). Antes la plantilla usaba Consumption (Y1).
-
-### Fixed
-
-- `docs/datalake.env.example` dejaba `AZURE_STORAGE_CONNECTION_STRING=` vacía y descomentada, lo que rompía la autenticación por identidad (adlfs la tomaba como una conexión real). Ahora va comentada.
-- `SynapseClient` reintenta el error 42109 (`The SQL pool is warming up`) como transitorio: antes la primera consulta tras un rato inactivo fallaba sin reintento.
+- Despliegue soportado: solo código en plan Premium con la librería desde PyPI y versión fija. La plantilla de `init` escribe `centraal-dataframework=={versión}` en `requirements.txt` (antes `>=0.2.0`), crea Log Analytics y Application Insights conectados a la Function, y su comentario de permisos de Synapse incluye `GRANT VIEW DEFINITION` y los dos `GRANT` que exige `OPENROWSET` con credencial. Desplegar como contenedor queda como referencia no soportada.
 
 ## [0.2.0] - 2026-10-06
 

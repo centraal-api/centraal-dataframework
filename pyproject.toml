@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "centraal_dataframework"
-version = "0.2.0"
+version = "0.3.0"
 homepage = "https://github.com/centraal-api/centraal-dataframework"
 description = "Framework para ejecutar transformaciones y calidad de datos sobre Azure Functions."
 authors = ["centraal.studio <equipo@centraal.studio>"]
