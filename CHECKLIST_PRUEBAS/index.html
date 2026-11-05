@@ -542,8 +542,8 @@ siguiente. Más detalle en <a href="../CAPACIDAD/">CAPACIDAD.md</a>.</p>
 </tr>
 <tr>
 <td>4. Publicar 0.3.0 en PyPI</td>
-<td>En curso</td>
-<td>—</td>
+<td>Completo</td>
+<td>2026-11-05</td>
 </tr>
 <tr>
 <td>5. Verificación en la Function (forma soportada)</td>
@@ -649,8 +649,9 @@ referencia en <a href="../DESPLIEGUE_CONTENEDOR/">DESPLIEGUE_CONTENEDOR.md</a>.<
 <ul>
 <li>[x] Bloques 0 a 3 marcados.</li>
 <li>[x] Versión en <code>pyproject.toml</code>, <code>centraal_dataframework/__init__.py</code> y <code>.bumpversion.cfg</code>, y <code>[Unreleased]</code> movido en el CHANGELOG.</li>
-<li>[ ] Merge a main y push del tag <code>v&lt;versión&gt;</code>; <code>release.yml</code> publica en PyPI.</li>
-<li>[ ] La versión aparece en PyPI y se instala: <code>pip install "centraal-dataframework[synapse]==&lt;versión&gt;"</code>.</li>
+<li>[x] Merge a main y push del tag <code>v&lt;versión&gt;</code>; <code>release.yml</code> publica en PyPI. — <code>v0.3.0</code>, workflow de release en verde.</li>
+<li>[x] La versión aparece en PyPI y se instala: <code>pip install "centraal-dataframework[synapse]==&lt;versión&gt;"</code>. — 0.3.0, instalada en un entorno limpio con Python 3.12.</li>
+<li>[x] El workflow <code>dev.yml</code> (tox) pasa en main. El entorno <code>build</code> instala las versiones más nuevas de mkdocs, sin el lock: con <code>pymdown-extensions</code> 12 falló por <code>uslugify</code>, que se eliminó; arreglado en <code>mkdocs.yml</code> con <code>pymdownx.slugs.slugify</code>. — <code>02c373e</code>, 15 de 15 trabajos en verde.</li>
 </ul>
 <h3 id="5-verificación-en-una-function-de-azure-forma-soportada">5. Verificación en una Function de Azure (forma soportada)<a class="headerlink" href="#5-verificación-en-una-function-de-azure-forma-soportada" title="Permanent link">&para;</a></h3>
 <p>Despliegue de código en plan Premium con la versión publicada, generado con <code>init</code>
