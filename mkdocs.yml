@@ -48,6 +48,8 @@ markdown_extensions:
 plugins:
   - include-markdown
   - search
+  # Declarado aquí: si mkdocstrings 0.24 lo crea por su cuenta, mkdocs-autorefs >= 1.3 falla en on_config.
+  - autorefs
   - mkdocstrings:
       default_handler: python
       handlers:
